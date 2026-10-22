@@ -7,12 +7,13 @@
   "description": "Open Financial Agent Protocol (OFAP), draft 0.1: how AI agents find, price, subscribe to and service regulated financial products. An extension on top of MCP and PAP.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "generate": "bun scripts/generate.mjs schema.ts schema.json",
-    "examples": "bun scripts/examples.mjs examples",
-    "validate": "bun scripts/validate.mjs . ./profiles.ts",
+    "generate": "bun scripts/generate.ts",
+    "examples": "bun scripts/examples.ts",
+    "validate": "bun scripts/validate.ts",
     "check": "bun run typecheck && bun run generate && bun run examples && bun run validate"
   },
   "devDependencies": {
+    "@types/bun": "1.2.16",
     "ajv": "8.17.1",
     "ajv-formats": "3.0.1",
     "ts-json-schema-generator": "2.3.0",

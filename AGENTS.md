@@ -2,13 +2,13 @@
 
 ## Source of truth
 
-`schema.ts` holds every type and its rules, in RFC 2119 keywords. `profiles.ts` holds the line profiles. `scripts/generate.mjs` generates `schema.json` from `schema.ts`, and `scripts/examples.mjs` writes the worked flow in `examples/`. Don't edit `schema.json` or `examples/` by hand.
+`schema.ts` holds every type and its rules, in RFC 2119 keywords. `profiles.ts` holds the line profiles. `scripts/generate.ts` generates `schema.json` from `schema.ts`, and `scripts/examples.ts` writes the worked flow in `examples/`. Don't edit `schema.json` or `examples/` by hand.
 
 ## Checks
 
-After a change, run `bun run check` and commit what it writes. It type-checks the schema, regenerates `schema.json` and the examples, validates the examples against the schema, and runs the rule checks in `scripts/validate.mjs`. CI fails when `schema.json` or `examples/` differ from what the scripts write.
+After a change, run `bun run check` and commit what it writes. It type-checks the schema and the scripts (each example in `scripts/examples.ts` has its schema type), regenerates `schema.json` and the examples, validates the examples against the schema, and runs the rule checks in `scripts/validate.ts`. CI fails when `schema.json` or `examples/` differ from what the scripts write.
 
-When you add a MUST rule that a JSON Schema cannot express, add a check for it in `scripts/validate.mjs` and list it under "Rules the checks cover" in the README.
+When you add a MUST rule that a JSON Schema cannot express, add a check for it in `scripts/validate.ts` and list it under "Rules the checks cover" in the README.
 
 ## Sector modules
 

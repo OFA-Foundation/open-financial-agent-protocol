@@ -33,7 +33,7 @@ Credit and investment ask for the same kinds of evidence in their own form. That
 | `examples/` | A worked pet insurance flow with fictional data: quote a cat, quote an older dog that gets no offer, apply, add a dog |
 | `scripts/` | Generate the schema, build the examples, run the checks |
 
-Run `bun install`, then `bun run check`. It type-checks the schema, generates `schema.json`, rebuilds the examples, validates them, and runs the rule checks. CI runs the same command on every push.
+Run `bun install`, then `bun run check`. It type-checks the schema and the scripts, so each example must match its schema type. Then it generates `schema.json`, rebuilds the examples, validates them, and runs the rule checks. CI runs the same command on every push.
 
 ## Core and sector modules
 

@@ -18,7 +18,7 @@ body:
               - schema.ts, PAP operations and evidence
               - profiles.ts
               - Examples
-              - Checks (scripts/validate.mjs)
+              - Checks (scripts/validate.ts)
               - Several parts
       validations:
           required: true
