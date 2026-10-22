@@ -946,8 +946,11 @@ export type OfapErrorCode =
   | "not_licensed"
   /** The product is not sold where the customer is. */
   | "not_available_in_region"
+  /** No product has this `product_id`. */
   | "product_not_found"
+  /** No offer has this `offer_id`. */
   | "offer_not_found"
+  /** The offer is past its `valid_until`. */
   | "offer_expired"
   /** The answers follow an old version of the question set. */
   | "question_set_outdated"
@@ -955,10 +958,13 @@ export type OfapErrorCode =
   | "sensitive_field_received"
   /** A document with `required_before_commitment` is not in `documents_delivered`. */
   | "documents_not_delivered"
+  /** The declaration does not have `accuracy_confirmed: true`. */
   | "accuracy_not_confirmed"
   /** The needs assessment is missing, of another sector, or its outcome does not allow the application. */
   | "needs_assessment_invalid"
+  /** No agreement has this `agreement_number`. */
   | "agreement_not_found"
+  /** The provider does not accept this change to the agreement. */
   | "amendment_not_allowed"
   /** The tool is above the conformance level the server declares. */
   | "not_supported";

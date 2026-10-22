@@ -32,8 +32,9 @@ Credit and investment ask for the same kinds of evidence in their own form. That
 | `profiles.ts` | Line profiles: the common core of questions per product line |
 | `examples/` | A worked pet insurance flow with fictional data: quote a cat, quote an older dog that gets no offer, apply, add a dog |
 | `scripts/` | Generate the schema, build the examples, run the checks |
+| `content/`, `app/`, `components/`, `lib/` | The website at [openfinancialagent.org](https://openfinancialagent.org). See `AGENTS.md` |
 
-Run `bun install`, then `bun run check`. It type-checks the schema and the scripts, so each example must match its schema type. Then it generates `schema.json`, rebuilds the examples, validates them, and runs the rule checks. CI runs the same command on every push.
+Run `bun install`, then `bun run check`. It type-checks the schema and the scripts, so each example must match its schema type. Then it generates `schema.json`, rebuilds the examples, validates them, and runs the rule checks. CI runs the same command on every push. `bun run dev` previews the website, and `bun run build` builds it.
 
 ## Core and sector modules
 
@@ -95,12 +96,11 @@ R1 profiles compile. R2 a question set has every required question of its profil
 ## Open points
 
 1. **Conversation-only distributors.** `ConversationData` is a proposal. Decide whether a distributor that exposes only a company agent can reach level 2 if it returns structured quotes.
-2. **Domain.** The extension identifier uses openfinancialagent.org, which is not registered yet.
-3. **PAP fields.** `Operation` mirrors PAP draft 0.2 and rejects unknown fields. It must accept new PAP fields before 1.0.
-4. **Credit and investment modules.** Draft each one on the rules of section 8, with at least two distributors as input.
-5. **Profiles.** A second distributor for the pet and home profiles, and profiles for commercial lines.
-6. **Legal review** of the IDD references, country by country.
-7. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
+2. **PAP fields.** `Operation` mirrors PAP draft 0.2 and rejects unknown fields. It must accept new PAP fields before 1.0.
+3. **Credit and investment modules.** Draft each one on the rules for sector modules (section 8 of `schema.ts`), with at least two distributors as input.
+4. **Profiles.** A second distributor for the pet and home profiles, and profiles for commercial lines.
+5. **Legal review** of the IDD references, country by country.
+6. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
 
 ## Related work
 

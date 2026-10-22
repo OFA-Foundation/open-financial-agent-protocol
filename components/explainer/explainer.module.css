@@ -1,0 +1,1143 @@
+/* The explainer. The stage is a fixed canvas, 1024 × 576 (or 400 × 600 on a
+   narrow frame), scaled to the width of its frame, so the layout never
+   reflows while it plays. Colours, radii and type come from the tokens. */
+
+.figure {
+  container-type: inline-size;
+  margin: 0;
+}
+
+.frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1024 / 576;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+@container (max-width: 759px) {
+  .frame {
+    aspect-ratio: auto;
+    height: min(780px, 150cqw);
+  }
+}
+
+.frame[data-record] {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  height: auto;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+}
+
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1024px;
+  height: 576px;
+  overflow: hidden;
+  transform-origin: 0 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 19px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage[data-layout="portrait"] {
+  width: 400px;
+  height: 600px;
+}
+
+.stage:not([data-ready]) {
+  visibility: hidden;
+}
+
+:where(.stage) p {
+  margin: 0;
+}
+
+.stage code {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+}
+
+/* Chapter and captions */
+
+.top {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 0;
+  height: 40px;
+}
+
+.chapter {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  display: flex;
+  gap: var(--space-2);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+}
+
+.chapter span {
+  color: var(--ink);
+}
+
+.captions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  border-top: 1px solid var(--line);
+  background: var(--canvas);
+}
+
+.caption {
+  position: absolute;
+  inset: 0 20px;
+  display: flex;
+  align-items: center;
+  font-size: 15.5px;
+  line-height: 22px;
+  text-wrap: pretty;
+}
+
+/* Cards: the agent, the payload and the distributor */
+
+.agent,
+.payload,
+.distributor {
+  position: absolute;
+  top: 40px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+}
+
+.agent {
+  left: 20px;
+  width: 280px;
+  height: 472px;
+}
+
+.agentHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  height: 44px;
+  padding: 13px 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.agentTitle {
+  font-weight: 600;
+}
+
+.agentFor {
+  font-size: 12px;
+  color: var(--ink-subtle);
+}
+
+.chat {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 45px;
+  bottom: 12px;
+  overflow: hidden;
+  padding-top: 12px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 20px);
+}
+
+.chat > .chatItem {
+  top: 12px;
+}
+
+.chatItem {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  visibility: hidden;
+}
+
+.chatItem[data-kind="customer"] {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.customer {
+  max-width: 88%;
+  padding: 8px 11px;
+  border-radius: var(--radius-md) var(--radius-md) 2px var(--radius-md);
+  background: var(--surface);
+}
+
+.agentMessage {
+  padding-right: var(--space-4);
+}
+
+.docs,
+.offers {
+  display: grid;
+  gap: 6px;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docs li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.fileTag {
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-size: 9px;
+  line-height: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ink-subtle);
+}
+
+.docTitle {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.docs code {
+  font-size: 10.5px;
+  color: var(--ink-subtle);
+}
+
+.offers li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px var(--space-2);
+  padding: var(--space-2) 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.offerTier {
+  font-weight: 600;
+}
+
+.offerPrice {
+  font-weight: 500;
+  text-align: right;
+}
+
+.offerCover {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+
+.ring {
+  position: absolute;
+  inset: -1px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.handoff {
+  display: grid;
+  gap: 2px;
+  margin-top: var(--space-2);
+  padding: var(--space-2) 10px;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+}
+
+.handoff strong {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.handoff code {
+  font-size: 10.5px;
+  color: var(--ink-subtle);
+}
+
+.approved {
+  font-size: 11.5px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--ink-subtle);
+}
+
+.positiveWord {
+  margin-right: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--positive);
+}
+
+/* The approval sheet, in the agent's own interface */
+
+.backdrop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 45px;
+  bottom: 0;
+  background: var(--canvas);
+  visibility: hidden;
+}
+
+.sheet {
+  position: absolute;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: var(--space-2);
+  padding: 14px;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  box-shadow: var(--shadow-overlay);
+  visibility: hidden;
+}
+
+.sheetLabel,
+.keptLabel,
+.toolsLabel,
+.payloadKind,
+.bandRole,
+.sessionLabel {
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+}
+
+.sheetTitle {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 600;
+}
+
+.sheetMeta {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: 10.5px;
+  line-height: 15px;
+  color: var(--ink-subtle);
+}
+
+.sheetSummary {
+  margin-bottom: 10px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--ink-muted);
+}
+
+.sheetTerms {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.sheetTerms dt {
+  color: var(--ink-subtle);
+}
+
+.sheetTerms dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+
+.sheetActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.decline,
+.approve {
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+.decline {
+  border: 1px solid var(--line-control);
+}
+
+.approve {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--canvas);
+}
+
+.approve > span:not(.ripple) {
+  grid-area: 1 / 1;
+  justify-self: center;
+}
+
+.approvedLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  visibility: hidden;
+}
+
+.approvedLabel svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ripple {
+  position: absolute;
+  inset: -1px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-md);
+  visibility: hidden;
+}
+
+/* The wire, inside the PAP Session */
+
+.work {
+  position: absolute;
+  inset: 0;
+}
+
+.wire {
+  position: absolute;
+  left: 300px;
+  top: 40px;
+  width: 512px;
+  height: 96px;
+}
+
+.session {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 4px;
+  bottom: 2px;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  visibility: hidden;
+}
+
+.sessionLabel {
+  position: absolute;
+  right: 10px;
+  top: -8px;
+  padding: 0 6px;
+  background: var(--surface);
+  color: var(--ink-muted);
+}
+
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 54px;
+  height: 1px;
+  background: color-mix(in srgb, var(--line-control) 55%, transparent);
+}
+
+.port {
+  position: absolute;
+  top: -4px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-full);
+  background: var(--canvas);
+}
+
+.port[data-end="agent"] {
+  left: -5px;
+}
+
+.port[data-end="distributor"] {
+  right: -5px;
+}
+
+.trail {
+  position: absolute;
+  left: 0;
+  top: -0.25px;
+  width: 100%;
+  height: 1.5px;
+  background: var(--ink);
+  transform-origin: 0 50%;
+  visibility: hidden;
+}
+
+/* The moving call: the one orange point on the stage, as in the mark. */
+.dot {
+  position: absolute;
+  left: -5px;
+  top: -4.5px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--surface);
+  visibility: hidden;
+}
+
+.wireEnd {
+  display: none;
+}
+
+.request,
+.response {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  visibility: hidden;
+}
+
+.request {
+  bottom: 50px;
+  display: grid;
+  gap: 1px;
+}
+
+.requestLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.layerTag {
+  flex: none;
+  padding: 0 4px;
+  border: 1px solid var(--line-control);
+  border-radius: 3px;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 9.5px;
+  line-height: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.method {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.method span {
+  font-weight: 400;
+  color: var(--ink-subtle);
+}
+
+.ofapTag {
+  flex: none;
+  font-size: 9.5px;
+  line-height: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-subtle);
+}
+
+.detail {
+  overflow: hidden;
+  font-size: 10.5px;
+  line-height: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink-subtle);
+}
+
+.response {
+  top: 63px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-muted);
+}
+
+.status {
+  flex: none;
+  padding: 0 7px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-full);
+  font-size: 10.5px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.status[data-tone="positive"] {
+  color: var(--positive);
+}
+
+.status[data-tone="caution"] {
+  color: var(--caution);
+}
+
+.status[data-tone="neutral"] {
+  color: var(--ink-muted);
+}
+
+/* The payload of the latest call */
+
+.payload {
+  left: 316px;
+  top: 148px;
+  width: 480px;
+  height: 364px;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--ink-subtle);
+}
+
+.payloadLayer {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+}
+
+.payloadHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 31px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.payloadHead code {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.payloadHead .payloadFrom {
+  margin-left: auto;
+  color: var(--ink-subtle);
+}
+
+.lines {
+  padding: var(--space-2) 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  line-height: 15.5px;
+}
+
+.line {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 0 var(--space-4);
+  white-space: pre;
+  text-overflow: ellipsis;
+  visibility: hidden;
+}
+
+.mark {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--surface);
+  box-shadow: inset 2px 0 0 var(--ink);
+  opacity: 0;
+}
+
+/* The distributor */
+
+.distributor {
+  left: 812px;
+  width: 192px;
+  height: 472px;
+}
+
+.distHead {
+  padding: 11px 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.distName {
+  font-weight: 600;
+}
+
+.distDomain {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 15px;
+  color: var(--ink-subtle);
+}
+
+.endpoints {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+}
+
+.endpoint {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 6px;
+  padding: 6px var(--space-2);
+  visibility: hidden;
+}
+
+.endpoint:first-child {
+  visibility: visible;
+}
+
+.rowMark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: inset 2px 0 0 var(--ink);
+  opacity: 0;
+}
+
+.endpoint > :not(.rowMark),
+.tool > code,
+.kept > :not(.rowMark) {
+  position: relative;
+}
+
+.endpointName {
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 500;
+}
+
+.endpointPath {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink-subtle);
+}
+
+.tools {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  padding: 0 0 0 var(--space-2);
+  border-left: 1px solid var(--line);
+  list-style: none;
+}
+
+.toolsLabel {
+  padding: 0 6px 2px;
+  font-size: 9px;
+}
+
+.tool {
+  position: relative;
+  padding: 1px 6px;
+  font-size: 10.5px;
+  line-height: 17px;
+}
+
+.kept {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  padding: var(--space-2);
+  visibility: hidden;
+}
+
+.kept code {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* The three layers */
+
+.layers {
+  position: absolute;
+  left: 316px;
+  top: 40px;
+  width: 688px;
+  height: 472px;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: var(--space-3);
+  visibility: hidden;
+}
+
+.band {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  visibility: hidden;
+}
+
+.bandName {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.bandRole {
+  margin-top: 4px;
+}
+
+.bandText {
+  margin-bottom: var(--space-2);
+  color: var(--ink-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 10.5px;
+  line-height: 17px;
+}
+
+/* Title cards of the video file */
+
+.title {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: var(--canvas);
+  text-align: center;
+  visibility: hidden;
+}
+
+.titleName {
+  margin-top: 6px;
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.titleText {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink-muted);
+}
+
+/* The narrow stage: the agent and the wire, without the payload and the distributor. */
+
+.stage[data-layout="portrait"] .top {
+  left: 16px;
+  right: 16px;
+  height: 36px;
+}
+
+.stage[data-layout="portrait"] .chapter {
+  top: 10px;
+}
+
+.stage[data-layout="portrait"] .agent {
+  left: 16px;
+  top: 36px;
+  width: 368px;
+  height: 340px;
+}
+
+.stage[data-layout="portrait"] .wire {
+  left: 16px;
+  top: 384px;
+  width: 368px;
+  height: 116px;
+}
+
+.stage[data-layout="portrait"] .session {
+  left: 8px;
+  right: 8px;
+  bottom: 22px;
+}
+
+.stage[data-layout="portrait"] .request,
+.stage[data-layout="portrait"] .response {
+  left: 20px;
+  right: 20px;
+}
+
+.stage[data-layout="portrait"] .request {
+  bottom: 70px;
+}
+
+.stage[data-layout="portrait"] .wireEnd {
+  position: absolute;
+  top: 98px;
+  display: block;
+  font-size: 10px;
+  line-height: 14px;
+  color: var(--ink-subtle);
+}
+
+.stage[data-layout="portrait"] .wireEnd[data-end="agent"] {
+  left: 0;
+}
+
+.stage[data-layout="portrait"] .wireEnd[data-end="distributor"] {
+  right: 0;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+}
+
+.stage[data-layout="portrait"] .payload,
+.stage[data-layout="portrait"] .distributor {
+  display: none;
+}
+
+.stage[data-layout="portrait"] .layers {
+  left: 16px;
+  top: 44px;
+  width: 368px;
+  height: 432px;
+}
+
+.stage[data-layout="portrait"] .band {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: var(--space-3) 14px;
+}
+
+.stage[data-layout="portrait"] .bandName {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.stage[data-layout="portrait"] .bandText {
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.stage[data-layout="portrait"] .captions {
+  height: 100px;
+}
+
+.stage[data-layout="portrait"] .caption {
+  inset: 0 16px;
+  font-size: 14.5px;
+  line-height: 21px;
+}
+
+/* Controls under the stage */
+
+.controls {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.play {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--ink);
+  color: var(--canvas);
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+
+.play:hover {
+  background: var(--ink-muted);
+}
+
+.play svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.chapters {
+  display: flex;
+  flex: 1;
+  gap: var(--space-1);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-2) 0 0;
+  list-style: none;
+}
+
+.chapters li {
+  flex-basis: 0;
+  min-width: 0;
+}
+
+.chapters button {
+  display: block;
+  width: 100%;
+  padding: 0 0 var(--space-1);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bar {
+  position: relative;
+  display: block;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--line);
+}
+
+.bar span {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+.chapterTitle {
+  display: block;
+  overflow: hidden;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink-subtle);
+}
+
+.chapters button[aria-current="step"] .chapterTitle {
+  color: var(--ink);
+}
+
+.time {
+  flex: none;
+  padding-top: 3px;
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-subtle);
+}
+
+@container (max-width: 640px) {
+  .chapterTitle {
+    display: none;
+  }
+}
+
+.transcript {
+  margin-top: var(--space-4);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.transcript summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--ink-muted);
+}
+
+.transcript ol {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transcript li {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.transcript button {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-subtle);
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  text-decoration: underline;
+  text-decoration-color: var(--line-control);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

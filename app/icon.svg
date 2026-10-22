@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>OFAP</title>
+  <defs>
+    <mask id="gap" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+      <rect width="32" height="32" fill="#fff"/>
+      <circle cx="23.78" cy="8.22" r="5.8" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#0b1b32"/>
+  <g transform="translate(16 16) scale(0.74) translate(-16 -16)">
+    <circle cx="16" cy="16" r="11" fill="none" stroke="#eef2f7" stroke-width="3.4" mask="url(#gap)"/>
+    <circle cx="23.78" cy="8.22" r="3.5" fill="#ff7d3b"/>
+  </g>
+</svg>
