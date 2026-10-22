@@ -1,0 +1,23 @@
+{
+  "status": "needs_input",
+  "quote_request_id": "qr-7f3a",
+  "missing_fields": [
+    {
+      "field": "sex",
+      "issue": "missing"
+    },
+    {
+      "field": "is_neutered",
+      "issue": "missing"
+    },
+    {
+      "field": "date_of_birth",
+      "issue": "missing",
+      "message": "An approximate date is fine."
+    },
+    {
+      "field": "currently_insured",
+      "issue": "missing"
+    }
+  ]
+}

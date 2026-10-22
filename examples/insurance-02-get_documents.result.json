@@ -1,0 +1,26 @@
+{
+  "documents": [
+    {
+      "document_id": "doc-ipid-pet-fr",
+      "type": "ipid",
+      "title": "IPID Example Pets Essentiel",
+      "language": "fr",
+      "version": "2026-09",
+      "url": "https://pets.example.com/docs/ipid-essentiel-2026-09.pdf",
+      "media_type": "application/pdf",
+      "sha256": "fcc6278ba8b67d6258f56c9e5ce11ea5604bde5a49e005416e19891863b99a8d",
+      "required_before_commitment": true
+    },
+    {
+      "document_id": "doc-cg-pet-fr",
+      "type": "general_conditions",
+      "title": "Conditions générales",
+      "language": "fr",
+      "version": "2026-09",
+      "url": "https://pets.example.com/docs/cg-2026-09.pdf",
+      "media_type": "application/pdf",
+      "sha256": "430aaae4bb2e758857c68516a6077a52c8f46031f445a3d082af80a0e5da2414",
+      "required_before_commitment": true
+    }
+  ]
+}

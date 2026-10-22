@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+    - name: Report a security vulnerability
+      url: https://github.com/OFA-Foundation/open-financial-agent-protocol/security/advisories/new
+      about: Report weaknesses that could harm a live implementation privately, not in a public issue.

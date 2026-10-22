@@ -1,0 +1,86 @@
+{
+  "question_set": {
+    "question_set_id": "qs-pet-fr-essentiel",
+    "version": "3",
+    "product_id": "pet-fr-essentiel",
+    "sector": "insurance",
+    "line": "pet",
+    "profile": "insurance/pet@0.1",
+    "answers_schema": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "x-profile-key": "country"
+        },
+        "postal_code": {
+          "type": "string",
+          "x-profile-key": "postal_code",
+          "x-ask": "What is your postal code?"
+        },
+        "species": {
+          "type": "string",
+          "enum": [
+            "dog",
+            "cat"
+          ],
+          "x-profile-key": "species"
+        },
+        "pet_name": {
+          "type": "string",
+          "x-profile-key": "pet_name"
+        },
+        "breed": {
+          "type": "string",
+          "x-profile-key": "breed"
+        },
+        "sex": {
+          "type": "string",
+          "enum": [
+            "female",
+            "male"
+          ],
+          "x-profile-key": "sex"
+        },
+        "is_neutered": {
+          "type": "boolean",
+          "x-profile-key": "is_neutered"
+        },
+        "date_of_birth": {
+          "type": "string",
+          "format": "date",
+          "x-profile-key": "date_of_birth"
+        },
+        "lifestyle": {
+          "type": "string",
+          "enum": [
+            "indoor",
+            "outdoor"
+          ],
+          "x-profile-key": "lifestyle"
+        },
+        "currently_insured": {
+          "type": "boolean",
+          "x-ask": "Is your pet insured with another company today?"
+        },
+        "microchip_number": {
+          "type": "string",
+          "x-collected-by": "distributor_page",
+          "description": "Collected on the distributor's page after the quote."
+        }
+      },
+      "required": [
+        "country",
+        "postal_code",
+        "species",
+        "pet_name",
+        "breed",
+        "sex",
+        "is_neutered",
+        "date_of_birth",
+        "currently_insured"
+      ]
+    }
+  }
+}

@@ -1,0 +1,43 @@
+name: Implementation report
+description: Tell us what you ran into while implementing the draft, as an agent or a distributor.
+labels: ["implementation"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              The draft changes based on what implementers learn. Reports are useful at any stage, including if you stopped partway.
+    - type: dropdown
+      id: role
+      attributes:
+          label: You implemented it as
+          options:
+              - An agent
+              - A distributor (insurer, broker, MGA, comparator)
+              - Both
+              - A library or tool for others
+      validations:
+          required: true
+    - type: textarea
+      id: scope
+      attributes:
+          label: What you implemented
+          description: The conformance level, the tools and the product lines, for example level 2 with `get_question_set` and `quote` for pet insurance.
+      validations:
+          required: true
+    - type: textarea
+      id: problems
+      attributes:
+          label: What didn't work or was hard
+          description: Unclear rules, missing pieces, or things that didn't work as written. Name the types or rules where you can.
+      validations:
+          required: true
+    - type: textarea
+      id: worked
+      attributes:
+          label: What worked well
+          description: Optional. Parts worth keeping as they are.
+    - type: input
+      id: link
+      attributes:
+          label: Code or demo
+          description: Optional. A link, if it's public.

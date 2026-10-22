@@ -1,0 +1,68 @@
+{
+  "offer_id": "of-essentiel-70",
+  "parties": [
+    {
+      "party_ref": "p1",
+      "kind": "person",
+      "roles": [
+        "subscriber",
+        "insured",
+        "payer"
+      ],
+      "display_name": "Camille Martin",
+      "country_of_residence": "FR"
+    }
+  ],
+  "declaration": {
+    "question_set": {
+      "question_set_id": "qs-pet-fr-essentiel",
+      "version": "3"
+    },
+    "answers": {
+      "country": "FR",
+      "postal_code": "69003",
+      "species": "cat",
+      "pet_name": "Miso",
+      "breed": "European shorthair",
+      "sex": "female",
+      "is_neutered": true,
+      "date_of_birth": "2023-04-01",
+      "lifestyle": "indoor",
+      "currently_insured": false
+    },
+    "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+    "accuracy_confirmed": true
+  },
+  "needs_assessment": {
+    "sector": "insurance",
+    "kind": "demands_and_needs",
+    "statement": "Cover vet bills for an indoor cat, with a budget under 20 EUR a month.",
+    "advice_given": false,
+    "recorded_at": "2026-10-20T10:02:00+02:00"
+  },
+  "documents_delivered": [
+    {
+      "document_id": "doc-ipid-pet-fr",
+      "version": "2026-09",
+      "sha256": "fcc6278ba8b67d6258f56c9e5ce11ea5604bde5a49e005416e19891863b99a8d",
+      "delivered_at": "2026-10-20T10:03:00+02:00"
+    },
+    {
+      "document_id": "doc-cg-pet-fr",
+      "version": "2026-09",
+      "sha256": "430aaae4bb2e758857c68516a6077a52c8f46031f445a3d082af80a0e5da2414",
+      "delivered_at": "2026-10-20T10:03:00+02:00"
+    }
+  ],
+  "contact_consent": {
+    "channels": [
+      "email"
+    ],
+    "details_collected_by": "distributor_page",
+    "providers_may_contact": false,
+    "purposes": [
+      "this_application"
+    ]
+  },
+  "start_date": "2026-11-01"
+}

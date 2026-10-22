@@ -1,0 +1,34 @@
+name: Line profile data
+description: Share the questions a tariff asks, to make a line profile stable or to start a new one.
+labels: ["profile"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              A line profile needs a second distributor of the same line before it is stable. Don't paste customer data, internal tool names, or anything under a confidentiality agreement.
+    - type: input
+      id: line
+      attributes:
+          label: Line
+          description: For example `pet` or `home`, which have a profile, or a line with no profile yet, such as `motor` or `travel`.
+      validations:
+          required: true
+    - type: input
+      id: countries
+      attributes:
+          label: Countries
+          description: Where the tariff is sold, for example `FR, ES`.
+      validations:
+          required: true
+    - type: textarea
+      id: questions
+      attributes:
+          label: Questions
+          description: The questions the tariff needs before it can price, with their type, their allowed values and which ones are required. A JSON Schema is best.
+      validations:
+          required: true
+    - type: textarea
+      id: differences
+      attributes:
+          label: Differences from the profile
+          description: Optional. Where your questions differ from the profile in `profiles.ts`, and why.

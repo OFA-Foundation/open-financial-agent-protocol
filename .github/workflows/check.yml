@@ -1,0 +1,17 @@
+name: check
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.16
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - name: schema.json and examples are up to date
+        run: git diff --exit-code -- schema.json examples

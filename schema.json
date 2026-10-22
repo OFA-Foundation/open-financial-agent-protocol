@@ -1,0 +1,2572 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openfinancialagent.org/schemas/0.1/schema.json",
+  "title": "Open Financial Agent Protocol (OFAP), draft 0.1",
+  "description": "Generated from schema.ts. Do not edit by hand.",
+  "definitions": {
+    "Agreement": {
+      "type": "object",
+      "properties": {
+        "agreement_number": {
+          "type": "string"
+        },
+        "sector": {
+          "$ref": "#/definitions/Sector"
+        },
+        "status": {
+          "$ref": "#/definitions/AgreementStatus"
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        },
+        "provider": {
+          "$ref": "#/definitions/ProviderRef"
+        },
+        "parties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Party"
+          }
+        },
+        "pricing": {
+          "$ref": "#/definitions/Pricing",
+          "description": "Price as agreed, in the form of the sector."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "start_date": {
+          "$ref": "#/definitions/DateString"
+        },
+        "renewal_date": {
+          "$ref": "#/definitions/DateString"
+        },
+        "end_date": {
+          "$ref": "#/definitions/DateString"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Subject"
+          },
+          "description": "What the agreement covers: a pet, a home, a vehicle, a property."
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialDocument"
+          },
+          "description": "Includes the proof of insurance when the product has one."
+        }
+      },
+      "required": [
+        "agreement_number",
+        "sector",
+        "status",
+        "product_id",
+        "line",
+        "provider",
+        "parties",
+        "pricing",
+        "options",
+        "start_date",
+        "subjects",
+        "documents"
+      ],
+      "additionalProperties": false,
+      "description": "An agreement in force. In the insurance module, a policy."
+    },
+    "AgreementStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "suspended",
+        "lapsed",
+        "cancelled",
+        "closed",
+        "expired"
+      ]
+    },
+    "AmendAgreementParams": {
+      "type": "object",
+      "properties": {
+        "agreement_number": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AmendmentChange"
+          }
+        },
+        "effective_date": {
+          "$ref": "#/definitions/DateString",
+          "description": "When the changes take effect. Default: the earliest date the provider accepts."
+        },
+        "declaration": {
+          "$ref": "#/definitions/Declaration",
+          "description": "Required when a change adds a party or a subject that the provider must price."
+        },
+        "needs_assessment": {
+          "$ref": "#/definitions/NeedsAssessment"
+        },
+        "documents_delivered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeliveredDocument"
+          }
+        }
+      },
+      "required": [
+        "agreement_number",
+        "changes"
+      ],
+      "additionalProperties": false,
+      "description": "Requires a signed-in PAP session with write scope."
+    },
+    "AmendAgreementResult": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "$ref": "#/definitions/Operation%3CAmendmentTerms%3E"
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false,
+      "description": "Result of `amend_agreement`. The operation MUST have `user_approval_required: true` when `pricing_after` differs from `pricing_before`, when `amount_due_now` is set, or when a change adds or removes a party or a subject. A standing permission is not enough for these."
+    },
+    "AmendmentChange": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "update_address"
+            },
+            "country": {
+              "$ref": "#/definitions/CountryCode"
+            },
+            "postal_code": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "street": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "country",
+            "postal_code",
+            "city",
+            "street"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "add_party"
+            },
+            "party": {
+              "$ref": "#/definitions/Party"
+            }
+          },
+          "required": [
+            "kind",
+            "party"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "remove_party"
+            },
+            "party_ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "party_ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "add_option"
+            },
+            "option": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "option"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "remove_option"
+            },
+            "option": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "option"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "change_excess"
+            },
+            "excess": {
+              "$ref": "#/definitions/Money"
+            }
+          },
+          "required": [
+            "kind",
+            "excess"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "add_subject"
+            },
+            "subject": {
+              "$ref": "#/definitions/Subject"
+            }
+          },
+          "required": [
+            "kind",
+            "subject"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "remove_subject"
+            },
+            "subject_ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "subject_ref"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "One change to an agreement. A sector module adds the changes of its sector."
+    },
+    "AmendmentTerms": {
+      "type": "object",
+      "properties": {
+        "agreement_number": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AmendmentChange"
+          }
+        },
+        "effective_date": {
+          "$ref": "#/definitions/DateString"
+        },
+        "pricing_before": {
+          "$ref": "#/definitions/Pricing"
+        },
+        "pricing_after": {
+          "$ref": "#/definitions/Pricing"
+        },
+        "amount_due_now": {
+          "$ref": "#/definitions/Money",
+          "description": "Amount the customer pays at once, or gets back when negative, for example a premium adjustment."
+        },
+        "declaration": {
+          "$ref": "#/definitions/Declaration"
+        },
+        "needs_assessment": {
+          "$ref": "#/definitions/NeedsAssessment"
+        },
+        "documents_delivered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeliveredDocument"
+          }
+        }
+      },
+      "required": [
+        "agreement_number",
+        "changes",
+        "effective_date",
+        "pricing_before",
+        "pricing_after",
+        "documents_delivered"
+      ],
+      "additionalProperties": false
+    },
+    "Answers": {
+      "type": "object",
+      "additionalProperties": {},
+      "description": "Answers keyed by property name in `answers_schema`."
+    },
+    "AnswersSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "object"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "properties"
+      ],
+      "additionalProperties": {},
+      "description": "A JSON Schema (2020-12) object that describes the answers. Each property is one question. OFAP adds these keywords to each property:\n\n- `x-collected-by`: a `CollectedBy` value. Default `agent`.\n- `x-profile-key`: the key of the matching question in the line profile,   when the question is part of the common core.\n- `x-ask`: a short question the agent can ask the customer, in plain words."
+    },
+    "ApplicationOutcome": {
+      "type": "object",
+      "properties": {
+        "application_id": {
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/definitions/EvidenceRecord"
+        },
+        "handoff_url": {
+          "$ref": "#/definitions/Url",
+          "description": "Page where the customer finishes the subscription."
+        }
+      },
+      "required": [
+        "application_id",
+        "evidence",
+        "handoff_url"
+      ],
+      "additionalProperties": false
+    },
+    "ApplicationTerms": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string"
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "sector": {
+          "$ref": "#/definitions/Sector"
+        },
+        "provider": {
+          "$ref": "#/definitions/ProviderRef"
+        },
+        "pricing": {
+          "$ref": "#/definitions/Pricing"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "start_date": {
+          "$ref": "#/definitions/DateString"
+        },
+        "parties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Party"
+          }
+        },
+        "declaration": {
+          "$ref": "#/definitions/Declaration"
+        },
+        "needs_assessment": {
+          "$ref": "#/definitions/NeedsAssessment",
+          "description": "It MUST be of the same sector as the offer."
+        },
+        "documents_delivered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeliveredDocument"
+          },
+          "description": "Documents delivered before this revision was proposed. Every document of the offer with `required_before_commitment: true` MUST be in this list."
+        },
+        "contact_consent": {
+          "$ref": "#/definitions/ContactConsent"
+        },
+        "withdrawal_period_days": {
+          "type": "number",
+          "description": "Days the customer has to withdraw after conclusion, when the law gives the right."
+        }
+      },
+      "required": [
+        "offer_id",
+        "product_id",
+        "sector",
+        "provider",
+        "pricing",
+        "options",
+        "parties",
+        "declaration",
+        "needs_assessment",
+        "documents_delivered",
+        "contact_consent"
+      ],
+      "additionalProperties": false,
+      "description": "Terms of an application or a conclusion. Every field the law needs as evidence is here, so that a confirmed revision records exactly what the customer accepted."
+    },
+    "CollectedBy": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "distributor_page"
+      ],
+      "description": "Who collects the value of a question.\n- `agent`: the agent MAY ask and send the value.\n- `distributor_page`: the value MUST NOT pass through the agent. The customer   gives it on the distributor's own page. Use it for identity numbers, bank   account and card numbers, tax numbers, health details and passwords."
+    },
+    "ConcludeOutcome": {
+      "type": "object",
+      "properties": {
+        "agreement_number": {
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/definitions/EvidenceRecord"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialDocument"
+          }
+        }
+      },
+      "required": [
+        "agreement_number",
+        "evidence",
+        "documents"
+      ],
+      "additionalProperties": false
+    },
+    "ConcludeParams": {
+      "$ref": "#/definitions/SubmitApplicationParams"
+    },
+    "ConcludeResult": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "$ref": "#/definitions/Operation%3CApplicationTerms%3E"
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false,
+      "description": "Result of `conclude`. The operation MUST have `user_approval_required: true`. When it succeeds, `result.data` holds a `ConcludeOutcome`."
+    },
+    "ConformanceLevel": {
+      "type": "number",
+      "enum": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "description": "Conformance level that a distributor declares.\n\n- 1 Inform: `get_distributor`, `list_products`, `get_documents`\n- 2 Quote: level 1, plus `get_question_set` and `quote`\n- 3 Subscribe: level 2, plus `submit_application` or `conclude`\n- 4 Service: level 3, plus `get_agreement` and `amend_agreement`\n\nA server that declares a level MUST implement every tool of that level and of the levels below it, except that level 3 needs only one of `submit_application` and `conclude`."
+    },
+    "ContactConsent": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "email",
+              "phone",
+              "sms",
+              "post"
+            ]
+          },
+          "description": "Channels the distributor MAY use to contact the customer. Empty means none."
+        },
+        "details_collected_by": {
+          "$ref": "#/definitions/CollectedBy",
+          "description": "When `distributor_page`, the contact details never pass through the agent."
+        },
+        "providers_may_contact": {
+          "type": "boolean",
+          "description": "True only when the customer agreed that providers may contact them too."
+        },
+        "purposes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Purposes the customer agreed to, for example \"this_application\", \"marketing\"."
+        }
+      },
+      "required": [
+        "channels",
+        "details_collected_by",
+        "providers_may_contact",
+        "purposes"
+      ],
+      "additionalProperties": false,
+      "description": "The customer's choice about later contact."
+    },
+    "ConversationData": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "ask": {
+              "type": "string"
+            },
+            "schema": {
+              "type": "object",
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "field",
+            "ask",
+            "schema"
+          ],
+          "additionalProperties": false
+        },
+        "quote": {
+          "$ref": "#/definitions/QuoteResult"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialDocument"
+          }
+        },
+        "operation": {
+          "$ref": "#/definitions/Operation%3C(ApplicationTerms%7CAmendmentTerms)%3E"
+        }
+      },
+      "additionalProperties": false,
+      "description": "PROPOSED. Some distributors expose only a company agent. If OFAP accepts them at level 2, each message that carries an OFAP object puts it here, in the message's structured data (`data` in a PAP conversation, `structuredContent` in a chat tool)."
+    },
+    "CountryCode": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code, upper case.",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "CoverLimit": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Stable key, for example \"vet_costs_per_year\"."
+        },
+        "label": {
+          "type": "string"
+        },
+        "limit": {
+          "$ref": "#/definitions/Money"
+        },
+        "reimbursement_rate": {
+          "type": "number",
+          "description": "Share of a claim paid back, from 0 to 1. Used by pet and health cover."
+        }
+      },
+      "required": [
+        "key",
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "CoverSummary": {
+      "type": "object",
+      "properties": {
+        "included": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Covers included, as short labels."
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CoverLimit"
+          }
+        },
+        "excess": {
+          "$ref": "#/definitions/Money"
+        },
+        "main_exclusions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Main exclusions. The full list is in the documents."
+        },
+        "waiting_period_days": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "included"
+      ],
+      "additionalProperties": false
+    },
+    "CurrencyCode": {
+      "type": "string",
+      "description": "ISO 4217 currency code.",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "DateString": {
+      "type": "string",
+      "description": "Calendar date, ISO 8601.",
+      "format": "date"
+    },
+    "DateTimeString": {
+      "type": "string",
+      "description": "Date and time with offset, ISO 8601.",
+      "format": "date-time"
+    },
+    "Decimal": {
+      "type": "string",
+      "description": "A decimal number as a string, so that no value is lost to floating point, for example \"12.90\".",
+      "pattern": "^-?[0-9]+(\\.[0-9]+)?$"
+    },
+    "Declaration": {
+      "type": "object",
+      "properties": {
+        "question_set": {
+          "$ref": "#/definitions/QuestionSetRef"
+        },
+        "answers": {
+          "$ref": "#/definitions/Answers"
+        },
+        "answers_sha256": {
+          "$ref": "#/definitions/Sha256"
+        },
+        "accuracy_confirmed": {
+          "type": "boolean",
+          "description": "True when the customer confirmed that the answers are true and complete. The agent MUST NOT set it to true for invented or test data."
+        }
+      },
+      "required": [
+        "question_set",
+        "answers",
+        "answers_sha256",
+        "accuracy_confirmed"
+      ],
+      "additionalProperties": false,
+      "description": "The answers the customer commits to."
+    },
+    "DeliveredDocument": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/definitions/Sha256"
+        },
+        "delivered_at": {
+          "$ref": "#/definitions/DateTimeString"
+        }
+      },
+      "required": [
+        "document_id",
+        "version",
+        "sha256",
+        "delivered_at"
+      ],
+      "additionalProperties": false
+    },
+    "DistributorRole": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ProviderRole"
+        },
+        {
+          "type": "string",
+          "const": "broker"
+        },
+        {
+          "type": "string",
+          "const": "agent"
+        },
+        {
+          "type": "string",
+          "const": "mga"
+        },
+        {
+          "type": "string",
+          "const": "comparator"
+        }
+      ],
+      "description": "Role of a party in the distribution chain. The provider roles are in `ProviderRole`. A sector module adds its intermediary roles here."
+    },
+    "DocumentType": {
+      "type": "string",
+      "enum": [
+        "pre_contract_information",
+        "terms_of_business",
+        "other",
+        "ipid",
+        "general_conditions",
+        "special_conditions",
+        "demands_and_needs",
+        "proof_of_insurance"
+      ],
+      "description": "Kind of document. A sector module adds the documents that the law of its sector asks for."
+    },
+    "EvidenceRecord": {
+      "type": "object",
+      "properties": {
+        "record_id": {
+          "type": "string"
+        },
+        "operation_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number"
+        },
+        "approved_by": {
+          "type": "string",
+          "enum": [
+            "user",
+            "standing_permission"
+          ]
+        },
+        "confirmed_at": {
+          "$ref": "#/definitions/DateTimeString"
+        },
+        "documents_delivered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeliveredDocument"
+          }
+        },
+        "question_set": {
+          "$ref": "#/definitions/QuestionSetRef"
+        },
+        "answers_sha256": {
+          "$ref": "#/definitions/Sha256"
+        },
+        "needs_assessment": {
+          "$ref": "#/definitions/NeedsAssessment"
+        },
+        "contact_consent": {
+          "$ref": "#/definitions/ContactConsent"
+        },
+        "terms_sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "SHA-256 of the canonical JSON (RFC 8785) of the confirmed `terms`."
+        }
+      },
+      "required": [
+        "record_id",
+        "operation_id",
+        "revision",
+        "approved_by",
+        "confirmed_at",
+        "documents_delivered",
+        "question_set",
+        "answers_sha256",
+        "needs_assessment",
+        "contact_consent",
+        "terms_sha256"
+      ],
+      "additionalProperties": false,
+      "description": "What the distributor keeps when an operation succeeds. It links the exact revision the customer accepted to the documents, the declaration, the needs assessment and the consent. The distributor MUST keep it for the period the law requires.\n\nA PAP confirmation proves that an agent stated the customer approved a revision. It does not prove that the customer saw the terms. This record adds what was delivered and what was declared. It still does not prove that the customer read the documents."
+    },
+    "FieldIssue": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "issue": {
+          "type": "string",
+          "enum": [
+            "missing",
+            "invalid",
+            "not_accepted"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "issue"
+      ],
+      "additionalProperties": false
+    },
+    "FinancialDocument": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/DocumentType"
+        },
+        "title": {
+          "type": "string"
+        },
+        "language": {
+          "$ref": "#/definitions/LanguageTag"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version label set by the distributor. A new text MUST get a new version."
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "Digest of the exact file at `url`. Used as evidence of what was delivered."
+        },
+        "required_before_commitment": {
+          "type": "boolean",
+          "description": "True when the law requires that the customer receives this document before they commit, for example the IPID."
+        }
+      },
+      "required": [
+        "document_id",
+        "type",
+        "title",
+        "language",
+        "version",
+        "url",
+        "media_type",
+        "sha256",
+        "required_before_commitment"
+      ],
+      "additionalProperties": false
+    },
+    "GetAgreementParams": {
+      "type": "object",
+      "properties": {
+        "agreement_number": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "agreement_number"
+      ],
+      "additionalProperties": false,
+      "description": "Requires a signed-in PAP session with read scope."
+    },
+    "GetAgreementResult": {
+      "type": "object",
+      "properties": {
+        "agreement": {
+          "$ref": "#/definitions/Agreement"
+        }
+      },
+      "required": [
+        "agreement"
+      ],
+      "additionalProperties": false
+    },
+    "GetDistributorParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Params of `get_distributor`. No params."
+    },
+    "GetDistributorResult": {
+      "type": "object",
+      "properties": {
+        "legal_name": {
+          "type": "string"
+        },
+        "trading_name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Domain the distributor controls. It MUST match the server's own domain."
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DistributorRole"
+          }
+        },
+        "licences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Licence"
+          },
+          "description": "Every licence the distributor relies on to sell the listed products."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          }
+        },
+        "complaints_url": {
+          "$ref": "#/definitions/Url",
+          "description": "Where a customer can complain. Required by most regulators."
+        },
+        "ofap": {
+          "$ref": "#/definitions/OfapSettings",
+          "description": "Settings the server declares for OFAP."
+        }
+      },
+      "required": [
+        "legal_name",
+        "domain",
+        "roles",
+        "licences",
+        "countries",
+        "ofap"
+      ],
+      "additionalProperties": false
+    },
+    "GetDocumentsParams": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "product_id": {
+              "type": "string"
+            },
+            "country": {
+              "$ref": "#/definitions/CountryCode"
+            },
+            "language": {
+              "$ref": "#/definitions/LanguageTag"
+            }
+          },
+          "required": [
+            "product_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "offer_id": {
+              "type": "string"
+            },
+            "language": {
+              "$ref": "#/definitions/LanguageTag"
+            }
+          },
+          "required": [
+            "offer_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "agreement_number": {
+              "type": "string"
+            },
+            "language": {
+              "$ref": "#/definitions/LanguageTag"
+            }
+          },
+          "required": [
+            "agreement_number"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Params of `get_documents`. Give exactly one of the three references."
+    },
+    "GetDocumentsResult": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FinancialDocument"
+          }
+        }
+      },
+      "required": [
+        "documents"
+      ],
+      "additionalProperties": false
+    },
+    "GetQuestionSetParams": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "additionalProperties": false
+    },
+    "GetQuestionSetResult": {
+      "type": "object",
+      "properties": {
+        "question_set": {
+          "$ref": "#/definitions/QuestionSet"
+        }
+      },
+      "required": [
+        "question_set"
+      ],
+      "additionalProperties": false
+    },
+    "InsuranceNeedsAssessment": {
+      "type": "object",
+      "properties": {
+        "sector": {
+          "type": "string",
+          "const": "insurance"
+        },
+        "kind": {
+          "type": "string",
+          "const": "demands_and_needs"
+        },
+        "statement": {
+          "type": "string",
+          "description": "The need in the customer's words or a faithful summary."
+        },
+        "advice_given": {
+          "type": "boolean",
+          "description": "True when the distributor gave a personal recommendation (advice)."
+        },
+        "advice_rationale": {
+          "type": "string",
+          "description": "Why the recommended offer meets the need. Required when `advice_given` is true."
+        },
+        "recorded_at": {
+          "$ref": "#/definitions/DateTimeString"
+        }
+      },
+      "required": [
+        "sector",
+        "kind",
+        "statement",
+        "advice_given",
+        "recorded_at"
+      ],
+      "additionalProperties": false,
+      "description": "Demands and needs, recorded before the contract is concluded (IDD Art. 20(1))."
+    },
+    "InsurancePricing": {
+      "type": "object",
+      "properties": {
+        "sector": {
+          "type": "string",
+          "const": "insurance"
+        },
+        "premium": {
+          "$ref": "#/definitions/Premium"
+        },
+        "alternative_premiums": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Premium"
+          },
+          "description": "The same price for another period, when the server can give it."
+        },
+        "cover": {
+          "$ref": "#/definitions/CoverSummary"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductOption"
+          }
+        },
+        "start_date": {
+          "$ref": "#/definitions/DateString"
+        }
+      },
+      "required": [
+        "sector",
+        "premium",
+        "cover"
+      ],
+      "additionalProperties": false
+    },
+    "InsuranceProductDetails": {
+      "type": "object",
+      "properties": {
+        "sector": {
+          "type": "string",
+          "const": "insurance"
+        },
+        "cover": {
+          "$ref": "#/definitions/CoverSummary"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductOption"
+          }
+        }
+      },
+      "required": [
+        "sector",
+        "cover"
+      ],
+      "additionalProperties": false
+    },
+    "InterfaceKind": {
+      "type": "string",
+      "enum": [
+        "tools",
+        "conversation"
+      ],
+      "description": "How a distributor exposes the protocol."
+    },
+    "KnownProductLine": {
+      "type": "string",
+      "enum": [
+        "pet",
+        "home",
+        "renters",
+        "motor",
+        "travel",
+        "health",
+        "life",
+        "funeral",
+        "borrower_insurance",
+        "professional_liability",
+        "general_liability",
+        "business_owners_policy",
+        "workers_compensation"
+      ],
+      "description": "Lines that have, or will have, a profile in OFAP. A sector module adds its own group."
+    },
+    "LanguageTag": {
+      "type": "string",
+      "description": "BCP 47 language tag, for example `fr` or `es-ES`.",
+      "pattern": "^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$"
+    },
+    "Licence": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        },
+        "regulator": {
+          "type": "string",
+          "description": "Supervising authority, for example \"ACPR\", \"FCA\", \"DGSFP\"."
+        },
+        "register": {
+          "type": "string",
+          "description": "Name of the public register, for example \"ORIAS\", \"FCA Register\", \"NIPR\"."
+        },
+        "identifier_type": {
+          "$ref": "#/definitions/RegisterIdentifierType"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/DistributorRole"
+        },
+        "sectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Sector"
+          },
+          "description": "Sectors this entry covers."
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Register categories, for example ORIAS \"COA\" (insurance broker) or \"AGA\" (tied insurance agent)."
+        },
+        "subdivisions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subdivisions where the licence applies, for example US states as ISO 3166-2 codes (\"US-CA\"). Omit when the licence covers the whole country."
+        },
+        "verification_url": {
+          "$ref": "#/definitions/Url",
+          "description": "Public page where anyone can check the entry."
+        }
+      },
+      "required": [
+        "country",
+        "regulator",
+        "register",
+        "identifier_type",
+        "identifier",
+        "role",
+        "sectors"
+      ],
+      "additionalProperties": false,
+      "description": "One entry in a public register that gives the right to distribute a product."
+    },
+    "ListProductsParams": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        },
+        "sector": {
+          "$ref": "#/definitions/Sector"
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        },
+        "cursor": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ListProductsResult": {
+      "type": "object",
+      "properties": {
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Product"
+          }
+        },
+        "next_cursor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "products"
+      ],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "$ref": "#/definitions/Decimal"
+        },
+        "currency": {
+          "$ref": "#/definitions/CurrencyCode"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "NeedsAssessment": {
+      "$ref": "#/definitions/InsuranceNeedsAssessment",
+      "description": "Needs assessment that the law of the sector asks for. One member per sector module."
+    },
+    "NoOffer": {
+      "type": "object",
+      "properties": {
+        "reason_code": {
+          "type": "string",
+          "description": "Stable reason code, for example \"risk_not_accepted\", \"age_not_accepted\", \"breed_not_accepted\", \"claims_history_not_accepted\", \"not_available_in_region\"."
+        },
+        "message": {
+          "type": "string",
+          "description": "Plain-language explanation the agent can pass to the customer."
+        }
+      },
+      "required": [
+        "reason_code",
+        "message"
+      ],
+      "additionalProperties": false,
+      "description": "Why no offer is possible."
+    },
+    "OfapError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/OfapErrorCode"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FieldIssue"
+          }
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false,
+      "description": "Error returned in an MCP tool result with `isError: true`, in `structuredContent.error`. PAP errors (`insufficient_scope`, `sign_in_required`, `terms_changed`) keep their PAP form."
+    },
+    "OfapErrorCode": {
+      "type": "string",
+      "enum": [
+        "not_licensed",
+        "not_available_in_region",
+        "product_not_found",
+        "offer_not_found",
+        "offer_expired",
+        "question_set_outdated",
+        "sensitive_field_received",
+        "documents_not_delivered",
+        "accuracy_not_confirmed",
+        "needs_assessment_invalid",
+        "agreement_not_found",
+        "amendment_not_allowed",
+        "not_supported"
+      ]
+    },
+    "OfapProgress": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "licensed_review",
+            "provider_decision",
+            "customer_action_on_distributor_page",
+            "payment_pending"
+          ]
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "expected_by": {
+          "$ref": "#/definitions/DateTimeString"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "OfapSettings": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Protocol version the server implements."
+        },
+        "conformance_level": {
+          "$ref": "#/definitions/ConformanceLevel"
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InterfaceKind"
+          }
+        },
+        "sectors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Sector"
+          },
+          "description": "Sector modules the server implements."
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductLine"
+          },
+          "description": "Product lines the server can quote or serve."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Countries where the server's products are sold."
+        },
+        "can_conclude": {
+          "type": "boolean",
+          "description": "True when the server can conclude an agreement inside the agent (`conclude`). False when the customer always finishes on the distributor's own page."
+        }
+      },
+      "required": [
+        "version",
+        "conformance_level",
+        "interfaces",
+        "sectors",
+        "lines",
+        "countries",
+        "can_conclude"
+      ],
+      "additionalProperties": false,
+      "description": "Settings object of the extension. A server puts it under `capabilities.extensions[\"org.openfinancialagent/ofap\"]` in its MCP `server/discover` response, and under the same key in the `extensions` field of its PAP `poppy.json`."
+    },
+    "Offer": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string"
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "sector": {
+          "$ref": "#/definitions/Sector"
+        },
+        "tier": {
+          "type": "string",
+          "description": "Name of the tier or plan, for example \"Terceros Ampliado\" or \"Band B\"."
+        },
+        "provider": {
+          "$ref": "#/definitions/ProviderRef"
+        },
+        "pricing": {
+          "$ref": "#/definitions/Pricing"
+        },
+        "indicative": {
+          "type": "boolean",
+          "description": "True when the offer is indicative and can change after checks."
+        },
+        "valid_until": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "Last moment the offer can be accepted at this price."
+        },
+        "subscription_paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubscriptionPath"
+          }
+        },
+        "handoff_url": {
+          "$ref": "#/definitions/Url",
+          "description": "Page where the customer can continue with this exact offer. Required when `subscription_paths` contains `handoff`. It MUST NOT contain personal data."
+        },
+        "recommended": {
+          "type": "boolean",
+          "description": "True when the distributor recommends this offer after advice."
+        }
+      },
+      "required": [
+        "offer_id",
+        "product_id",
+        "sector",
+        "provider",
+        "pricing",
+        "indicative",
+        "valid_until",
+        "subscription_paths"
+      ],
+      "additionalProperties": false,
+      "description": "One priced offer. A distributor can return several offers: one per tier, per provider, or per duration."
+    },
+    "Operation<(ApplicationTerms|AmendmentTerms)>": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number",
+          "description": "Starts at 1. Increases when the terms change. Only the latest revision can be confirmed."
+        },
+        "state": {
+          "$ref": "#/definitions/OperationState"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Plain-language terms that the customer can decide from alone."
+        },
+        "terms": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ApplicationTerms"
+            },
+            {
+              "$ref": "#/definitions/AmendmentTerms"
+            }
+          ]
+        },
+        "expires_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "Required while `proposed`."
+        },
+        "user_approval_required": {
+          "type": "boolean",
+          "description": "When true, a standing permission is not enough. The customer MUST approve this revision."
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "revision": {
+                  "type": "number"
+                },
+                "approved_by": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "standing_permission"
+                  ]
+                },
+                "confirmed_at": {
+                  "$ref": "#/definitions/DateTimeString"
+                }
+              },
+              "required": [
+                "revision",
+                "approved_by",
+                "confirmed_at"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "summary": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "summary"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "ofap_progress": {
+          "$ref": "#/definitions/OfapProgress",
+          "description": "OFAP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know OFAP ignore it."
+        }
+      },
+      "required": [
+        "operation_id",
+        "revision",
+        "state",
+        "summary",
+        "terms",
+        "user_approval_required",
+        "confirmation",
+        "result"
+      ],
+      "additionalProperties": false,
+      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `ofap_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an OFAP tool."
+    },
+    "Operation<AmendmentTerms>": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number",
+          "description": "Starts at 1. Increases when the terms change. Only the latest revision can be confirmed."
+        },
+        "state": {
+          "$ref": "#/definitions/OperationState"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Plain-language terms that the customer can decide from alone."
+        },
+        "terms": {
+          "$ref": "#/definitions/AmendmentTerms"
+        },
+        "expires_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "Required while `proposed`."
+        },
+        "user_approval_required": {
+          "type": "boolean",
+          "description": "When true, a standing permission is not enough. The customer MUST approve this revision."
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "revision": {
+                  "type": "number"
+                },
+                "approved_by": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "standing_permission"
+                  ]
+                },
+                "confirmed_at": {
+                  "$ref": "#/definitions/DateTimeString"
+                }
+              },
+              "required": [
+                "revision",
+                "approved_by",
+                "confirmed_at"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "summary": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "summary"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "ofap_progress": {
+          "$ref": "#/definitions/OfapProgress",
+          "description": "OFAP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know OFAP ignore it."
+        }
+      },
+      "required": [
+        "operation_id",
+        "revision",
+        "state",
+        "summary",
+        "terms",
+        "user_approval_required",
+        "confirmation",
+        "result"
+      ],
+      "additionalProperties": false,
+      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `ofap_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an OFAP tool."
+    },
+    "Operation<ApplicationTerms>": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number",
+          "description": "Starts at 1. Increases when the terms change. Only the latest revision can be confirmed."
+        },
+        "state": {
+          "$ref": "#/definitions/OperationState"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Plain-language terms that the customer can decide from alone."
+        },
+        "terms": {
+          "$ref": "#/definitions/ApplicationTerms"
+        },
+        "expires_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "Required while `proposed`."
+        },
+        "user_approval_required": {
+          "type": "boolean",
+          "description": "When true, a standing permission is not enough. The customer MUST approve this revision."
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "revision": {
+                  "type": "number"
+                },
+                "approved_by": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "standing_permission"
+                  ]
+                },
+                "confirmed_at": {
+                  "$ref": "#/definitions/DateTimeString"
+                }
+              },
+              "required": [
+                "revision",
+                "approved_by",
+                "confirmed_at"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "summary": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "summary"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "ofap_progress": {
+          "$ref": "#/definitions/OfapProgress",
+          "description": "OFAP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know OFAP ignore it."
+        }
+      },
+      "required": [
+        "operation_id",
+        "revision",
+        "state",
+        "summary",
+        "terms",
+        "user_approval_required",
+        "confirmation",
+        "result"
+      ],
+      "additionalProperties": false,
+      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `ofap_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an OFAP tool."
+    },
+    "OperationState": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "in_progress",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "expired"
+      ]
+    },
+    "Party": {
+      "type": "object",
+      "properties": {
+        "party_ref": {
+          "type": "string",
+          "description": "Local reference, unique in one application."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "person",
+            "organisation"
+          ]
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PartyRole"
+          }
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "relationship_to_subscriber": {
+          "type": "string",
+          "description": "Relationship to the subscriber, for example \"self\", \"spouse\", \"child\", \"employee\"."
+        },
+        "date_of_birth": {
+          "$ref": "#/definitions/DateString"
+        },
+        "country_of_residence": {
+          "$ref": "#/definitions/CountryCode"
+        }
+      },
+      "required": [
+        "party_ref",
+        "kind",
+        "roles",
+        "display_name"
+      ],
+      "additionalProperties": false,
+      "description": "A person or organisation in the agreement. Data in a party MUST be limited to what the product needs. Identity numbers MUST NOT be here (see `CollectedBy`)."
+    },
+    "PartyRole": {
+      "type": "string",
+      "enum": [
+        "subscriber",
+        "payer",
+        "insured",
+        "beneficiary"
+      ],
+      "description": "Role of a party in the agreement. A sector module adds the roles of its sector."
+    },
+    "Premium": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "$ref": "#/definitions/Money"
+        },
+        "period": {
+          "$ref": "#/definitions/PremiumPeriod"
+        },
+        "taxes_included": {
+          "type": "boolean",
+          "description": "True when taxes and mandatory levies are in `amount`."
+        }
+      },
+      "required": [
+        "amount",
+        "period",
+        "taxes_included"
+      ],
+      "additionalProperties": false
+    },
+    "PremiumPeriod": {
+      "type": "string",
+      "enum": [
+        "month",
+        "quarter",
+        "half_year",
+        "year",
+        "single"
+      ]
+    },
+    "Pricing": {
+      "$ref": "#/definitions/InsurancePricing",
+      "description": "Price in the form of the offer's sector. One member per sector module."
+    },
+    "Product": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "sector": {
+          "$ref": "#/definitions/Sector"
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        },
+        "provider": {
+          "$ref": "#/definitions/ProviderRef",
+          "description": "Provider of the product, when it is not the distributor."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          }
+        },
+        "summary": {
+          "type": "string"
+        },
+        "details": {
+          "$ref": "#/definitions/ProductDetails"
+        },
+        "subscription_paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubscriptionPath"
+          }
+        }
+      },
+      "required": [
+        "product_id",
+        "name",
+        "sector",
+        "line",
+        "countries",
+        "summary",
+        "details",
+        "subscription_paths"
+      ],
+      "additionalProperties": false
+    },
+    "ProductDetails": {
+      "$ref": "#/definitions/InsuranceProductDetails",
+      "description": "Details of the product's sector. One member per sector module."
+    },
+    "ProductLine": {
+      "type": "string",
+      "description": "Product line. Servers SHOULD use a value of `KnownProductLine`. Other values MUST be lower case with underscores.",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "ProductOption": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "price": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Premium"
+            },
+            {
+              "$ref": "#/definitions/Money"
+            }
+          ],
+          "description": "Cost of the option, in the same form as the main price."
+        }
+      },
+      "required": [
+        "key",
+        "label"
+      ],
+      "additionalProperties": false,
+      "description": "An option the customer can add (optional cover, extra service)."
+    },
+    "ProviderRef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "legal_name": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/ProviderRole"
+        },
+        "licence": {
+          "$ref": "#/definitions/Licence"
+        }
+      },
+      "required": [
+        "name",
+        "role"
+      ],
+      "additionalProperties": false,
+      "description": "The party that carries the risk or provides the money."
+    },
+    "ProviderRole": {
+      "type": "string",
+      "const": "insurer",
+      "description": "Role of the party that carries the risk or provides the money. A sector module adds its provider role, for example a lender."
+    },
+    "QuestionSet": {
+      "type": "object",
+      "properties": {
+        "question_set_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of this question set. A change in any question MUST change it."
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "sector": {
+          "$ref": "#/definitions/Sector"
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Line profile and version this question set builds on, for example \"insurance/pet@0.1\"."
+        },
+        "answers_schema": {
+          "$ref": "#/definitions/AnswersSchema"
+        }
+      },
+      "required": [
+        "question_set_id",
+        "version",
+        "product_id",
+        "sector",
+        "line",
+        "answers_schema"
+      ],
+      "additionalProperties": false
+    },
+    "QuestionSetRef": {
+      "type": "object",
+      "properties": {
+        "question_set_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_set_id",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "QuoteParams": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "product_id": {
+              "type": "string"
+            },
+            "question_set": {
+              "$ref": "#/definitions/QuestionSetRef"
+            },
+            "answers": {
+              "$ref": "#/definitions/Answers"
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Options the customer wants priced, by key (optional covers, extra services)."
+            },
+            "language": {
+              "$ref": "#/definitions/LanguageTag"
+            }
+          },
+          "required": [
+            "product_id",
+            "question_set",
+            "answers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "quote_request_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "quote_request_id"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Params of `quote`.\n\nThe agent MAY send partial answers. The server then returns `needs_input` with the missing fields, and the agent calls `quote` again with more answers. This one loop replaces the multi-step flow tools (`action`, `stateUpdates`, `sessionId`) that most servers use. Some servers already work this way.\n\nTo read a quote that is still in progress, send only `quote_request_id`."
+    },
+    "QuoteResult": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "const": "complete"
+            },
+            "quote_request_id": {
+              "type": "string"
+            },
+            "question_set": {
+              "$ref": "#/definitions/QuestionSetRef"
+            },
+            "answers_sha256": {
+              "$ref": "#/definitions/Sha256",
+              "description": "SHA-256 of the canonical JSON (RFC 8785) of the answers used."
+            },
+            "offers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Offer"
+              }
+            },
+            "no_offer": {
+              "$ref": "#/definitions/NoOffer",
+              "description": "Required when `offers` is empty."
+            }
+          },
+          "required": [
+            "status",
+            "quote_request_id",
+            "question_set",
+            "answers_sha256",
+            "offers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "const": "needs_input"
+            },
+            "quote_request_id": {
+              "type": "string"
+            },
+            "missing_fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FieldIssue"
+              },
+              "description": "Properties of `answers_schema` that are missing or not valid."
+            }
+          },
+          "required": [
+            "status",
+            "quote_request_id",
+            "missing_fields"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "const": "in_progress"
+            },
+            "quote_request_id": {
+              "type": "string"
+            },
+            "retry_after_seconds": {
+              "type": "number",
+              "description": "When the agent SHOULD read the quote again."
+            },
+            "message": {
+              "type": "string",
+              "description": "Plain-language status, for example \"Two insurers have answered, three to go\"."
+            }
+          },
+          "required": [
+            "status",
+            "quote_request_id",
+            "retry_after_seconds"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RegisterIdentifierType": {
+      "type": "string",
+      "enum": [
+        "orias_number",
+        "fca_frn",
+        "npn",
+        "dgsfp_key",
+        "other"
+      ],
+      "description": "Kind of public register identifier. A sector module adds the registers of its sector."
+    },
+    "Sector": {
+      "type": "string",
+      "const": "insurance",
+      "description": "Sector modules of this draft. Draft 0.1 defines one module: insurance (section 9).\n\nThe core is the same for every sector. A sector module adds what the law of its sector asks for. A module MUST define:\n- its value in `Sector`, and its group of lines in `KnownProductLine`;\n- one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with   a `sector` field that holds the module's value;\n- its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`,   `DocumentType`, `PartyRole` and `AmendmentChange`, when the sector needs   them;\n- which of its documents are `required_before_commitment`;\n- its line profiles in `profiles.ts`, and checks for the rules of its sector   that a JSON Schema cannot express.\n\nA module MUST NOT change a core type or a core rule. The tools, the quote loop, the declaration, the PAP operations and the evidence record stay the same for every sector.\n\nA server declares the modules it implements in `OfapSettings.sectors`. An agent MUST NOT show a product, an offer or an agreement of a sector it does not implement as if it were of a known sector.\n\nCandidate modules for a later draft:\n- credit: SECCI and ESIS, creditworthiness (CCD Art. 18, MCD Art. 18), APR   and total cost of credit;\n- investment: KID (PRIIPs), suitability or appropriateness (MiFID II Art.   25), fees and risk indicator."
+    },
+    "SessionRequirement": {
+      "type": "string",
+      "enum": [
+        "none",
+        "signed_out_or_none",
+        "signed_in_read",
+        "signed_in_write"
+      ],
+      "description": "Session that a tool needs (PAP draft 0.2)."
+    },
+    "Sha256": {
+      "type": "string",
+      "description": "Lower-case hex SHA-256 digest.",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "Subject": {
+      "type": "object",
+      "properties": {
+        "subject_ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "pet",
+            "home",
+            "vehicle",
+            "property",
+            "valuable_item",
+            "business",
+            "person",
+            "other"
+          ]
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {},
+          "description": "Attributes of the subject, following the line profile."
+        }
+      },
+      "required": [
+        "subject_ref",
+        "kind",
+        "display_name",
+        "attributes"
+      ],
+      "additionalProperties": false
+    },
+    "SubmitApplicationParams": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string"
+        },
+        "parties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Party"
+          }
+        },
+        "declaration": {
+          "$ref": "#/definitions/Declaration"
+        },
+        "needs_assessment": {
+          "$ref": "#/definitions/NeedsAssessment"
+        },
+        "documents_delivered": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeliveredDocument"
+          }
+        },
+        "contact_consent": {
+          "$ref": "#/definitions/ContactConsent"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "start_date": {
+          "$ref": "#/definitions/DateString"
+        }
+      },
+      "required": [
+        "offer_id",
+        "parties",
+        "declaration",
+        "needs_assessment",
+        "documents_delivered",
+        "contact_consent"
+      ],
+      "additionalProperties": false
+    },
+    "SubmitApplicationResult": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "$ref": "#/definitions/Operation%3CApplicationTerms%3E"
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false,
+      "description": "When the operation succeeds, `result.data` holds an `ApplicationOutcome`."
+    },
+    "SubscriptionPath": {
+      "type": "string",
+      "enum": [
+        "conclude",
+        "application",
+        "handoff"
+      ],
+      "description": "How a customer can subscribe to a product."
+    },
+    "ToolName": {
+      "type": "string",
+      "enum": [
+        "get_distributor",
+        "list_products",
+        "get_documents",
+        "get_question_set",
+        "quote",
+        "submit_application",
+        "conclude",
+        "get_agreement",
+        "amend_agreement"
+      ]
+    },
+    "ToolSignatures": {
+      "type": "object",
+      "properties": {
+        "get_distributor": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/GetDistributorParams"
+            },
+            "result": {
+              "$ref": "#/definitions/GetDistributorResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "list_products": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/ListProductsParams"
+            },
+            "result": {
+              "$ref": "#/definitions/ListProductsResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "get_documents": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/GetDocumentsParams"
+            },
+            "result": {
+              "$ref": "#/definitions/GetDocumentsResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "get_question_set": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/GetQuestionSetParams"
+            },
+            "result": {
+              "$ref": "#/definitions/GetQuestionSetResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "quote": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/QuoteParams"
+            },
+            "result": {
+              "$ref": "#/definitions/QuoteResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "submit_application": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/SubmitApplicationParams"
+            },
+            "result": {
+              "$ref": "#/definitions/SubmitApplicationResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "conclude": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/ConcludeParams"
+            },
+            "result": {
+              "$ref": "#/definitions/ConcludeResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "get_agreement": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/GetAgreementParams"
+            },
+            "result": {
+              "$ref": "#/definitions/GetAgreementResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "amend_agreement": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/AmendAgreementParams"
+            },
+            "result": {
+              "$ref": "#/definitions/AmendAgreementResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "get_distributor",
+        "list_products",
+        "get_documents",
+        "get_question_set",
+        "quote",
+        "submit_application",
+        "conclude",
+        "get_agreement",
+        "amend_agreement"
+      ],
+      "additionalProperties": false,
+      "description": "Params and result type of each tool."
+    },
+    "Url": {
+      "type": "string",
+      "format": "uri"
+    }
+  }
+}

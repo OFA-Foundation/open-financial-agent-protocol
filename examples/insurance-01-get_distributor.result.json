@@ -1,0 +1,46 @@
+{
+  "legal_name": "Example Pets SAS",
+  "trading_name": "Example Pets",
+  "domain": "pets.example.com",
+  "roles": [
+    "broker"
+  ],
+  "licences": [
+    {
+      "country": "FR",
+      "regulator": "ACPR",
+      "register": "ORIAS",
+      "identifier_type": "orias_number",
+      "identifier": "00000000",
+      "role": "broker",
+      "sectors": [
+        "insurance"
+      ],
+      "categories": [
+        "COA"
+      ],
+      "verification_url": "https://www.orias.fr/"
+    }
+  ],
+  "countries": [
+    "FR"
+  ],
+  "complaints_url": "https://pets.example.com/complaints",
+  "ofap": {
+    "version": "0.1",
+    "conformance_level": 4,
+    "interfaces": [
+      "tools"
+    ],
+    "sectors": [
+      "insurance"
+    ],
+    "lines": [
+      "pet"
+    ],
+    "countries": [
+      "FR"
+    ],
+    "can_conclude": false
+  }
+}

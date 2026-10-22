@@ -1,0 +1,51 @@
+name: Spec feedback
+description: A point about the schema, a line profile, the examples or the checks.
+labels: ["feedback"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              One point per issue. For a weakness that could harm a live implementation, don't open an issue. Report it privately, as [SECURITY.md](https://github.com/OFA-Foundation/open-financial-agent-protocol/blob/main/SECURITY.md) describes.
+    - type: dropdown
+      id: file
+      attributes:
+          label: Part
+          options:
+              - README
+              - schema.ts, core
+              - schema.ts, sector modules (section 8)
+              - schema.ts, insurance module
+              - schema.ts, PAP operations and evidence
+              - profiles.ts
+              - Examples
+              - Checks (scripts/validate.mjs)
+              - Several parts
+      validations:
+          required: true
+    - type: input
+      id: section
+      attributes:
+          label: Type or rule
+          description: Optional. The type, field or rule, for example `QuoteParams`, `Offer.handoff_url` or `R6`.
+    - type: dropdown
+      id: kind
+      attributes:
+          label: Kind
+          options:
+              - Gap
+              - Ambiguous
+              - Contradiction
+              - Regulatory (does not meet the IDD or a national law)
+              - Risk (privacy or security)
+              - Simplification
+              - Wording
+              - Question
+      validations:
+          required: true
+    - type: textarea
+      id: description
+      attributes:
+          label: Feedback
+          description: What's wrong and why it matters, with a suggested change if you have one.
+      validations:
+          required: true
