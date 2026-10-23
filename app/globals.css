@@ -274,10 +274,12 @@ kbd {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: var(--space-16);
-  align-items: center;
-  padding-block: var(--space-24) var(--space-16);
+  gap: var(--space-12);
+  padding-block: var(--space-24) var(--space-8);
+}
+
+.hero-text {
+  max-width: 48rem;
 }
 
 .hero h1 {
@@ -285,7 +287,7 @@ kbd {
 }
 
 .lede {
-  max-width: 34rem;
+  max-width: 40rem;
   margin: 0 0 var(--space-8);
   color: var(--ink-muted);
 }
@@ -296,26 +298,34 @@ kbd {
   gap: var(--space-3);
 }
 
+.declare {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--space-8);
+  align-items: start;
+  margin-top: var(--space-12);
+}
+
+.declare > div {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.declare p {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
 .declaration {
   min-width: 0;
+  margin: 0;
   padding: var(--space-6);
+  overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--surface);
-}
-
-.declaration pre {
-  margin: var(--space-4) 0;
-  overflow-x: auto;
   font-size: 13px;
   line-height: 20px;
-}
-
-.declaration-note {
-  margin: 0;
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--ink-subtle);
 }
 
 .section {
@@ -334,49 +344,818 @@ kbd {
   color: var(--ink-muted);
 }
 
-.layers {
+/* Context: the figures and the news */
+
+.page-head {
   display: grid;
+  gap: var(--space-4);
+  max-width: var(--width-measure);
+  padding-block: var(--space-16) var(--space-8);
+}
+
+.page-head p {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.page-end {
+  margin-top: var(--space-12);
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.figure {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-6);
   border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.figure-value {
+  margin: 0;
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--ink-muted);
+}
+
+.source {
+  justify-self: start;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ink-subtle);
+}
+
+.news {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.news li {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: var(--space-6);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.news-date {
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  color: var(--ink-subtle);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.news-body {
+  display: grid;
+  gap: var(--space-2);
+  max-width: var(--width-measure);
+}
+
+.news-body p {
+  margin: 0;
+}
+
+.news blockquote {
+  margin: 0;
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--line-control);
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+/* The opening picture: agents, the website, the two steps, then the caption
+   of the current beat. Each column shares two rows through subgrid: the label,
+   then the picture. Every timed keyframe below is a share of one story
+   (--story), so that the beats stay in step. */
+
+.flow {
+  display: grid;
+  grid-template-columns:
+    minmax(136px, 0.75fr) minmax(48px, 0.45fr) minmax(220px, 1.15fr)
+    minmax(40px, 0.3fr) minmax(280px, 1.5fr);
+  grid-template-rows: auto var(--flow-height) auto;
+  row-gap: var(--space-3);
+  margin: 0;
+}
+
+.flow > div {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  min-width: 0;
+}
+
+.flow-agents {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-agents li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 40px;
+  font-size: 14px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.flow-logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.flow-logo svg {
+  width: 22px;
+  height: 22px;
+}
+
+.flow-agent-name {
+  display: grid;
+  justify-items: end;
+}
+
+.flow-agent-note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-subtle);
+}
+
+.flow-agents li.other {
+  color: var(--ink-subtle);
+}
+
+.flow-logo.other {
+  border-style: dashed;
+  color: var(--ink-subtle);
+}
+
+.flow-wire > div,
+.flow-vwire {
+  position: relative;
+}
+
+.flow > .flow-vwire {
+  display: none;
+}
+
+.flow-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.flow-lines line {
+  stroke: var(--line-control);
+  stroke-width: 1;
+}
+
+.flow-lines line.dashed {
+  stroke-dasharray: 3 4;
+}
+
+/* The moving calls are the one orange marker of this view. */
+/* The moving calls are the one orange marker of this view. The calls from
+   the agents loop on their own; the calls from the website to each step
+   follow the story. Each call runs from (--x0, --y0) to (--x1, --y1), so the
+   same keyframes serve the wide picture and the narrow one. */
+.flow-call {
+  position: absolute;
+  left: var(--x0);
+  top: var(--y0);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation: flow-in 2s linear var(--delay) infinite;
+}
+
+@keyframes flow-in {
+  0% {
+    left: var(--x0);
+    top: var(--y0);
+    opacity: 0;
+  }
+  10%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: var(--x1);
+    top: var(--y1);
+    opacity: 0;
+  }
+}
+
+.flow-call.out {
+  animation: flow-out var(--story) linear infinite;
+}
+
+.flow-call.out.step-2 {
+  animation-name: flow-out-2;
+}
+
+@keyframes flow-out {
+  0%,
+  43% {
+    left: var(--x0);
+    top: var(--y0);
+    opacity: 0;
+  }
+  44% {
+    opacity: 1;
+  }
+  50% {
+    left: var(--x1);
+    top: var(--y1);
+    opacity: 1;
+  }
+  51%,
+  100% {
+    left: var(--x1);
+    top: var(--y1);
+    opacity: 0;
+  }
+}
+
+@keyframes flow-out-2 {
+  0%,
+  61% {
+    left: var(--x0);
+    top: var(--y0);
+    opacity: 0;
+  }
+  62% {
+    opacity: 1;
+  }
+  68% {
+    left: var(--x1);
+    top: var(--y1);
+    opacity: 1;
+  }
+  69%,
+  100% {
+    left: var(--x1);
+    top: var(--y1);
+    opacity: 0;
+  }
+}
+
+.flow-site {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
-.layer {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  gap: var(--space-6);
-  align-items: baseline;
-  padding: var(--space-6);
-}
-
-.layer + .layer {
-  border-top: 1px solid var(--line);
-}
-
-.layer-name {
+.flow-site-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
   font-family: var(--font-mono), monospace;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-subtle);
 }
 
-.layer p {
+.flow-site-dots {
+  width: 32px;
+  height: 8px;
+  background: radial-gradient(circle, var(--line-control) 3px, transparent 3.5px) 0 0 / 12px 8px repeat-x;
+}
+
+.flow-site-body {
+  position: relative;
+  min-height: 0;
+}
+
+.flow-site-form {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.flow-site-title {
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.flow-site-text {
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--line);
+}
+
+.flow-site-text.short {
+  width: 70%;
+  margin-bottom: var(--space-2);
+}
+
+.flow-site-field {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-subtle);
+}
+
+.flow-site-button {
+  justify-self: start;
+  margin-top: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--canvas);
+  font-weight: 500;
+}
+
+.flow-site-caption {
   margin: 0;
-  max-width: var(--width-measure);
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-subtle);
+}
+
+/* Beat 2 puts what a regulated sale needs over the form. Each need turns from
+   a cross to a check when its step solves it. At rest, every need is solved. */
+.flow-gate {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--canvas);
+  animation: flow-gate var(--story) ease-in-out infinite;
+}
+
+@keyframes flow-gate {
+  0%,
+  24% {
+    opacity: 0;
+  }
+  28%,
+  92% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.flow-gate-title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.flow-gate ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-gate li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-2);
+  font-size: 13px;
+  line-height: 18px;
   color: var(--ink-muted);
 }
 
-.layer-ofap {
-  background: var(--surface);
+.flow-gate li > span:first-of-type {
+  grid-column: 2;
 }
 
-.layer-ofap p {
-  color: var(--ink);
+.flow-mark {
+  grid-area: 1 / 1;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.flow-mark.no {
+  color: var(--critical);
+  opacity: 0;
+  animation: flow-need-no var(--story) linear calc(var(--shift) - var(--story)) infinite;
+}
+
+.flow-mark.yes {
+  color: var(--positive);
+}
+
+.flow-mark.yes,
+.flow-gate .flow-tag.yes {
+  animation: flow-need-yes var(--story) linear calc(var(--shift) - var(--story)) infinite;
+}
+
+@keyframes flow-need-no {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  57%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flow-need-yes {
+  0%,
+  55% {
+    opacity: 0;
+  }
+  57%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* The two steps. Each one takes the focus in its beat: identification first,
+   then communication. */
+.flow-steps {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--flow-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-steps li {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+}
+
+.flow-steps li.step-1 {
+  animation: flow-step-1 var(--story) ease-in-out infinite;
+}
+
+.flow-steps li.step-2 {
+  animation: flow-step-2 var(--story) ease-in-out infinite;
+}
+
+@keyframes flow-step-1 {
+  0%,
+  48%,
+  70%,
+  100% {
+    border-color: var(--line);
+    background: var(--canvas);
+  }
+  52%,
+  66% {
+    border-color: var(--ink);
+    background: var(--surface);
+  }
+}
+
+@keyframes flow-step-2 {
+  0%,
+  66%,
+  94%,
+  100% {
+    border-color: var(--line);
+    background: var(--canvas);
+  }
+  70%,
+  90% {
+    border-color: var(--ink);
+    background: var(--surface);
+  }
+}
+
+.flow-step-name {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.flow-step-question {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-muted);
+}
+
+.flow-answers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.flow-answer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.flow-on {
+  font-size: 12px;
+  color: var(--ink-subtle);
+}
+
+.flow-tag {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+.flow-tag.ours {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--canvas);
+}
+
+/* The caption of the current beat. The four captions share one line. */
+.flow-story {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 28px;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-story li {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  opacity: 0;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.flow-story-number {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line-control);
+  border-radius: 50%;
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.flow-story .beat-1 {
+  animation: flow-beat-1 var(--story) linear infinite;
+}
+
+.flow-story .beat-2 {
+  animation: flow-beat-2 var(--story) linear infinite;
+}
+
+.flow-story .beat-3 {
+  animation: flow-beat-3 var(--story) linear infinite;
+}
+
+.flow-story .beat-4 {
+  animation: flow-beat-4 var(--story) linear infinite;
+}
+
+@keyframes flow-beat-1 {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  24%,
+  97% {
+    opacity: 0;
+  }
+  99%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes flow-beat-2 {
+  0%,
+  23% {
+    opacity: 0;
+  }
+  25%,
+  47% {
+    opacity: 1;
+  }
+  49%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flow-beat-3 {
+  0%,
+  49% {
+    opacity: 0;
+  }
+  51%,
+  65% {
+    opacity: 1;
+  }
+  67%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flow-beat-4 {
+  0%,
+  67% {
+    opacity: 0;
+  }
+  69%,
+  95% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* With no motion, the picture shows its last beat and every caption. */
+@media (prefers-reduced-motion: reduce) {
+  .flow-call {
+    display: none;
+  }
+
+  .flow-gate,
+  .flow-mark,
+  .flow-gate .flow-tag.yes,
+  .flow-steps li {
+    animation: none;
+  }
+
+  .flow-mark.no {
+    opacity: 0;
+  }
+
+  .flow-story {
+    display: grid;
+    gap: var(--space-2);
+    height: auto;
+  }
+
+  .flow-story li {
+    position: static;
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* The two steps */
+
+/* The cards share their rows, so that the headings, the text and the tags
+   line up across the columns. */
+.problems {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--space-3) var(--space-8);
+}
+
+.problem {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.problem > p:not(.label) {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+/* What goes in the box */
+
+.box {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-md);
+}
+
+.box li {
+  display: grid;
+  grid-template-columns: 180px 240px minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: baseline;
+  padding: var(--space-4) var(--space-6);
+}
+
+.box li + li {
+  border-top: 1px solid var(--line);
+}
+
+.box-step {
+  font-weight: 600;
+}
+
+.box-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-size: 13px;
+}
+
+.box-text {
+  color: var(--ink-muted);
+}
+
+.keeps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.keeps > div {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.keeps p {
+  margin: 0;
+  color: var(--ink-muted);
 }
 
 .levels {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
@@ -465,6 +1244,10 @@ kbd {
 
 .pill.caution {
   color: var(--caution);
+}
+
+.pill.critical {
+  color: var(--critical);
 }
 
 .feedback {
@@ -760,17 +1543,114 @@ kbd {
 
 @media (max-width: 980px) {
   .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-12);
-    padding-block: var(--space-16) var(--space-12);
+    padding-block: var(--space-16) 0;
   }
 
-  .levels {
+  .figures,
+  .sectors,
+  .keeps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .keeps {
+    gap: var(--space-6);
+  }
+
+  .flow {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: 0;
+  }
+
+  .flow > div {
+    grid-row: auto;
+    grid-template-rows: none;
+    gap: var(--space-3);
+  }
+
+  .flow > .flow-wire,
+  .flow-col:not(:first-child) > .label,
+  .flow-agents li.secondary,
+  .flow-agent-note {
+    display: none;
+  }
+
+  .flow > .flow-vwire {
+    display: block;
+    height: 56px;
+  }
+
+  .flow-agents {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .flow-agents li {
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+    height: auto;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .flow-agent-name {
+    justify-items: center;
+  }
+
+  .flow-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: auto;
+    gap: var(--space-3);
   }
 
-  .sectors {
+  .flow-steps li {
+    align-content: start;
+  }
+
+  .flow-site-body {
+    display: grid;
+  }
+
+  .flow-site-form,
+  .flow-gate {
+    grid-area: 1 / 1;
+  }
+
+  .flow-gate {
+    position: static;
+  }
+
+  .flow-story {
+    height: 66px;
+    margin-top: var(--space-6);
+  }
+
+  .flow-story li {
+    align-items: flex-start;
+  }
+
+  .declare,
+  .problems {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .problem {
+    grid-row: auto;
+    grid-template-rows: none;
+    gap: var(--space-3);
+  }
+
+  .problem + .problem {
+    margin-top: var(--space-6);
+  }
+
+  .box li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+    padding: var(--space-4);
   }
 
   .docs {
@@ -843,10 +1723,9 @@ kbd {
     font-size: 13px;
   }
 
-  .layer {
+  .news li {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-2);
-    padding: var(--space-4);
+    gap: var(--space-1);
   }
 
   .levels,

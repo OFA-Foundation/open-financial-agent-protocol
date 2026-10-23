@@ -16,7 +16,7 @@ Draft 0.1 defines the core and the insurance module. Section 8 of `schema.ts` li
 
 ## Names
 
-Don't name a real company anywhere in the specification, the comments or the examples, and don't copy a company's tool names. This applies also when its server or API is public. Describe a source by its line and country, for example "a pet insurer (FR, DE, SE)". The examples use fictional companies on `example.com`. You can name public specifications (MCP, PAP, RFC 8785), laws (IDD) and public registers and regulators (ORIAS, ACPR, FCA).
+Don't name a real company anywhere in the specification, the comments or the examples, and don't copy a company's tool names. This applies also when its server or API is public. Describe a source by its line and country, for example "a pet insurer (FR, DE, SE)". The examples use fictional companies on `example.com`. The figures and the news on the home page follow the same rule: describe the company, for example "an online insurance marketplace", and link the source. The one exception is the opening picture of the home page. It shows the names and logos of the AI assistants that visit insurers' sites, so that a reader recognises them. The logos are single-colour, from `components/home/agent-logos.ts`. You can name public specifications (MCP, PAP, RFC 8785), laws (IDD) and public registers and regulators (ORIAS, ACPR, FCA).
 
 ## Site
 
@@ -24,9 +24,11 @@ The site is a Next.js static export in `app/`, `components/` and `lib/`. The spe
 
 The explainer on the home page is in `components/explainer/`. `script.ts` holds the storyboard, and `lib/explainer-data.ts` reads its figures and payloads from the worked example. Each frame is a function of the time, set by one clock, so nothing renders while it plays. On `/?record`, `window.ofapExplainer` seeks that clock, so that a headless browser can render the video one frame at a time.
 
+The opening picture of the home page is `components/home/agent-flow.tsx`: agents call a website made for people, and two steps follow, one after the other (identification, then communication). It is CSS only. The full picture shows at rest, and the motion stops under `prefers-reduced-motion`.
+
 ## Design
 
-Take every colour, gap and radius from the tokens in `app/tokens.css`, which match the OFAP Design System. Write no literal colours in components. Orange (`--accent`) appears only in the mark and in one marker per view: the current page in the docs, the moving call in the explainer. Set text in IBM Plex Sans and code in IBM Plex Mono, from `app/fonts/`. Separate with `--line` borders, not shadows.
+Take every colour, gap and radius from the tokens in `app/tokens.css`, which match the OFAP Design System. Write no literal colours in components. Orange (`--accent`) appears only in the mark and in one marker per view: the current page in the docs, the moving call in the explainer, the moving calls in the opening picture. Set text in IBM Plex Sans and code in IBM Plex Mono, from `app/fonts/`. Separate with `--line` borders, not shadows.
 
 ## Writing
 
