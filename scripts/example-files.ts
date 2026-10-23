@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import type {
-  AmendAgreementResult,
   GetDistributorResult,
   GetDocumentsResult,
   GetQuestionSetResult,
@@ -25,7 +24,6 @@ export interface Examples {
   "insurance-09-submit_application.params": SubmitApplicationParams;
   "insurance-10-submit_application.result.proposed": SubmitApplicationResult;
   "insurance-11-operation.succeeded": SubmitApplicationResult;
-  "insurance-12-amend_agreement.result.proposed": AmendAgreementResult;
 }
 
 export type ExampleName = keyof Examples;
@@ -43,7 +41,6 @@ export const EXAMPLE_DEFINITIONS: { [K in ExampleName]: string } = {
   "insurance-09-submit_application.params": "SubmitApplicationParams",
   "insurance-10-submit_application.result.proposed": "SubmitApplicationResult",
   "insurance-11-operation.succeeded": "SubmitApplicationResult",
-  "insurance-12-amend_agreement.result.proposed": "AmendAgreementResult",
 };
 
 export function examplePath(name: ExampleName): string {

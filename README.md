@@ -1,8 +1,8 @@
 # Open Financial Agent Protocol (OFAP)
 
-OFAP defines how an AI agent finds, prices, subscribes to and services a regulated financial product with any distributor. It also defines the evidence that each step leaves, so that a sale through an agent meets the same rules as a sale on the distributor's own site.
+OFAP defines how an AI agent finds, prices and subscribes to a regulated financial product with any distributor. It also defines the evidence that each step leaves, so that a sale through an agent meets the same rules as a sale on the distributor's own site.
 
-Draft 0.1 covers insurance. The core does not depend on the sector, and each sector comes as a module on top of it. Credit and investment can follow as modules with no change to the core.
+Draft 0.1 covers insurance, and the sale only. Servicing after the sale comes in a later draft. The core does not depend on the sector, and each sector comes as a module on top of it. Credit and investment can follow as modules with no change to the core.
 
 OFAP is an extension on top of two protocols. MCP carries every call. PAP carries the customer's session and every action with a business effect. OFAP defines only what is specific to regulated financial products.
 
@@ -10,7 +10,7 @@ Status: **draft 0.1**. A later draft can break this one until 1.0.
 
 ## Why
 
-Personal agents and AI assistants now quote, buy and manage insurance for people. Each distributor exposes a different shape. The MCP servers we looked at for this draft quote with different tool names, different inputs and different flows. An agent cannot compare two offers or do the same action twice in the same way.
+Personal agents and AI assistants now quote and buy insurance for people. Each distributor exposes a different shape. The MCP servers we looked at for this draft quote with different tool names, different inputs and different flows. An agent cannot compare two offers or do the same action twice in the same way.
 
 MCP and PAP do not cover what insurance regulation asks for:
 
@@ -30,7 +30,7 @@ Credit and investment ask for the same kinds of evidence in their own form. That
 | `schema.ts` | Source of truth. Every type, with the rules in RFC 2119 keywords |
 | `schema.json` | JSON Schema generated from `schema.ts`. Do not edit it by hand |
 | `profiles.ts` | Line profiles: the common core of questions per product line |
-| `examples/` | A worked pet insurance flow with fictional data: quote a cat, quote an older dog that gets no offer, apply, add a dog |
+| `examples/` | A worked pet insurance flow with fictional data: quote a cat, quote an older dog that gets no offer, apply, keep the evidence |
 | `scripts/` | Generate the schema, build the examples, run the checks |
 | `content/`, `app/`, `components/`, `lib/` | The website at [openfinancialagent.org](https://openfinancialagent.org). See `AGENTS.md` |
 
@@ -38,7 +38,7 @@ Run `bun install`, then `bun run check`. It type-checks the schema and the scrip
 
 ## Core and sector modules
 
-The core holds what every regulated financial product needs: the distributor and its licences, products, documents, question sets, the quote loop, parties, the declaration, PAP operations, evidence and agreements. A sector module adds what the law of its sector asks for.
+The core holds what every regulated financial product needs: the distributor and its licences, products, documents, question sets, the quote loop, parties, the declaration, PAP operations and evidence. A sector module adds what the law of its sector asks for.
 
 | What a module adds | Insurance (draft 0.1) |
 |---|---|
@@ -62,7 +62,6 @@ Candidate modules for a later draft:
 | 1. Inform | `get_distributor`, `list_products`, `get_documents` | None |
 | 2. Quote | + `get_question_set`, `quote` | None, or signed out |
 | 3. Subscribe | + `submit_application` or `conclude` | Signed out is enough. The action is a PAP operation |
-| 4. Service | + `get_agreement`, `amend_agreement` | Signed in, read or write scope |
 
 A server declares its level, sectors and lines under `capabilities.extensions["org.openfinancialagent/ofap"]` in MCP `server/discover`, and under the same key in PAP `poppy.json`.
 
@@ -85,13 +84,13 @@ A product's question set must include every required question of its profile wit
 
 **Sensitive fields never pass through the agent.** A question marked `x-collected-by: distributor_page` (identity numbers, bank or card numbers, health details) is collected on the distributor's own page.
 
-**No auth and no confirm step of our own.** Actions with a business effect return a PAP operation, and the agent confirms it at the PAP operations endpoint. `conclude`, any change of price or amount due, and any change that adds or removes a party or a subject need the customer's own approval of that revision. A standing permission is not enough.
+**No auth and no confirm step of our own.** Actions with a business effect return a PAP operation, and the agent confirms it at the PAP operations endpoint. `conclude` needs the customer's own approval of that revision. A standing permission is not enough.
 
 **Evidence.** The terms of an application hold the parties, the declaration (answers, question set version, hash, accuracy confirmed), the needs assessment, every document delivered with its version and hash, and the contact consent. When the operation succeeds, the distributor keeps an `EvidenceRecord` with the hash of the confirmed terms. A PAP confirmation alone does not prove that the customer saw the terms. This record adds what was delivered and what was declared.
 
 ## Rules the checks cover
 
-R1 profiles compile. R2 a question set has every required question of its profile. R3 answers match their question set. R4 no `distributor_page` field in agent answers. R5 `answers_sha256` is the SHA-256 of the canonical JSON (RFC 8785). R6 every document required before commitment was delivered, same version and digest. R7 accuracy confirmed before a proposal. R8 needs assessment and pricing match the offer's sector. R9 an application needs the customer's own approval. R10 a non-life insurance product has an IPID required before commitment. R11 the evidence hash matches the confirmed terms. R12 a price change, an amount due, or a change of party or subject needs the customer's own approval. R13 a handoff offer has a `handoff_url`. R14 an empty quote gives a reason.
+R1 profiles compile. R2 a question set has every required question of its profile. R3 answers match their question set. R4 no `distributor_page` field in agent answers. R5 `answers_sha256` is the SHA-256 of the canonical JSON (RFC 8785). R6 every document required before commitment was delivered, same version and digest. R7 accuracy confirmed before a proposal. R8 needs assessment and pricing match the offer's sector. R9 an application needs the customer's own approval. R10 a non-life insurance product has an IPID required before commitment. R11 the evidence hash matches the confirmed terms. R12 a handoff offer has a `handoff_url`. R13 an empty quote gives a reason.
 
 ## Open points
 
@@ -99,8 +98,9 @@ R1 profiles compile. R2 a question set has every required question of its profil
 2. **PAP fields.** `Operation` mirrors PAP draft 0.2 and rejects unknown fields. It must accept new PAP fields before 1.0.
 3. **Credit and investment modules.** Draft each one on the rules for sector modules (section 8 of `schema.ts`), with at least two distributors as input.
 4. **Profiles.** A second distributor for the pet and home profiles, and profiles for commercial lines.
-5. **Legal review** of the IDD references, country by country.
-6. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
+5. **Servicing after the sale.** Draft 0.1 stops at the sale. A later draft adds a level 4 for what comes after it: read and change an agreement, renew it, cancel it, and open and follow a claim.
+6. **Legal review** of the IDD references, country by country.
+7. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
 
 ## Related work
 

@@ -1,10 +1,8 @@
 // Builds the worked insurance flow. All companies, people and prices are fictional.
-// Quote a cat, quote an older dog that gets no offer, apply for the cat, then
-// add a dog to the agreement.
+// Quote a cat, quote an older dog that gets no offer, then apply for the cat.
 import type {
   ApplicationOutcome,
   ApplicationTerms,
-  AmendmentTerms,
   ContactConsent,
   CoverLimit,
   CoverSummary,
@@ -21,7 +19,6 @@ import type {
   ProviderRef,
   QuestionSet,
   QuestionSetRef,
-  Subject,
 } from "../schema";
 import { canonicalSha256, sha256 } from "./canonical";
 import { examplePath, type ExampleName, type Examples } from "./example-files";
@@ -65,7 +62,7 @@ await write("insurance-01-get_distributor.result", {
   complaints_url: "https://pets.example.com/complaints",
   ofap: {
     version: "0.1",
-    conformance_level: 4,
+    conformance_level: 3,
     interfaces: ["tools"],
     sectors: ["insurance"],
     lines: ["pet"],
@@ -365,47 +362,6 @@ await write("insurance-11-operation.succeeded", {
     state: "succeeded",
     confirmation: { revision: 1, approved_by: "user", confirmed_at: evidence.confirmed_at },
     result: { summary: "Application received. Camille finishes on Example Pets' site.", data: outcome },
-  },
-});
-
-/* Amendment: add a dog */
-
-const dog: Subject = {
-  subject_ref: "pet-2",
-  kind: "pet",
-  display_name: "Pixel",
-  attributes: { species: "dog", breed: "Beagle", sex: "male", is_neutered: false, date_of_birth: "2025-02-10" },
-};
-const { alternative_premiums: _alternativePremiums, ...pricingWithoutAlternatives } = offer70.pricing;
-const amendmentTerms: AmendmentTerms = {
-  agreement_number: "EXP-2026-004812",
-  changes: [{ kind: "add_subject", subject: dog }],
-  effective_date: "2026-12-01",
-  pricing_before: offer70.pricing,
-  pricing_after: {
-    ...pricingWithoutAlternatives,
-    premium: { amount: { amount: "31.20", currency: "EUR" }, period: "month", taxes_included: true },
-  },
-  declaration: {
-    question_set: questionSetRef,
-    answers: dog.attributes,
-    answers_sha256: canonicalSha256(dog.attributes),
-    accuracy_confirmed: true,
-  },
-  documents_delivered: documentsDelivered,
-};
-
-await write("insurance-12-amend_agreement.result.proposed", {
-  operation: {
-    operation_id: "op-77d0",
-    revision: 1,
-    state: "proposed",
-    summary: "Add Pixel (beagle, born February 2025) from 1 December 2026. The premium goes from 14.90 to 31.20 EUR a month.",
-    terms: amendmentTerms,
-    expires_at: "2026-11-20T12:00:00+01:00",
-    user_approval_required: true,
-    confirmation: null,
-    result: null,
   },
 });
 

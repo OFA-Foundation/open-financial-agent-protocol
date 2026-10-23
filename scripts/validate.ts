@@ -6,7 +6,7 @@ import addFormats from "ajv-formats";
 import { join } from "node:path";
 import { PROFILES } from "../profiles";
 import type { Answers, ApplicationOutcome, QuoteParams, QuoteResult } from "../schema";
-import { canonicalJson, canonicalSha256 } from "./canonical";
+import { canonicalSha256 } from "./canonical";
 import { EXAMPLE_DEFINITIONS, readExample, type ExampleName } from "./example-files";
 
 const schema = await Bun.file(join(import.meta.dir, "..", "schema.json")).json();
@@ -57,14 +57,13 @@ const quote = completed(await readExample("insurance-07-quote.result.complete"))
 const emptyQuote = completed(await readExample("insurance-08-quote.result.no_offer"));
 const application = (await readExample("insurance-10-submit_application.result.proposed")).operation;
 const succeeded = (await readExample("insurance-11-operation.succeeded")).operation;
-const amendment = (await readExample("insurance-12-amend_agreement.result.proposed")).operation;
 
 const outcomeData: unknown = succeeded.result?.data;
 const outcomeCheck = matchesDefinition("ApplicationOutcome", outcomeData);
 check(outcomeCheck.valid, `insurance-11 result.data is a valid ApplicationOutcome${outcomeCheck.errors}`);
 const outcome = outcomeData as ApplicationOutcome;
 
-/* Rules R1 to R14 */
+/* Rules R1 to R13 */
 
 const brokenProfiles = PROFILES.filter((profile) => {
   try {
@@ -120,25 +119,13 @@ check(
 );
 check(outcome.evidence.terms_sha256 === canonicalSha256(terms), "R11 evidence terms_sha256 matches the confirmed terms");
 
-const changesPartyOrSubject = amendment.terms.changes.some((change) =>
-  ["add_party", "remove_party", "add_subject", "remove_subject"].includes(change.kind),
-);
-const needsApproval =
-  canonicalJson(amendment.terms.pricing_before) !== canonicalJson(amendment.terms.pricing_after) ||
-  amendment.terms.amount_due_now !== undefined ||
-  changesPartyOrSubject;
-check(
-  !needsApproval || amendment.user_approval_required,
-  "R12 a price change, an amount due, or a change of party or subject needs user_approval_required",
-);
-
 check(
   quote.offers.every((offer) => !offer.subscription_paths.includes("handoff") || offer.handoff_url !== undefined),
-  "R13 handoff offers carry a handoff_url",
+  "R12 handoff offers carry a handoff_url",
 );
 check(
   emptyQuote.offers.length > 0 || (emptyQuote.no_offer?.reason_code ?? "") !== "",
-  "R14 an empty quote gives a no_offer reason",
+  "R13 an empty quote gives a no_offer reason",
 );
 
 console.log(failures ? `\n${failures} check(s) failed` : "\nAll checks passed");

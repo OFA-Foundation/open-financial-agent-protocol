@@ -1,9 +1,10 @@
 /**
  * Open Financial Agent Protocol (OFAP): schema, draft 0.1
  *
- * OFAP defines how an AI agent finds, prices, subscribes to and services a
- * regulated financial product with any distributor, and what evidence each
- * step leaves. Draft 0.1 covers insurance.
+ * OFAP defines how an AI agent finds, prices and subscribes to a regulated
+ * financial product with any distributor, and what evidence each step leaves.
+ * Draft 0.1 covers insurance, and the sale only. Servicing after the sale
+ * comes in a later draft.
  *
  * This file is the source of truth. `schema.json` is generated from it. Do not
  * edit `schema.json` by hand.
@@ -53,13 +54,12 @@ export const PROTOCOL_VERSION = "0.1";
  * - 1 Inform: `get_distributor`, `list_products`, `get_documents`
  * - 2 Quote: level 1, plus `get_question_set` and `quote`
  * - 3 Subscribe: level 2, plus `submit_application` or `conclude`
- * - 4 Service: level 3, plus `get_agreement` and `amend_agreement`
  *
  * A server that declares a level MUST implement every tool of that level and
  * of the levels below it, except that level 3 needs only one of
  * `submit_application` and `conclude`.
  */
-export type ConformanceLevel = 1 | 2 | 3 | 4;
+export type ConformanceLevel = 1 | 2 | 3;
 
 /** How a distributor exposes the protocol. */
 export type InterfaceKind =
@@ -85,7 +85,7 @@ export interface OfapSettings {
   interfaces: InterfaceKind[];
   /** Sector modules the server implements. */
   sectors: Sector[];
-  /** Product lines the server can quote or serve. */
+  /** Product lines the server can quote. */
   lines: ProductLine[];
   /** Countries where the server's products are sold. */
   countries: CountryCode[];
@@ -344,11 +344,10 @@ export interface FinancialDocument {
   required_before_commitment: boolean;
 }
 
-/** Params of `get_documents`. Give exactly one of the three references. */
+/** Params of `get_documents`. Give exactly one of the two references. */
 export type GetDocumentsParams =
   | { product_id: string; country?: CountryCode; language?: LanguageTag }
-  | { offer_id: string; language?: LanguageTag }
-  | { agreement_number: string; language?: LanguageTag };
+  | { offer_id: string; language?: LanguageTag };
 
 export interface GetDocumentsResult {
   documents: FinancialDocument[];
@@ -528,8 +527,7 @@ export interface FieldIssue {
  * - one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with
  *   a `sector` field that holds the module's value;
  * - its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`,
- *   `DocumentType`, `PartyRole` and `AmendmentChange`, when the sector needs
- *   them;
+ *   `DocumentType` and `PartyRole`, when the sector needs them;
  * - which of its documents are `required_before_commitment`;
  * - its line profiles in `profiles.ts`, and checks for the rules of its sector
  *   that a JSON Schema cannot express.
@@ -539,8 +537,8 @@ export interface FieldIssue {
  * same for every sector.
  *
  * A server declares the modules it implements in `OfapSettings.sectors`. An
- * agent MUST NOT show a product, an offer or an agreement of a sector it does
- * not implement as if it were of a known sector.
+ * agent MUST NOT show a product or an offer of a sector it does not implement
+ * as if it were of a known sector.
  *
  * Candidate modules for a later draft:
  * - credit: SECCI and ESIS, creditworthiness (CCD Art. 18, MCD Art. 18), APR
@@ -684,7 +682,7 @@ export interface Declaration {
 }
 
 /* ========================================================================== */
-/* 11. PAP operations with financial terms (levels 3 and 4)                   */
+/* 11. PAP operations with financial terms (level 3)                         */
 /* ========================================================================== */
 
 export type OperationState =
@@ -839,106 +837,7 @@ export interface EvidenceRecord {
 }
 
 /* ========================================================================== */
-/* 13. Agreements (core, level 4)                                             */
-/* ========================================================================== */
-
-export type AgreementStatus =
-  | "pending"
-  | "active"
-  | "suspended"
-  | "lapsed"
-  | "cancelled"
-  | "closed"
-  | "expired";
-
-/** An agreement in force. In the insurance module, a policy. */
-export interface Agreement {
-  agreement_number: string;
-  sector: Sector;
-  status: AgreementStatus;
-  product_id: string;
-  line: ProductLine;
-  provider: ProviderRef;
-  parties: Party[];
-  /** Price as agreed, in the form of the sector. */
-  pricing: Pricing;
-  options: string[];
-  start_date: DateString;
-  renewal_date?: DateString;
-  end_date?: DateString;
-  /** What the agreement covers: a pet, a home, a vehicle, a property. */
-  subjects: Subject[];
-  /** Includes the proof of insurance when the product has one. */
-  documents: FinancialDocument[];
-}
-
-export interface Subject {
-  subject_ref: string;
-  kind: "pet" | "home" | "vehicle" | "property" | "valuable_item" | "business" | "person" | "other";
-  display_name: string;
-  /** Attributes of the subject, following the line profile. */
-  attributes: { [key: string]: unknown };
-}
-
-/** Requires a signed-in PAP session with read scope. */
-export interface GetAgreementParams {
-  agreement_number: string;
-}
-
-export interface GetAgreementResult {
-  agreement: Agreement;
-}
-
-/** One change to an agreement. A sector module adds the changes of its sector. */
-export type AmendmentChange =
-  // Any sector
-  | { kind: "update_address"; country: CountryCode; postal_code: string; city: string; street: string }
-  | { kind: "add_party"; party: Party }
-  | { kind: "remove_party"; party_ref: string }
-  | { kind: "add_option"; option: string }
-  | { kind: "remove_option"; option: string }
-  // Insurance
-  | { kind: "change_excess"; excess: Money }
-  | { kind: "add_subject"; subject: Subject }
-  | { kind: "remove_subject"; subject_ref: string };
-
-/** Requires a signed-in PAP session with write scope. */
-export interface AmendAgreementParams {
-  agreement_number: string;
-  changes: AmendmentChange[];
-  /** When the changes take effect. Default: the earliest date the provider accepts. */
-  effective_date?: DateString;
-  /** Required when a change adds a party or a subject that the provider must price. */
-  declaration?: Declaration;
-  needs_assessment?: NeedsAssessment;
-  documents_delivered?: DeliveredDocument[];
-}
-
-export interface AmendmentTerms {
-  agreement_number: string;
-  changes: AmendmentChange[];
-  effective_date: DateString;
-  pricing_before: Pricing;
-  pricing_after: Pricing;
-  /** Amount the customer pays at once, or gets back when negative, for example a premium adjustment. */
-  amount_due_now?: Money;
-  declaration?: Declaration;
-  needs_assessment?: NeedsAssessment;
-  documents_delivered: DeliveredDocument[];
-}
-
-/**
- * Result of `amend_agreement`. The operation MUST have
- * `user_approval_required: true` when `pricing_after` differs from
- * `pricing_before`, when `amount_due_now` is set, or when a change adds or
- * removes a party or a subject. A standing permission is not enough for these.
- */
-export interface AmendAgreementResult {
-  operation: Operation<AmendmentTerms>;
-}
-
-/* ========================================================================== */
-/* 14. Errors (core)                                                          */
+/* 13. Errors (core)                                                          */
 /* ========================================================================== */
 
 export type OfapErrorCode =
@@ -962,10 +861,6 @@ export type OfapErrorCode =
   | "accuracy_not_confirmed"
   /** The needs assessment is missing, of another sector, or its outcome does not allow the application. */
   | "needs_assessment_invalid"
-  /** No agreement has this `agreement_number`. */
-  | "agreement_not_found"
-  /** The provider does not accept this change to the agreement. */
-  | "amendment_not_allowed"
   /** The tool is above the conformance level the server declares. */
   | "not_supported";
 
@@ -981,7 +876,7 @@ export interface OfapError {
 }
 
 /* ========================================================================== */
-/* 15. Conversation binding (PROPOSED, NOT DECIDED)                           */
+/* 14. Conversation binding (PROPOSED, NOT DECIDED)                           */
 /* ========================================================================== */
 
 /**
@@ -994,11 +889,11 @@ export interface ConversationData {
   question?: { field: string; ask: string; schema: { [keyword: string]: unknown } };
   quote?: QuoteResult;
   documents?: FinancialDocument[];
-  operation?: Operation<ApplicationTerms | AmendmentTerms>;
+  operation?: Operation<ApplicationTerms>;
 }
 
 /* ========================================================================== */
-/* 16. Tool index                                                             */
+/* 15. Tool index                                                             */
 /* ========================================================================== */
 
 export const TOOL_NAMES = {
@@ -1009,18 +904,12 @@ export const TOOL_NAMES = {
   quote: "quote",
   submit_application: "submit_application",
   conclude: "conclude",
-  get_agreement: "get_agreement",
-  amend_agreement: "amend_agreement",
 } as const;
 
 export type ToolName = keyof typeof TOOL_NAMES;
 
 /** Session that a tool needs (PAP draft 0.2). */
-export type SessionRequirement =
-  | "none"
-  | "signed_out_or_none"
-  | "signed_in_read"
-  | "signed_in_write";
+export type SessionRequirement = "none" | "signed_out_or_none";
 
 /** Level, session and MCP annotations of each tool. */
 export const TOOLS: {
@@ -1038,8 +927,6 @@ export const TOOLS: {
   quote: { level: 2, session: "signed_out_or_none", readOnlyHint: true, returnsOperation: false },
   submit_application: { level: 3, session: "signed_out_or_none", readOnlyHint: false, returnsOperation: true },
   conclude: { level: 3, session: "signed_out_or_none", readOnlyHint: false, returnsOperation: true },
-  get_agreement: { level: 4, session: "signed_in_read", readOnlyHint: true, returnsOperation: false },
-  amend_agreement: { level: 4, session: "signed_in_write", readOnlyHint: false, returnsOperation: true },
 };
 
 /** Params and result type of each tool. */
@@ -1051,6 +938,4 @@ export interface ToolSignatures {
   quote: { params: QuoteParams; result: QuoteResult };
   submit_application: { params: SubmitApplicationParams; result: SubmitApplicationResult };
   conclude: { params: ConcludeParams; result: ConcludeResult };
-  get_agreement: { params: GetAgreementParams; result: GetAgreementResult };
-  amend_agreement: { params: AmendAgreementParams; result: AmendAgreementResult };
 }

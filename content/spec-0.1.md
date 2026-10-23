@@ -4,7 +4,7 @@ Draft 0.1 covers insurance. A later draft can break this one until 1.0. The sour
 
 ## 1. Overview
 
-OFAP defines how an AI agent finds, prices, subscribes to and services a regulated financial product with any distributor. It also defines the evidence that each step leaves, so that a sale through an agent meets the same rules as a sale on the distributor's own site.
+OFAP defines how an AI agent finds, prices and subscribes to a regulated financial product with any distributor. It also defines the evidence that each step leaves, so that a sale through an agent meets the same rules as a sale on the distributor's own site. Draft 0.1 covers the sale only. Servicing after the sale comes in a later draft.
 
 OFAP is an extension on top of two protocols:
 
@@ -56,7 +56,7 @@ The session column follows PAP draft 0.2. A read-only tool sets the MCP `readOnl
 - `application`: the agent sends `submit_application`, and the customer finishes on the distributor's page.
 - `handoff`: the customer goes to the distributor's page with an offer reference.
 
-`get_documents` returns the `FinancialDocument` objects of a product, an offer or an agreement. Each document has a version, set by the distributor, and the SHA-256 of the exact file at its `url`. A new text MUST get a new version. `required_before_commitment` is true when the law requires that the customer receives the document before they commit, for example the IPID.
+`get_documents` returns the `FinancialDocument` objects of a product or an offer. Each document has a version, set by the distributor, and the SHA-256 of the exact file at its `url`. A new text MUST get a new version. `required_before_commitment` is true when the law requires that the customer receives the document before they commit, for example the IPID.
 
 ## 8. Question sets
 
@@ -117,45 +117,38 @@ When an operation succeeds, the distributor keeps an `EvidenceRecord`. It links 
 
 A PAP confirmation proves that an agent stated the customer approved a revision. It does not prove that the customer saw the terms. The evidence record adds what was delivered and what was declared. It still does not prove that the customer read the documents.
 
-## 12. Agreements
-
-`get_agreement` returns an `Agreement`. It needs a signed-in PAP session with read scope. `amend_agreement` needs write scope. It takes a list of `AmendmentChange` values and returns a PAP operation whose terms are an `AmendmentTerms` object: the changes, the effective date, the pricing before and after, and the amount the customer pays at once, if any.
-
-The operation MUST have `user_approval_required: true` when the price changes, when `amount_due_now` is set, or when a change adds or removes a party or a subject. A standing permission is not enough for these. A change that adds a party or a subject that the provider must price needs a `declaration`.
-
-## 13. Errors
+## 12. Errors
 
 A tool returns an error in an MCP tool result with `isError: true`, as an `OfapError` in `structuredContent.error`. PAP errors such as `insufficient_scope`, `sign_in_required` and `terms_changed` keep their PAP form.
 
 <!-- ofap:errors -->
 
-## 14. Sector modules
+## 13. Sector modules
 
 The core is the same for every sector. A sector module adds what the law of its sector asks for. A module MUST define:
 
 - its value in `Sector`, and its group of lines in `KnownProductLine`;
 - one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with a `sector` field that holds the module's value;
-- its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`, `DocumentType`, `PartyRole` and `AmendmentChange`, when the sector needs them;
+- its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`, `DocumentType` and `PartyRole`, when the sector needs them;
 - which of its documents are `required_before_commitment`;
 - its line profiles, and checks for the rules of its sector that a JSON Schema cannot express.
 
-A module MUST NOT change a core type or a core rule. The tools, the quote loop, the declaration, the PAP operations and the evidence record stay the same for every sector. A server declares the modules it implements in `OfapSettings.sectors`. An agent MUST NOT show a product, an offer or an agreement of a sector it does not implement as if it were of a known sector.
+A module MUST NOT change a core type or a core rule. The tools, the quote loop, the declaration, the PAP operations and the evidence record stay the same for every sector. A server declares the modules it implements in `OfapSettings.sectors`. An agent MUST NOT show a product or an offer of a sector it does not implement as if it were of a known sector.
 
 Candidate modules for a later draft:
 
 - **Credit.** SECCI and ESIS before commitment, creditworthiness under the CCD and the MCD, APR and total cost of credit.
 - **Investment.** KID under PRIIPs, suitability or appropriateness under MiFID II, fees and risk indicator.
 
-## 15. Insurance module
+## 14. Insurance module
 
 - **Pricing.** An `InsurancePricing` object: the `Premium` (amount, period, and whether taxes are in it), the same price for other periods, the cover summary, the options and the start date. The `CoverSummary` lists what is included, the limits and reimbursement rates, the excess, the main exclusions and the waiting period.
 - **Needs assessment.** An `InsuranceNeedsAssessment` records the customer's demands and needs before the contract is concluded (IDD Art. 20(1)). When the distributor gave a personal recommendation, `advice_rationale` is REQUIRED and says why the offer meets the need.
 - **Documents.** The IPID, the general and special conditions, the statement of demands and needs, and the proof of insurance.
 - **Parties.** The insured and the beneficiary, next to the subscriber and the payer of the core.
-- **Amendments.** A change of excess, and the addition or removal of a subject, such as a pet, a home or a vehicle.
 - **Registers.** ORIAS in France, the FCA register in the United Kingdom, NIPR in the United States and the DGSFP register in Spain.
 
-## 16. Security and privacy
+## 15. Security and privacy
 
 - Values marked `distributor_page` never pass through the agent.
 - Data in a `Party` MUST be limited to what the product needs. Identity numbers MUST NOT be in a party.
@@ -164,13 +157,13 @@ Candidate modules for a later draft:
 
 Report a weakness that could harm a live implementation privately, as [SECURITY.md](https://github.com/OFA-Foundation/open-financial-agent-protocol/blob/main/SECURITY.md) describes.
 
-## 17. Checks
+## 16. Checks
 
 The repository builds a [worked pet insurance flow](/spec/0.1/example) and checks it against `schema.json` and against the rules that a JSON Schema cannot express:
 
 <!-- ofap:readme Rules the checks cover -->
 
-## 18. Open points
+## 17. Open points
 
 <!-- ofap:readme Open points -->
 

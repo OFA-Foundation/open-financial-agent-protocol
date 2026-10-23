@@ -28,7 +28,7 @@
   "complaints_url": "https://pets.example.com/complaints",
   "ofap": {
     "version": "0.1",
-    "conformance_level": 4,
+    "conformance_level": 3,
     "interfaces": [
       "tools"
     ],

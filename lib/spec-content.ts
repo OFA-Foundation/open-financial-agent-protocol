@@ -19,8 +19,6 @@ import { REFERENCE_HREF, repoFileUrl } from "./site";
 export const SESSION_LABELS: Record<SessionRequirement, string> = {
   none: "None",
   signed_out_or_none: "None, or signed out",
-  signed_in_read: "Signed in, read scope",
-  signed_in_write: "Signed in, write scope",
 };
 
 /** The anchor of a definition in the reference, for example `Operation<ApplicationTerms>` → `Operation-ApplicationTerms`. */
@@ -227,7 +225,7 @@ const STEPS: ExampleStep[] = [
     file: "insurance-01-get_distributor.result",
     title: "Find the distributor",
     tool: "get_distributor, result",
-    text: "The agent asks who sells and under which licence. Example Pets is a broker in the ORIAS register, and it declares level 4 for pet insurance in France.",
+    text: "The agent asks who sells and under which licence. Example Pets is a broker in the ORIAS register, and it declares level 3 for pet insurance in France.",
   },
   {
     file: "insurance-02-get_documents.result",
@@ -289,12 +287,6 @@ const STEPS: ExampleStep[] = [
     tool: "PAP operation, after confirmation",
     text: "Camille approves, and the agent confirms at the PAP operations endpoint. The operation succeeds and carries the evidence record, with the hash of the confirmed terms.",
   },
-  {
-    file: "insurance-12-amend_agreement.result.proposed",
-    title: "Add a dog",
-    tool: "amend_agreement, result",
-    text: "Later, Camille adds a dog. The premium changes and a subject is added, so Camille must approve this revision too.",
-  },
 ];
 
 export function exampleMarkdown(): string {
@@ -308,7 +300,7 @@ export function exampleMarkdown(): string {
   );
   return [
     "# Worked example: pet insurance",
-    `A broker, Example Pets, sells the pet insurance of an insurer, Example Mutual, in France. An agent quotes a cat called Miso for Camille Martin, applies, and later adds a dog to the policy. All companies, people and prices are fictional. The repository writes these files with [\`scripts/examples.ts\`](${repoFileUrl("scripts/examples.ts")}) and checks them against the [schema](${REFERENCE_HREF}) and the rules on every push.`,
+    `A broker, Example Pets, sells the pet insurance of an insurer, Example Mutual, in France. An agent quotes a cat called Miso for Camille Martin, and applies for the first offer. All companies, people and prices are fictional. The repository writes these files with [\`scripts/examples.ts\`](${repoFileUrl("scripts/examples.ts")}) and checks them against the [schema](${REFERENCE_HREF}) and the rules on every push.`,
     ...steps,
   ].join("\n\n");
 }

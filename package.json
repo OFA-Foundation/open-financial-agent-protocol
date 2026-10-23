@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "packageManager": "bun@1.2.16",
-  "description": "Open Financial Agent Protocol (OFAP), draft 0.1: how AI agents find, price, subscribe to and service regulated financial products. An extension on top of MCP and PAP.",
+  "description": "Open Financial Agent Protocol (OFAP), draft 0.1: how AI agents find, price and subscribe to regulated financial products. An extension on top of MCP and PAP.",
   "license": "Apache-2.0",
   "scripts": {
     "dev": "next dev",

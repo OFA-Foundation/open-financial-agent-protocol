@@ -4,347 +4,6 @@
   "title": "Open Financial Agent Protocol (OFAP), draft 0.1",
   "description": "Generated from schema.ts. Do not edit by hand.",
   "definitions": {
-    "Agreement": {
-      "type": "object",
-      "properties": {
-        "agreement_number": {
-          "type": "string"
-        },
-        "sector": {
-          "$ref": "#/definitions/Sector"
-        },
-        "status": {
-          "$ref": "#/definitions/AgreementStatus"
-        },
-        "product_id": {
-          "type": "string"
-        },
-        "line": {
-          "$ref": "#/definitions/ProductLine"
-        },
-        "provider": {
-          "$ref": "#/definitions/ProviderRef"
-        },
-        "parties": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Party"
-          }
-        },
-        "pricing": {
-          "$ref": "#/definitions/Pricing",
-          "description": "Price as agreed, in the form of the sector."
-        },
-        "options": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "start_date": {
-          "$ref": "#/definitions/DateString"
-        },
-        "renewal_date": {
-          "$ref": "#/definitions/DateString"
-        },
-        "end_date": {
-          "$ref": "#/definitions/DateString"
-        },
-        "subjects": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Subject"
-          },
-          "description": "What the agreement covers: a pet, a home, a vehicle, a property."
-        },
-        "documents": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FinancialDocument"
-          },
-          "description": "Includes the proof of insurance when the product has one."
-        }
-      },
-      "required": [
-        "agreement_number",
-        "sector",
-        "status",
-        "product_id",
-        "line",
-        "provider",
-        "parties",
-        "pricing",
-        "options",
-        "start_date",
-        "subjects",
-        "documents"
-      ],
-      "additionalProperties": false,
-      "description": "An agreement in force. In the insurance module, a policy."
-    },
-    "AgreementStatus": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "active",
-        "suspended",
-        "lapsed",
-        "cancelled",
-        "closed",
-        "expired"
-      ]
-    },
-    "AmendAgreementParams": {
-      "type": "object",
-      "properties": {
-        "agreement_number": {
-          "type": "string"
-        },
-        "changes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AmendmentChange"
-          }
-        },
-        "effective_date": {
-          "$ref": "#/definitions/DateString",
-          "description": "When the changes take effect. Default: the earliest date the provider accepts."
-        },
-        "declaration": {
-          "$ref": "#/definitions/Declaration",
-          "description": "Required when a change adds a party or a subject that the provider must price."
-        },
-        "needs_assessment": {
-          "$ref": "#/definitions/NeedsAssessment"
-        },
-        "documents_delivered": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeliveredDocument"
-          }
-        }
-      },
-      "required": [
-        "agreement_number",
-        "changes"
-      ],
-      "additionalProperties": false,
-      "description": "Requires a signed-in PAP session with write scope."
-    },
-    "AmendAgreementResult": {
-      "type": "object",
-      "properties": {
-        "operation": {
-          "$ref": "#/definitions/Operation%3CAmendmentTerms%3E"
-        }
-      },
-      "required": [
-        "operation"
-      ],
-      "additionalProperties": false,
-      "description": "Result of `amend_agreement`. The operation MUST have `user_approval_required: true` when `pricing_after` differs from `pricing_before`, when `amount_due_now` is set, or when a change adds or removes a party or a subject. A standing permission is not enough for these."
-    },
-    "AmendmentChange": {
-      "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "update_address"
-            },
-            "country": {
-              "$ref": "#/definitions/CountryCode"
-            },
-            "postal_code": {
-              "type": "string"
-            },
-            "city": {
-              "type": "string"
-            },
-            "street": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind",
-            "country",
-            "postal_code",
-            "city",
-            "street"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "add_party"
-            },
-            "party": {
-              "$ref": "#/definitions/Party"
-            }
-          },
-          "required": [
-            "kind",
-            "party"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "remove_party"
-            },
-            "party_ref": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind",
-            "party_ref"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "add_option"
-            },
-            "option": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind",
-            "option"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "remove_option"
-            },
-            "option": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind",
-            "option"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "change_excess"
-            },
-            "excess": {
-              "$ref": "#/definitions/Money"
-            }
-          },
-          "required": [
-            "kind",
-            "excess"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "add_subject"
-            },
-            "subject": {
-              "$ref": "#/definitions/Subject"
-            }
-          },
-          "required": [
-            "kind",
-            "subject"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "const": "remove_subject"
-            },
-            "subject_ref": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "kind",
-            "subject_ref"
-          ],
-          "additionalProperties": false
-        }
-      ],
-      "description": "One change to an agreement. A sector module adds the changes of its sector."
-    },
-    "AmendmentTerms": {
-      "type": "object",
-      "properties": {
-        "agreement_number": {
-          "type": "string"
-        },
-        "changes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AmendmentChange"
-          }
-        },
-        "effective_date": {
-          "$ref": "#/definitions/DateString"
-        },
-        "pricing_before": {
-          "$ref": "#/definitions/Pricing"
-        },
-        "pricing_after": {
-          "$ref": "#/definitions/Pricing"
-        },
-        "amount_due_now": {
-          "$ref": "#/definitions/Money",
-          "description": "Amount the customer pays at once, or gets back when negative, for example a premium adjustment."
-        },
-        "declaration": {
-          "$ref": "#/definitions/Declaration"
-        },
-        "needs_assessment": {
-          "$ref": "#/definitions/NeedsAssessment"
-        },
-        "documents_delivered": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DeliveredDocument"
-          }
-        }
-      },
-      "required": [
-        "agreement_number",
-        "changes",
-        "effective_date",
-        "pricing_before",
-        "pricing_after",
-        "documents_delivered"
-      ],
-      "additionalProperties": false
-    },
     "Answers": {
       "type": "object",
       "additionalProperties": {},
@@ -522,10 +181,9 @@
       "enum": [
         1,
         2,
-        3,
-        4
+        3
       ],
-      "description": "Conformance level that a distributor declares.\n\n- 1 Inform: `get_distributor`, `list_products`, `get_documents`\n- 2 Quote: level 1, plus `get_question_set` and `quote`\n- 3 Subscribe: level 2, plus `submit_application` or `conclude`\n- 4 Service: level 3, plus `get_agreement` and `amend_agreement`\n\nA server that declares a level MUST implement every tool of that level and of the levels below it, except that level 3 needs only one of `submit_application` and `conclude`."
+      "description": "Conformance level that a distributor declares.\n\n- 1 Inform: `get_distributor`, `list_products`, `get_documents`\n- 2 Quote: level 1, plus `get_question_set` and `quote`\n- 3 Subscribe: level 2, plus `submit_application` or `conclude`\n\nA server that declares a level MUST implement every tool of that level and of the levels below it, except that level 3 needs only one of `submit_application` and `conclude`."
     },
     "ContactConsent": {
       "type": "object",
@@ -602,7 +260,7 @@
           }
         },
         "operation": {
-          "$ref": "#/definitions/Operation%3C(ApplicationTerms%7CAmendmentTerms)%3E"
+          "$ref": "#/definitions/Operation%3CApplicationTerms%3E"
         }
       },
       "additionalProperties": false,
@@ -912,31 +570,6 @@
       ],
       "additionalProperties": false
     },
-    "GetAgreementParams": {
-      "type": "object",
-      "properties": {
-        "agreement_number": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "agreement_number"
-      ],
-      "additionalProperties": false,
-      "description": "Requires a signed-in PAP session with read scope."
-    },
-    "GetAgreementResult": {
-      "type": "object",
-      "properties": {
-        "agreement": {
-          "$ref": "#/definitions/Agreement"
-        }
-      },
-      "required": [
-        "agreement"
-      ],
-      "additionalProperties": false
-    },
     "GetDistributorParams": {
       "type": "object",
       "additionalProperties": false,
@@ -1027,24 +660,9 @@
             "offer_id"
           ],
           "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "agreement_number": {
-              "type": "string"
-            },
-            "language": {
-              "$ref": "#/definitions/LanguageTag"
-            }
-          },
-          "required": [
-            "agreement_number"
-          ],
-          "additionalProperties": false
         }
       ],
-      "description": "Params of `get_documents`. Give exactly one of the three references."
+      "description": "Params of `get_documents`. Give exactly one of the two references."
     },
     "GetDocumentsResult": {
       "type": "object",
@@ -1389,8 +1007,6 @@
         "documents_not_delivered",
         "accuracy_not_confirmed",
         "needs_assessment_invalid",
-        "agreement_not_found",
-        "amendment_not_allowed",
         "not_supported"
       ]
     },
@@ -1446,7 +1062,7 @@
           "items": {
             "$ref": "#/definitions/ProductLine"
           },
-          "description": "Product lines the server can quote or serve."
+          "description": "Product lines the server can quote."
         },
         "countries": {
           "type": "array",
@@ -1529,219 +1145,6 @@
       ],
       "additionalProperties": false,
       "description": "One priced offer. A distributor can return several offers: one per tier, per provider, or per duration."
-    },
-    "Operation<(ApplicationTerms|AmendmentTerms)>": {
-      "type": "object",
-      "properties": {
-        "operation_id": {
-          "type": "string"
-        },
-        "revision": {
-          "type": "number",
-          "description": "Starts at 1. Increases when the terms change. Only the latest revision can be confirmed."
-        },
-        "state": {
-          "$ref": "#/definitions/OperationState"
-        },
-        "summary": {
-          "type": "string",
-          "description": "Plain-language terms that the customer can decide from alone."
-        },
-        "terms": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/ApplicationTerms"
-            },
-            {
-              "$ref": "#/definitions/AmendmentTerms"
-            }
-          ]
-        },
-        "expires_at": {
-          "$ref": "#/definitions/DateTimeString",
-          "description": "Required while `proposed`."
-        },
-        "user_approval_required": {
-          "type": "boolean",
-          "description": "When true, a standing permission is not enough. The customer MUST approve this revision."
-        },
-        "url": {
-          "$ref": "#/definitions/Url"
-        },
-        "confirmation": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "revision": {
-                  "type": "number"
-                },
-                "approved_by": {
-                  "type": "string",
-                  "enum": [
-                    "user",
-                    "standing_permission"
-                  ]
-                },
-                "confirmed_at": {
-                  "$ref": "#/definitions/DateTimeString"
-                }
-              },
-              "required": [
-                "revision",
-                "approved_by",
-                "confirmed_at"
-              ],
-              "additionalProperties": false
-            }
-          ]
-        },
-        "result": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "summary": {
-                  "type": "string"
-                },
-                "data": {
-                  "type": "object",
-                  "additionalProperties": {}
-                }
-              },
-              "required": [
-                "summary"
-              ],
-              "additionalProperties": false
-            }
-          ]
-        },
-        "ofap_progress": {
-          "$ref": "#/definitions/OfapProgress",
-          "description": "OFAP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know OFAP ignore it."
-        }
-      },
-      "required": [
-        "operation_id",
-        "revision",
-        "state",
-        "summary",
-        "terms",
-        "user_approval_required",
-        "confirmation",
-        "result"
-      ],
-      "additionalProperties": false,
-      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `ofap_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an OFAP tool."
-    },
-    "Operation<AmendmentTerms>": {
-      "type": "object",
-      "properties": {
-        "operation_id": {
-          "type": "string"
-        },
-        "revision": {
-          "type": "number",
-          "description": "Starts at 1. Increases when the terms change. Only the latest revision can be confirmed."
-        },
-        "state": {
-          "$ref": "#/definitions/OperationState"
-        },
-        "summary": {
-          "type": "string",
-          "description": "Plain-language terms that the customer can decide from alone."
-        },
-        "terms": {
-          "$ref": "#/definitions/AmendmentTerms"
-        },
-        "expires_at": {
-          "$ref": "#/definitions/DateTimeString",
-          "description": "Required while `proposed`."
-        },
-        "user_approval_required": {
-          "type": "boolean",
-          "description": "When true, a standing permission is not enough. The customer MUST approve this revision."
-        },
-        "url": {
-          "$ref": "#/definitions/Url"
-        },
-        "confirmation": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "revision": {
-                  "type": "number"
-                },
-                "approved_by": {
-                  "type": "string",
-                  "enum": [
-                    "user",
-                    "standing_permission"
-                  ]
-                },
-                "confirmed_at": {
-                  "$ref": "#/definitions/DateTimeString"
-                }
-              },
-              "required": [
-                "revision",
-                "approved_by",
-                "confirmed_at"
-              ],
-              "additionalProperties": false
-            }
-          ]
-        },
-        "result": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "summary": {
-                  "type": "string"
-                },
-                "data": {
-                  "type": "object",
-                  "additionalProperties": {}
-                }
-              },
-              "required": [
-                "summary"
-              ],
-              "additionalProperties": false
-            }
-          ]
-        },
-        "ofap_progress": {
-          "$ref": "#/definitions/OfapProgress",
-          "description": "OFAP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know OFAP ignore it."
-        }
-      },
-      "required": [
-        "operation_id",
-        "revision",
-        "state",
-        "summary",
-        "terms",
-        "user_approval_required",
-        "confirmation",
-        "result"
-      ],
-      "additionalProperties": false,
-      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `ofap_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an OFAP tool."
     },
     "Operation<ApplicationTerms>": {
       "type": "object",
@@ -2266,15 +1669,13 @@
     "Sector": {
       "type": "string",
       "const": "insurance",
-      "description": "Sector modules of this draft. Draft 0.1 defines one module: insurance (section 9).\n\nThe core is the same for every sector. A sector module adds what the law of its sector asks for. A module MUST define:\n- its value in `Sector`, and its group of lines in `KnownProductLine`;\n- one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with   a `sector` field that holds the module's value;\n- its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`,   `DocumentType`, `PartyRole` and `AmendmentChange`, when the sector needs   them;\n- which of its documents are `required_before_commitment`;\n- its line profiles in `profiles.ts`, and checks for the rules of its sector   that a JSON Schema cannot express.\n\nA module MUST NOT change a core type or a core rule. The tools, the quote loop, the declaration, the PAP operations and the evidence record stay the same for every sector.\n\nA server declares the modules it implements in `OfapSettings.sectors`. An agent MUST NOT show a product, an offer or an agreement of a sector it does not implement as if it were of a known sector.\n\nCandidate modules for a later draft:\n- credit: SECCI and ESIS, creditworthiness (CCD Art. 18, MCD Art. 18), APR   and total cost of credit;\n- investment: KID (PRIIPs), suitability or appropriateness (MiFID II Art.   25), fees and risk indicator."
+      "description": "Sector modules of this draft. Draft 0.1 defines one module: insurance (section 9).\n\nThe core is the same for every sector. A sector module adds what the law of its sector asks for. A module MUST define:\n- its value in `Sector`, and its group of lines in `KnownProductLine`;\n- one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with   a `sector` field that holds the module's value;\n- its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`,   `DocumentType` and `PartyRole`, when the sector needs them;\n- which of its documents are `required_before_commitment`;\n- its line profiles in `profiles.ts`, and checks for the rules of its sector   that a JSON Schema cannot express.\n\nA module MUST NOT change a core type or a core rule. The tools, the quote loop, the declaration, the PAP operations and the evidence record stay the same for every sector.\n\nA server declares the modules it implements in `OfapSettings.sectors`. An agent MUST NOT show a product or an offer of a sector it does not implement as if it were of a known sector.\n\nCandidate modules for a later draft:\n- credit: SECCI and ESIS, creditworthiness (CCD Art. 18, MCD Art. 18), APR   and total cost of credit;\n- investment: KID (PRIIPs), suitability or appropriateness (MiFID II Art.   25), fees and risk indicator."
     },
     "SessionRequirement": {
       "type": "string",
       "enum": [
         "none",
-        "signed_out_or_none",
-        "signed_in_read",
-        "signed_in_write"
+        "signed_out_or_none"
       ],
       "description": "Session that a tool needs (PAP draft 0.2)."
     },
@@ -2282,42 +1683,6 @@
       "type": "string",
       "description": "Lower-case hex SHA-256 digest.",
       "pattern": "^[a-f0-9]{64}$"
-    },
-    "Subject": {
-      "type": "object",
-      "properties": {
-        "subject_ref": {
-          "type": "string"
-        },
-        "kind": {
-          "type": "string",
-          "enum": [
-            "pet",
-            "home",
-            "vehicle",
-            "property",
-            "valuable_item",
-            "business",
-            "person",
-            "other"
-          ]
-        },
-        "display_name": {
-          "type": "string"
-        },
-        "attributes": {
-          "type": "object",
-          "additionalProperties": {},
-          "description": "Attributes of the subject, following the line profile."
-        }
-      },
-      "required": [
-        "subject_ref",
-        "kind",
-        "display_name",
-        "attributes"
-      ],
-      "additionalProperties": false
     },
     "SubmitApplicationParams": {
       "type": "object",
@@ -2397,9 +1762,7 @@
         "get_question_set",
         "quote",
         "submit_application",
-        "conclude",
-        "get_agreement",
-        "amend_agreement"
+        "conclude"
       ]
     },
     "ToolSignatures": {
@@ -2516,38 +1879,6 @@
             "result"
           ],
           "additionalProperties": false
-        },
-        "get_agreement": {
-          "type": "object",
-          "properties": {
-            "params": {
-              "$ref": "#/definitions/GetAgreementParams"
-            },
-            "result": {
-              "$ref": "#/definitions/GetAgreementResult"
-            }
-          },
-          "required": [
-            "params",
-            "result"
-          ],
-          "additionalProperties": false
-        },
-        "amend_agreement": {
-          "type": "object",
-          "properties": {
-            "params": {
-              "$ref": "#/definitions/AmendAgreementParams"
-            },
-            "result": {
-              "$ref": "#/definitions/AmendAgreementResult"
-            }
-          },
-          "required": [
-            "params",
-            "result"
-          ],
-          "additionalProperties": false
         }
       },
       "required": [
@@ -2557,9 +1888,7 @@
         "get_question_set",
         "quote",
         "submit_application",
-        "conclude",
-        "get_agreement",
-        "amend_agreement"
+        "conclude"
       ],
       "additionalProperties": false,
       "description": "Params and result type of each tool."

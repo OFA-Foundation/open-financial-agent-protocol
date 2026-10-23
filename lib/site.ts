@@ -10,9 +10,10 @@ export const SPEC_HREF = `/spec/${VERSION}`;
 export const REFERENCE_HREF = `${SPEC_HREF}/reference`;
 export const EXAMPLE_HREF = `${SPEC_HREF}/example`;
 export const SCHEMA_HREF = `/schemas/${VERSION}/schema.json`;
+export const CONTEXT_HREF = "/context";
 
 export const DESCRIPTION =
-  "How an AI agent finds, prices, subscribes to and services a regulated financial product, and what evidence each step leaves. An extension on top of MCP and PAP. Draft 0.1 covers insurance.";
+  "How an AI agent finds, prices and subscribes to a regulated financial product, and what evidence each step leaves. An extension on top of MCP and PAP. Draft 0.1 covers insurance.";
 
 export function repoFileUrl(path: string): string {
   return `${REPO_URL}/blob/main/${path}`;
