@@ -2,6 +2,7 @@
 // List the products with their scope, quote a cat, quote an older dog that gets no
 // offer and a pet outside the scope, have the customer validate the answers, get
 // binding offers, then apply for the cat.
+// Then the registry calls: find the seller, check three sellers, load the rules of France.
 import type {
   AnswerSource,
   AnswerSources,
@@ -15,6 +16,7 @@ import type {
   DeliveredDocument,
   DateTimeString,
   EvidenceRecord,
+  GetDistributorResult,
   InsuranceDocument,
   NeedsAssessment,
   Offer,
@@ -29,6 +31,13 @@ import type {
   ValidationOutcome,
   ValidationTerms,
 } from "../schema";
+import type {
+  GetCountryRulesParams,
+  LicenceCheck,
+  ListedDistributor,
+  SearchDistributorsParams,
+  VerifyLicenceParams,
+} from "../registry";
 import { canonicalSha256, sha256 } from "./canonical";
 import { examplePath, type ExampleName, type Examples } from "./example-files";
 
@@ -71,7 +80,7 @@ const insurer: ProviderRef = {
   ],
 };
 
-await write("insurance-01-get_distributor.result", {
+const distributor: GetDistributorResult = {
   legal_name: "Example Pets SAS",
   trading_name: "Example Pets",
   domain: "pets.example.com",
@@ -98,7 +107,9 @@ await write("insurance-01-get_distributor.result", {
     countries: ["FR"],
     can_conclude: false,
   },
-});
+};
+
+await write("insurance-01-get_distributor.result", distributor);
 
 /* Products and their scope */
 
@@ -560,6 +571,199 @@ await write("insurance-19-operation.application.succeeded", {
     confirmation: { revision: 1, approved_by: "user", confirmed_at: evidence.confirmed_at },
     result: { summary: "Application received. Camille finishes on Example Pets' site.", data: outcome },
   },
+});
+
+/* Registry: find Example Pets, check it, check two sellers that fail, load the rules of France */
+
+const orias = distributor.licences[0];
+if (!orias) throw new Error("the worked example distributor has no licence");
+const checkedAt = "2026-10-20T09:58:00+02:00";
+const examplePetsListing: ListedDistributor = {
+  legal_name: distributor.legal_name,
+  ...(distributor.trading_name ? { trading_name: distributor.trading_name } : {}),
+  domain: distributor.domain,
+  mcp_url: `https://${distributor.domain}/mcp`,
+  poppy_url: `https://${distributor.domain}/.well-known/poppy.json`,
+  roles: distributor.roles,
+  conformance_level: distributor.aip.conformance_level,
+  lines: distributor.aip.lines,
+  countries: distributor.aip.countries,
+  insured_families: ["pet"],
+  licence_check: {
+    entries: [{ country: orias.country, identifier_type: orias.identifier_type, identifier: orias.identifier }],
+    checked_at: "2026-10-18T03:00:00+02:00",
+  },
+  listed_since: "2026-10-01",
+};
+
+const searchParams: SearchDistributorsParams = { country: "FR", line: "pet", min_conformance_level: 2 };
+await write("registry-01-search_distributors.params", searchParams);
+await write("registry-02-search_distributors.result", { distributors: [examplePetsListing] });
+
+const licensedParams: VerifyLicenceParams = { subject: { domain: distributor.domain }, country: "FR", line: "pet" };
+await write("registry-03-verify_licence.params.licensed", licensedParams);
+await write("registry-04-verify_licence.result.licensed", {
+  check_id: "chk-4d1e",
+  params: licensedParams,
+  subject: {
+    legal_name: distributor.legal_name,
+    domain: distributor.domain,
+    domain_link: "aip_server",
+    listed: true,
+    mcp_url: examplePetsListing.mcp_url,
+  },
+  licences: [
+    {
+      country: orias.country,
+      regulator: orias.regulator,
+      register: orias.register,
+      identifier_type: orias.identifier_type,
+      identifier: orias.identifier,
+      role: orias.role,
+      status: "active",
+      register_status: "Inscrit",
+      categories: orias.categories ?? [],
+      name_in_register: "EXAMPLE PETS SAS",
+      access: "web_page",
+      checked_at: checkedAt,
+      source_url: "https://www.orias.fr/",
+    },
+  ],
+  outcome: {
+    verdict: "licensed",
+    message: "Example Pets SAS is in the ORIAS register as an insurance broker (COA), and the entry is active.",
+  },
+  checked_at: "2026-10-20T09:58:01+02:00",
+});
+
+// A seller that the agent found on the web. Its legal notice gives an ORIAS number that does not exist.
+const noLicenceParams: VerifyLicenceParams = {
+  subject: {
+    domain: "petcover.example.com",
+    identifier: { country: "FR", identifier_type: "orias_number", identifier: "00000001" },
+    legal_name: "Pet Cover Online SARL",
+  },
+  country: "FR",
+  line: "pet",
+};
+await write("registry-05-verify_licence.params.no_licence", noLicenceParams);
+await write("registry-06-verify_licence.result.no_licence", {
+  check_id: "chk-4d2a",
+  params: noLicenceParams,
+  subject: { domain: "petcover.example.com", domain_link: "not_linked", listed: false },
+  licences: [
+    {
+      country: "FR",
+      regulator: "ACPR",
+      register: "ORIAS",
+      identifier_type: "orias_number",
+      identifier: "00000001",
+      status: "not_found",
+      access: "web_page",
+      checked_at: "2026-10-20T10:12:00+02:00",
+      source_url: "https://www.orias.fr/",
+    },
+  ],
+  outcome: {
+    verdict: "not_licensed",
+    reason: "no_entry",
+    message:
+      "ORIAS has no entry with the number 00000001, and no entry in the name of Pet Cover Online SARL. This seller is not registered to sell insurance in France.",
+  },
+  checked_at: "2026-10-20T10:12:01+02:00",
+});
+
+// A US agency with an AIP server. Its Texas licence lapsed, so the registry removed it from the listing.
+const lapsedParams: VerifyLicenceParams = {
+  subject: { domain: "agency.example.com" },
+  country: "US",
+  subdivision: "US-TX",
+  line: "pet",
+};
+const agencyLicence = {
+  country: "US",
+  register: "NIPR",
+  identifier_type: "npn",
+  identifier: "00000000",
+  role: "agent",
+  categories: ["Property", "Casualty"],
+  lines: ["home", "renters", "motor", "pet"],
+  name_in_register: "EXAMPLE PET AGENCY LLC",
+  access: "web_page",
+  checked_at: "2026-10-21T15:40:00-05:00",
+  source_url: "https://nipr.com/",
+} satisfies Partial<LicenceCheck>;
+await write("registry-07-verify_licence.params.lapsed", lapsedParams);
+await write("registry-08-verify_licence.result.lapsed", {
+  check_id: "chk-7b90",
+  params: lapsedParams,
+  subject: { legal_name: "Example Pet Agency LLC", domain: "agency.example.com", domain_link: "aip_server", listed: false },
+  licences: [
+    {
+      ...agencyLicence,
+      regulator: "Texas Department of Insurance",
+      subdivisions: ["US-TX"],
+      status: "lapsed",
+      register_status: "Inactive",
+      valid_until: "2026-08-31",
+    },
+    {
+      ...agencyLicence,
+      regulator: "Oklahoma Insurance Department",
+      subdivisions: ["US-OK"],
+      status: "active",
+      register_status: "Active",
+      valid_until: "2027-05-31",
+    },
+  ],
+  outcome: {
+    verdict: "not_licensed",
+    reason: "licence_not_active",
+    message:
+      "Example Pet Agency LLC holds no active licence in Texas. Its Texas licence ended on 31 August 2026. Its licence in Oklahoma is active, but it does not cover a customer in Texas.",
+  },
+  checked_at: "2026-10-21T15:40:01-05:00",
+});
+
+const rulesFrance = [
+  "---",
+  "country: FR",
+  "version: 0.1.0",
+  "owner: AIP maintainers",
+  "status: draft",
+  "sources:",
+  "  - title: Directive (EU) 2016/97 on insurance distribution",
+  "    url: https://eur-lex.europa.eu/eli/dir/2016/97/oj",
+  "  - title: ORIAS, register of insurance intermediaries",
+  "    url: https://www.orias.fr/",
+  "---",
+  "",
+  "# France",
+  "",
+  "Draft. No lawyer and no regulator has reviewed this file.",
+  "",
+  "## Who may sell",
+  "",
+  "1. Check the seller with `verify_licence`, with the country FR, before you send any answer of the customer.",
+  "2. Check the insurer behind each offer in the same way.",
+  "",
+].join("\n");
+const rulesParams: GetCountryRulesParams = { country: "FR", line: "pet" };
+await write("registry-09-get_country_rules.params", rulesParams);
+await write("registry-10-get_country_rules.result", {
+  files: [
+    {
+      country: "FR",
+      version: "0.1.0",
+      owner: "AIP maintainers",
+      status: "draft",
+      language: "en",
+      content: rulesFrance,
+      sha256: sha256(rulesFrance),
+      url: "https://registry.example.com/rules/fr/0.1.0.md",
+      skill_uri: "skill://buy-insurance/references/countries/fr.md",
+    },
+  ],
 });
 
 console.log("examples written");

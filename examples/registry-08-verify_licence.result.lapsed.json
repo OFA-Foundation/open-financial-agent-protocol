@@ -1,0 +1,81 @@
+{
+  "check_id": "chk-7b90",
+  "params": {
+    "subject": {
+      "domain": "agency.example.com"
+    },
+    "country": "US",
+    "subdivision": "US-TX",
+    "line": "pet"
+  },
+  "subject": {
+    "legal_name": "Example Pet Agency LLC",
+    "domain": "agency.example.com",
+    "domain_link": "aip_server",
+    "listed": false
+  },
+  "licences": [
+    {
+      "country": "US",
+      "register": "NIPR",
+      "identifier_type": "npn",
+      "identifier": "00000000",
+      "role": "agent",
+      "categories": [
+        "Property",
+        "Casualty"
+      ],
+      "lines": [
+        "home",
+        "renters",
+        "motor",
+        "pet"
+      ],
+      "name_in_register": "EXAMPLE PET AGENCY LLC",
+      "access": "web_page",
+      "checked_at": "2026-10-21T15:40:00-05:00",
+      "source_url": "https://nipr.com/",
+      "regulator": "Texas Department of Insurance",
+      "subdivisions": [
+        "US-TX"
+      ],
+      "status": "lapsed",
+      "register_status": "Inactive",
+      "valid_until": "2026-08-31"
+    },
+    {
+      "country": "US",
+      "register": "NIPR",
+      "identifier_type": "npn",
+      "identifier": "00000000",
+      "role": "agent",
+      "categories": [
+        "Property",
+        "Casualty"
+      ],
+      "lines": [
+        "home",
+        "renters",
+        "motor",
+        "pet"
+      ],
+      "name_in_register": "EXAMPLE PET AGENCY LLC",
+      "access": "web_page",
+      "checked_at": "2026-10-21T15:40:00-05:00",
+      "source_url": "https://nipr.com/",
+      "regulator": "Oklahoma Insurance Department",
+      "subdivisions": [
+        "US-OK"
+      ],
+      "status": "active",
+      "register_status": "Active",
+      "valid_until": "2027-05-31"
+    }
+  ],
+  "outcome": {
+    "verdict": "not_licensed",
+    "reason": "licence_not_active",
+    "message": "Example Pet Agency LLC holds no active licence in Texas. Its Texas licence ended on 31 August 2026. Its licence in Oklahoma is active, but it does not cover a customer in Texas."
+  },
+  "checked_at": "2026-10-21T15:40:01-05:00"
+}

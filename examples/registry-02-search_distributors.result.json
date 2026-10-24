@@ -1,0 +1,35 @@
+{
+  "distributors": [
+    {
+      "legal_name": "Example Pets SAS",
+      "trading_name": "Example Pets",
+      "domain": "pets.example.com",
+      "mcp_url": "https://pets.example.com/mcp",
+      "poppy_url": "https://pets.example.com/.well-known/poppy.json",
+      "roles": [
+        "broker"
+      ],
+      "conformance_level": 3,
+      "lines": [
+        "pet"
+      ],
+      "countries": [
+        "FR"
+      ],
+      "insured_families": [
+        "pet"
+      ],
+      "licence_check": {
+        "entries": [
+          {
+            "country": "FR",
+            "identifier_type": "orias_number",
+            "identifier": "00000000"
+          }
+        ],
+        "checked_at": "2026-10-18T03:00:00+02:00"
+      },
+      "listed_since": "2026-10-01"
+    }
+  ]
+}

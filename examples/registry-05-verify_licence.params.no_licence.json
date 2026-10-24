@@ -1,0 +1,13 @@
+{
+  "subject": {
+    "domain": "petcover.example.com",
+    "identifier": {
+      "country": "FR",
+      "identifier_type": "orias_number",
+      "identifier": "00000001"
+    },
+    "legal_name": "Pet Cover Online SARL"
+  },
+  "country": "FR",
+  "line": "pet"
+}

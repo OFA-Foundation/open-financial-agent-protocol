@@ -1,0 +1,15 @@
+{
+  "files": [
+    {
+      "country": "FR",
+      "version": "0.1.0",
+      "owner": "AIP maintainers",
+      "status": "draft",
+      "language": "en",
+      "content": "---\ncountry: FR\nversion: 0.1.0\nowner: AIP maintainers\nstatus: draft\nsources:\n  - title: Directive (EU) 2016/97 on insurance distribution\n    url: https://eur-lex.europa.eu/eli/dir/2016/97/oj\n  - title: ORIAS, register of insurance intermediaries\n    url: https://www.orias.fr/\n---\n\n# France\n\nDraft. No lawyer and no regulator has reviewed this file.\n\n## Who may sell\n\n1. Check the seller with `verify_licence`, with the country FR, before you send any answer of the customer.\n2. Check the insurer behind each offer in the same way.\n",
+      "sha256": "77d335989962efdb591010bd8ebd744d013aa9d70df071204374d47cffc4c663",
+      "url": "https://registry.example.com/rules/fr/0.1.0.md",
+      "skill_uri": "skill://buy-insurance/references/countries/fr.md"
+    }
+  ]
+}

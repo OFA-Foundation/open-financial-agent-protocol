@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openfinancialagent.org/schemas/0.1/schema.json",
   "title": "Agentic Insurance Protocol (AIP), draft 0.1",
-  "description": "Generated from schema.ts. Do not edit by hand.",
+  "description": "Generated from schema.ts and registry.ts. Do not edit by hand.",
   "definitions": {
     "AipError": {
       "type": "object",
@@ -344,6 +344,88 @@
       "additionalProperties": false,
       "description": "Terms of an application or a conclusion. Every field the law needs as evidence is here, so that a confirmed revision records exactly what the customer accepted."
     },
+    "CheckCapacity": {
+      "type": "string",
+      "enum": [
+        "distributor",
+        "provider"
+      ],
+      "description": "In which capacity the agent checks a party."
+    },
+    "CheckSubject": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "$ref": "#/definitions/DomainName",
+              "description": "Domain of the seller's website or MCP server."
+            },
+            "identifier": {
+              "$ref": "#/definitions/RegisterIdentifier"
+            },
+            "legal_name": {
+              "type": "string",
+              "description": "Legal name that the seller shows, for example in the legal notice of its website."
+            }
+          },
+          "required": [
+            "domain"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "$ref": "#/definitions/RegisterIdentifier"
+            },
+            "legal_name": {
+              "type": "string",
+              "description": "Legal name that the seller shows, for example in the legal notice of its website."
+            }
+          },
+          "required": [
+            "identifier"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "The party to check. Give a domain, a register entry, or both."
+    },
+    "CheckedSubject": {
+      "type": "object",
+      "properties": {
+        "legal_name": {
+          "type": "string",
+          "description": "Legal name, from the AIP server of the domain or from the register."
+        },
+        "lei": {
+          "$ref": "#/definitions/Lei",
+          "description": "Legal entity identifier, from the AIP server of the domain or from the register."
+        },
+        "domain": {
+          "$ref": "#/definitions/DomainName"
+        },
+        "domain_link": {
+          "$ref": "#/definitions/DomainLink",
+          "description": "How the registry tied the domain to the entries. Present when the params give a domain."
+        },
+        "listed": {
+          "type": "boolean",
+          "description": "True when the registry lists an AIP server on the domain."
+        },
+        "mcp_url": {
+          "$ref": "#/definitions/Url",
+          "description": "MCP endpoint of the listed server."
+        }
+      },
+      "required": [
+        "listed"
+      ],
+      "additionalProperties": false,
+      "description": "What the registry found about the party it checked."
+    },
     "CollectedBy": {
       "type": "string",
       "enum": [
@@ -667,6 +749,20 @@
       ],
       "description": "Kind of document."
     },
+    "DomainLink": {
+      "type": "string",
+      "enum": [
+        "aip_server",
+        "register",
+        "not_linked"
+      ],
+      "description": "How the registry tied a domain to register entries."
+    },
+    "DomainName": {
+      "type": "string",
+      "description": "Host name, lower case, with no scheme, port or path, for example \"pets.example.com\".",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+    },
     "EvidenceRecord": {
       "type": "object",
       "properties": {
@@ -791,6 +887,44 @@
       ],
       "additionalProperties": false,
       "description": "Where the insured person lives, or where the insured good is."
+    },
+    "GetCountryRulesParams": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Adds the file of this subdivision, when one exists."
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine",
+          "description": "Adds the file of this line in the country, when one exists."
+        }
+      },
+      "required": [
+        "country"
+      ],
+      "additionalProperties": false,
+      "description": "Params of `get_country_rules`."
+    },
+    "GetCountryRulesResult": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RulesFile"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "files"
+      ],
+      "additionalProperties": false,
+      "description": "Result of `get_country_rules`.\n\n- `files` MUST start with the file of the country. The file of the   subdivision and then the file of the line follow, when they exist.\n- Each file MUST be the same text as the file of the same version in the   skill, so that `sha256` is the same in both places.\n- An agent MUST follow every file of the result. When the registry does not   answer, the agent uses the copy in its installed skill, and SHOULD tell the   customer which version it used."
     },
     "GetDistributorParams": {
       "type": "object",
@@ -1117,6 +1251,183 @@
       "additionalProperties": false,
       "description": "One entry in a public register that gives the right to sell a product, or to carry its risk."
     },
+    "LicenceCheck": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        },
+        "regulator": {
+          "type": "string",
+          "description": "Supervising authority, for example \"ACPR\", \"FCA\", or a US state insurance department."
+        },
+        "register": {
+          "type": "string",
+          "description": "Name of the public register, for example \"ORIAS\", \"FCA Register\", \"NIPR\"."
+        },
+        "identifier_type": {
+          "$ref": "#/definitions/RegisterIdentifierType"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/DistributorRole",
+          "description": "Role that the entry gives. Omit when the status is \"not_found\"."
+        },
+        "status": {
+          "$ref": "#/definitions/LicenceStatus"
+        },
+        "register_status": {
+          "type": "string",
+          "description": "The status in the words of the register, for example \"Authorised\" or \"Inscrit\"."
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Register categories, for example ORIAS \"COA\" or US lines of authority."
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductLine"
+          },
+          "description": "Lines that the categories cover, mapped by the registry. Omit when the categories cover every line."
+        },
+        "subdivisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubdivisionCode"
+          },
+          "description": "Subdivisions where the entry applies. Omit when it covers the whole country."
+        },
+        "passports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Other countries where the entry may operate, under the freedom to provide services or the freedom of establishment (EU and EEA), as the register shows them."
+        },
+        "name_in_register": {
+          "type": "string",
+          "description": "Name of the holder in the register."
+        },
+        "valid_until": {
+          "$ref": "#/definitions/DateString",
+          "description": "Last day of the entry, when the register gives one."
+        },
+        "access": {
+          "$ref": "#/definitions/SourceAccess",
+          "description": "How the registry read the register."
+        },
+        "source_date": {
+          "$ref": "#/definitions/DateString",
+          "description": "Date of the data in the source, when it is older than the read, for example the date of a bulk file."
+        },
+        "checked_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "When the registry read this entry."
+        },
+        "source_url": {
+          "$ref": "#/definitions/Url",
+          "description": "Public page where anyone can check the entry, or the search page of the register."
+        }
+      },
+      "required": [
+        "country",
+        "regulator",
+        "register",
+        "identifier_type",
+        "identifier",
+        "status",
+        "access",
+        "checked_at",
+        "source_url"
+      ],
+      "additionalProperties": false,
+      "description": "The result of reading one entry in one public register."
+    },
+    "LicenceStatus": {
+      "type": "string",
+      "enum": [
+        "active",
+        "lapsed",
+        "suspended",
+        "revoked",
+        "not_found",
+        "name_mismatch"
+      ],
+      "description": "Status of one register entry, as the registry reads it."
+    },
+    "LicenceVerdict": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "const": "licensed"
+            },
+            "message": {
+              "type": "string",
+              "description": "Plain-language explanation that the agent can pass to the customer."
+            }
+          },
+          "required": [
+            "verdict",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "const": "not_licensed"
+            },
+            "reason": {
+              "$ref": "#/definitions/NotLicensedReason"
+            },
+            "message": {
+              "type": "string",
+              "description": "Plain-language explanation that the agent can pass to the customer."
+            }
+          },
+          "required": [
+            "verdict",
+            "reason",
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "const": "unknown"
+            },
+            "reason": {
+              "$ref": "#/definitions/UnknownReason"
+            },
+            "message": {
+              "type": "string",
+              "description": "Plain-language explanation that the agent can pass to the customer."
+            }
+          },
+          "required": [
+            "verdict",
+            "reason",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "The answer to the question of the agent."
+    },
     "ListProductsParams": {
       "type": "object",
       "properties": {
@@ -1158,6 +1469,112 @@
         "products"
       ],
       "additionalProperties": false
+    },
+    "ListedDistributor": {
+      "type": "object",
+      "properties": {
+        "legal_name": {
+          "type": "string"
+        },
+        "trading_name": {
+          "type": "string"
+        },
+        "lei": {
+          "$ref": "#/definitions/Lei"
+        },
+        "domain": {
+          "$ref": "#/definitions/DomainName"
+        },
+        "mcp_url": {
+          "$ref": "#/definitions/Url",
+          "description": "MCP endpoint of the server: the `url` of the `apis` entry of type \"mcp\" in `poppy.json`."
+        },
+        "poppy_url": {
+          "$ref": "#/definitions/Url",
+          "description": "URL of the PAP `poppy.json` of the domain."
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DistributorRole"
+          }
+        },
+        "conformance_level": {
+          "$ref": "#/definitions/ConformanceLevel"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductLine"
+          },
+          "description": "Lines the server can quote, as it declares them."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Countries where the server sells, as it declares them."
+        },
+        "subdivisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubdivisionCode"
+          },
+          "description": "Subdivisions of the country asked where the server holds a licence. Omit when its licence covers the whole country."
+        },
+        "insured_families": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InsuredFamily"
+          },
+          "description": "Families of the insured in the underwriting scopes of its products."
+        },
+        "licence_check": {
+          "$ref": "#/definitions/ListingCheck"
+        },
+        "listed_since": {
+          "$ref": "#/definitions/DateString",
+          "description": "Date when the registry first listed the server."
+        }
+      },
+      "required": [
+        "legal_name",
+        "domain",
+        "mcp_url",
+        "poppy_url",
+        "roles",
+        "conformance_level",
+        "lines",
+        "countries",
+        "licence_check",
+        "listed_since"
+      ],
+      "additionalProperties": false,
+      "description": "A server that the registry lists."
+    },
+    "ListingCheck": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RegisterIdentifier"
+          },
+          "description": "The register entries that make the server licensed in the country asked.",
+          "minItems": 1
+        },
+        "checked_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "When the registry last read these entries in their registers."
+        }
+      },
+      "required": [
+        "entries",
+        "checked_at"
+      ],
+      "additionalProperties": false,
+      "description": "The last licence check of a listed server, for the country asked."
     },
     "Money": {
       "type": "object",
@@ -1229,6 +1646,18 @@
       "type": "string",
       "description": "Stable reason why no offer is possible. Servers SHOULD use a value of `KnownNoOfferReason`. Other values MUST be lower case with underscores.",
       "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "NotLicensedReason": {
+      "type": "string",
+      "enum": [
+        "no_entry",
+        "licence_not_active",
+        "name_mismatch",
+        "role_not_covered",
+        "subdivision_not_covered",
+        "line_not_covered"
+      ],
+      "description": "Why a party holds no licence for what the agent asked."
     },
     "Offer": {
       "type": "object",
@@ -1968,6 +2397,40 @@
         }
       ]
     },
+    "RegisterCoverage": {
+      "type": "string",
+      "enum": [
+        "intermediaries",
+        "insurers"
+      ],
+      "description": "The kind of party that a register lists."
+    },
+    "RegisterIdentifier": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "Country of the register."
+        },
+        "identifier_type": {
+          "$ref": "#/definitions/RegisterIdentifierType"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "register": {
+          "type": "string",
+          "description": "Name of the register. Give it when `identifier_type` is \"other\"."
+        }
+      },
+      "required": [
+        "country",
+        "identifier_type",
+        "identifier"
+      ],
+      "additionalProperties": false,
+      "description": "An entry in a public register, as an agent or a listing gives it."
+    },
     "RegisterIdentifierType": {
       "type": "string",
       "enum": [
@@ -1982,6 +2445,316 @@
       ],
       "description": "Kind of public register identifier."
     },
+    "RegisterSource": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        },
+        "subdivisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubdivisionCode"
+          },
+          "description": "Subdivisions that this source covers, for example one US state. Omit when it covers the whole country."
+        },
+        "register": {
+          "type": "string",
+          "description": "Name of the register, for example \"ORIAS\" or \"FCA Register\"."
+        },
+        "regulator": {
+          "type": "string",
+          "description": "Authority that keeps the register, or that supervises its entries."
+        },
+        "covers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RegisterCoverage"
+          }
+        },
+        "identifier_type": {
+          "$ref": "#/definitions/RegisterIdentifierType"
+        },
+        "access": {
+          "$ref": "#/definitions/SourceAccess"
+        },
+        "url": {
+          "$ref": "#/definitions/Url",
+          "description": "Public home page of the register."
+        }
+      },
+      "required": [
+        "country",
+        "register",
+        "regulator",
+        "covers",
+        "identifier_type",
+        "access",
+        "url"
+      ],
+      "additionalProperties": false,
+      "description": "A public register that the registry reads."
+    },
+    "RegistryError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/RegistryErrorCode"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false,
+      "description": "Error returned in an MCP tool result with `isError: true`, in `structuredContent.error`.\n\nA registry tool MUST refuse a call with a param that this file does not define, and MUST NOT keep its value. That is how the registry stays free of customer data."
+    },
+    "RegistryErrorCode": {
+      "type": "string",
+      "enum": [
+        "country_not_covered",
+        "invalid_params"
+      ]
+    },
+    "RegistrySettings": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Protocol version the registry implements."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Countries where the registry checks licences and lists servers."
+        },
+        "rules_countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Countries that have a rules file in `get_country_rules`."
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RegisterSource"
+          },
+          "description": "Every public register the registry reads."
+        },
+        "policy_url": {
+          "$ref": "#/definitions/Url",
+          "description": "Page where the operator publishes how it lists servers, how it checks licences, how it maps register categories to lines, and how to reach it."
+        }
+      },
+      "required": [
+        "version",
+        "countries",
+        "rules_countries",
+        "sources",
+        "policy_url"
+      ],
+      "additionalProperties": false,
+      "description": "Settings object of the registry extension. The registry puts it under `capabilities.extensions[\"org.openfinancialagent/registry\"]` in its MCP `server/discover` response.\n\nThe registry SHOULD also serve the buyer skill through the MCP Skills extension (`io.modelcontextprotocol/skills`). An agent whose host loads skills over MCP then gets the whole skill from the registry, and `get_country_rules` serves the same country files to the other agents."
+    },
+    "RegistryToolName": {
+      "type": "string",
+      "enum": [
+        "search_distributors",
+        "verify_licence",
+        "get_country_rules"
+      ]
+    },
+    "RegistryToolSignatures": {
+      "type": "object",
+      "properties": {
+        "search_distributors": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/SearchDistributorsParams"
+            },
+            "result": {
+              "$ref": "#/definitions/SearchDistributorsResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "verify_licence": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/VerifyLicenceParams"
+            },
+            "result": {
+              "$ref": "#/definitions/VerifyLicenceResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        "get_country_rules": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/GetCountryRulesParams"
+            },
+            "result": {
+              "$ref": "#/definitions/GetCountryRulesResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "search_distributors",
+        "verify_licence",
+        "get_country_rules"
+      ],
+      "additionalProperties": false,
+      "description": "Params and result type of each registry tool."
+    },
+    "RulesFile": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode"
+        },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Present for the file of a subdivision."
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine",
+          "description": "Present for the file of a line."
+        },
+        "version": {
+          "type": "string",
+          "description": "Version of the file. A change in the text MUST change it."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Who maintains the file: the AIP maintainers, until a regulator takes it over."
+        },
+        "status": {
+          "$ref": "#/definitions/RulesStatus"
+        },
+        "endorsed_by": {
+          "type": "string",
+          "description": "Regulator that endorsed this version. REQUIRED when `status` is \"endorsed\"."
+        },
+        "reviewed_at": {
+          "$ref": "#/definitions/DateString",
+          "description": "Date of the last legal review. Omit when no review happened."
+        },
+        "language": {
+          "$ref": "#/definitions/LanguageTag"
+        },
+        "content": {
+          "type": "string",
+          "description": "The whole file, unchanged, front matter included."
+        },
+        "sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "SHA-256 of `content` as UTF-8 bytes."
+        },
+        "url": {
+          "$ref": "#/definitions/Url",
+          "description": "Public HTTPS address of the same file."
+        },
+        "skill_uri": {
+          "type": "string",
+          "description": "URI of the same file in the skill that the registry serves over MCP, when it does."
+        }
+      },
+      "required": [
+        "country",
+        "version",
+        "owner",
+        "status",
+        "language",
+        "content",
+        "sha256",
+        "url"
+      ],
+      "additionalProperties": false,
+      "description": "One rules file of the buyer skill. The file is Markdown with a YAML front matter. The front matter holds `country`, `version`, `owner`, `status`, and `endorsed_by` and `reviewed_at` when they apply, with the same values as the fields of this object. It also holds `subdivision` and `line` for a file of a subdivision or of a line."
+    },
+    "RulesStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "endorsed"
+      ],
+      "description": "Review state of a rules file."
+    },
+    "SearchDistributorsParams": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "Country where the customer buys."
+        },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Subdivision where the customer buys, for example a US state."
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        },
+        "insured_family": {
+          "$ref": "#/definitions/InsuredFamily",
+          "description": "Family of the insured, as in the underwriting scope of a product, for example \"pet\" or \"dwelling\"."
+        },
+        "min_conformance_level": {
+          "$ref": "#/definitions/ConformanceLevel",
+          "description": "Return only servers of this level or above."
+        },
+        "cursor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "country"
+      ],
+      "additionalProperties": false,
+      "description": "Params of `search_distributors`. The params describe a market, never a person."
+    },
+    "SearchDistributorsResult": {
+      "type": "object",
+      "properties": {
+        "distributors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ListedDistributor"
+          }
+        },
+        "next_cursor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "distributors"
+      ],
+      "additionalProperties": false,
+      "description": "Result of `search_distributors`.\n\n- Each server in `distributors` MUST match every param of the search: the   country is in its `countries`, the line is in its `lines`, the subdivision   is in its `subdivisions` when it has some, the insured family is in its   `insured_families`, and its level is not below `min_conformance_level`.\n- The registry MUST return every listed server that matches, across the   pages.\n- The order carries no meaning. The registry MUST NOT rank a server for a   payment or for any commercial link. It SHOULD shuffle the order for each   new search, and keep that order across the pages of the same search.\n- An agent MUST NOT show the order to the customer as a ranking.\n- A search result is not a licence check. An agent checks the seller with   `verify_licence` before it sends any of the customer's answers."
+    },
     "SessionRequirement": {
       "type": "string",
       "enum": [
@@ -1994,6 +2767,15 @@
       "type": "string",
       "description": "Lower-case hex SHA-256 digest.",
       "pattern": "^[a-f0-9]{64}$"
+    },
+    "SourceAccess": {
+      "type": "string",
+      "enum": [
+        "api",
+        "bulk_file",
+        "web_page"
+      ],
+      "description": "How the registry reads a public register."
     },
     "SubdivisionCode": {
       "type": "string",
@@ -2262,6 +3044,17 @@
       "additionalProperties": false,
       "description": "The risks a product can cover. `list_products` gives it with no customer data, so that an agent can drop a product that cannot cover the customer before it asks a question.\n\n`geography` and `insured` are the structured part, which a machine can check against the answers. A server MUST NOT return an offer for a risk outside the structured part. An agent MUST NOT send answers to `quote` for a product whose structured part excludes the customer. `conditions` holds the rest."
     },
+    "UnknownReason": {
+      "type": "string",
+      "enum": [
+        "country_not_covered",
+        "subdivision_required",
+        "register_unavailable",
+        "subject_not_identified",
+        "domain_not_linked"
+      ],
+      "description": "Why the registry cannot decide."
+    },
     "Url": {
       "type": "string",
       "format": "uri"
@@ -2355,6 +3148,75 @@
       ],
       "additionalProperties": false,
       "description": "Terms of a validation: the answers that the customer validates, and their sources. The `summary` of the operation MUST show each answer and its source in plain words, so that the customer can check each one."
+    },
+    "VerifyLicenceParams": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "$ref": "#/definitions/CheckSubject"
+        },
+        "country": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "Country where the customer buys."
+        },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Subdivision where the customer buys. REQUIRED for a country in `PER_SUBDIVISION_COUNTRIES`, such as the United States."
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        },
+        "capacity": {
+          "$ref": "#/definitions/CheckCapacity",
+          "description": "Default \"distributor\"."
+        }
+      },
+      "required": [
+        "subject",
+        "country"
+      ],
+      "additionalProperties": false,
+      "description": "Params of `verify_licence`. The params name a company and a market, never a person.\n\nThe check MUST work for a seller that the registry does not list. An agent can find a seller anywhere on the web, and the check matters most then."
+    },
+    "VerifyLicenceResult": {
+      "type": "object",
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "description": "Identifier of this check, set by the registry."
+        },
+        "params": {
+          "$ref": "#/definitions/VerifyLicenceParams",
+          "description": "The params of the call, so that the result is a complete record alone."
+        },
+        "subject": {
+          "$ref": "#/definitions/CheckedSubject"
+        },
+        "licences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LicenceCheck"
+          },
+          "description": "Every entry the registry read for the party."
+        },
+        "outcome": {
+          "$ref": "#/definitions/LicenceVerdict"
+        },
+        "checked_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "When the registry gave the verdict."
+        }
+      },
+      "required": [
+        "check_id",
+        "params",
+        "subject",
+        "licences",
+        "outcome",
+        "checked_at"
+      ],
+      "additionalProperties": false,
+      "description": "Result of `verify_licence`.\n\nThe registry tests each entry in this order. An entry covers the question when it passes all five tests: 1. Country: the entry exists, and its `country` is the country asked or its    `passports` include it. 2. Subdivision: it has no `subdivisions`, or they include the subdivision    asked. 3. Line: it has no `lines`, or no line is asked, or its `lines` include the    line. 4. Role: for the capacity \"provider\", its role is a provider role. 5. Status: its status is \"active\".\n\nThe verdict:\n- \"licensed\" when at least one entry covers the question and, if the params   give a domain, `domain_link` is not \"not_linked\".\n- \"unknown\" when no entry covers the question and the registry could not   read every register that applies, or could not identify the party. Also   when an entry covers the question but the domain is not linked to it.\n- \"not_licensed\" in every other case: the registry read every register that   applies, and no entry covers the question. The reason comes from the entry   that passed the most tests, and names the first test it failed: country   \"no_entry\", subdivision \"subdivision_not_covered\", line   \"line_not_covered\", role \"role_not_covered\", status \"name_mismatch\" or   \"licence_not_active\".\n\nRules for the registry:\n- `licences` MUST list every entry that the registry read for the party in   the registers that apply, including the entries that are not active.\n- A verdict MUST rest only on reads made at most `MAX_READ_AGE_DAYS` days   before `checked_at`. The registry SHOULD read the register again for each   call when the register has an API or a web page.\n- The registry SHOULD keep each result under its `check_id` for at least five   years, so that it can confirm later what it said.\n\nRules for the agent:\n- An agent MUST check the seller, in the capacity \"distributor\", with the   customer's country, before it sends any of the customer's answers to that   seller. It MUST give the subdivision where licences apply per subdivision,   and SHOULD give the line.\n- An agent MUST check the provider of an offer, in the capacity \"provider\",   before it applies or concludes, when the provider is not the seller.\n- On \"not_licensed\", the agent MUST NOT send the customer's answers to that   party, and MUST NOT apply or conclude through it. It MUST tell the customer   why.\n- On \"unknown\", the agent MUST tell the customer that the licence could not be   checked, and why. It MUST NOT apply or conclude, and SHOULD NOT send the   customer's answers. It MAY ask the seller for its register identifier and   check again.\n- An agent MUST keep each result that it relies on with the record of the   sale, and SHOULD give the customer a copy."
     }
   }
 }

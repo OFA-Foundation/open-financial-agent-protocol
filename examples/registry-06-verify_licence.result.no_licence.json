@@ -1,0 +1,40 @@
+{
+  "check_id": "chk-4d2a",
+  "params": {
+    "subject": {
+      "domain": "petcover.example.com",
+      "identifier": {
+        "country": "FR",
+        "identifier_type": "orias_number",
+        "identifier": "00000001"
+      },
+      "legal_name": "Pet Cover Online SARL"
+    },
+    "country": "FR",
+    "line": "pet"
+  },
+  "subject": {
+    "domain": "petcover.example.com",
+    "domain_link": "not_linked",
+    "listed": false
+  },
+  "licences": [
+    {
+      "country": "FR",
+      "regulator": "ACPR",
+      "register": "ORIAS",
+      "identifier_type": "orias_number",
+      "identifier": "00000001",
+      "status": "not_found",
+      "access": "web_page",
+      "checked_at": "2026-10-20T10:12:00+02:00",
+      "source_url": "https://www.orias.fr/"
+    }
+  ],
+  "outcome": {
+    "verdict": "not_licensed",
+    "reason": "no_entry",
+    "message": "ORIAS has no entry with the number 00000001, and no entry in the name of Pet Cover Online SARL. This seller is not registered to sell insurance in France."
+  },
+  "checked_at": "2026-10-20T10:12:01+02:00"
+}

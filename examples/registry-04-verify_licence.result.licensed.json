@@ -1,0 +1,41 @@
+{
+  "check_id": "chk-4d1e",
+  "params": {
+    "subject": {
+      "domain": "pets.example.com"
+    },
+    "country": "FR",
+    "line": "pet"
+  },
+  "subject": {
+    "legal_name": "Example Pets SAS",
+    "domain": "pets.example.com",
+    "domain_link": "aip_server",
+    "listed": true,
+    "mcp_url": "https://pets.example.com/mcp"
+  },
+  "licences": [
+    {
+      "country": "FR",
+      "regulator": "ACPR",
+      "register": "ORIAS",
+      "identifier_type": "orias_number",
+      "identifier": "00000000",
+      "role": "broker",
+      "status": "active",
+      "register_status": "Inscrit",
+      "categories": [
+        "COA"
+      ],
+      "name_in_register": "EXAMPLE PETS SAS",
+      "access": "web_page",
+      "checked_at": "2026-10-20T09:58:00+02:00",
+      "source_url": "https://www.orias.fr/"
+    }
+  ],
+  "outcome": {
+    "verdict": "licensed",
+    "message": "Example Pets SAS is in the ORIAS register as an insurance broker (COA), and the entry is active."
+  },
+  "checked_at": "2026-10-20T09:58:01+02:00"
+}
