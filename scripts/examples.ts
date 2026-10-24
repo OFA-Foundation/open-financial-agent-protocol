@@ -62,10 +62,11 @@ const insurer: ProviderRef = {
     {
       country: "FR",
       regulator: "ACPR",
-      register: "EIOPA register of insurance undertakings",
+      register: "REGAFI",
       identifier_type: "lei",
       identifier: "EXAMPLEMUTUAL0000042",
       role: "insurer",
+      verification_url: "https://www.regafi.fr/",
     },
   ],
 };

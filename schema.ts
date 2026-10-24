@@ -227,6 +227,8 @@ export type DistributorRole =
 export type RegisterIdentifierType =
   /** France, ORIAS (insurance intermediaries). */
   | "orias_number"
+  /** France, SIREN company number (9 digits), for example in REGAFI (insurers). */
+  | "siren"
   /** United Kingdom, FCA Firm Reference Number. */
   | "fca_frn"
   /** United States, National Producer Number (NIPR, insurance). */
@@ -245,7 +247,7 @@ export interface Licence {
   country: CountryCode;
   /** Supervising authority, for example "ACPR", "FCA", "DGSFP". */
   regulator: string;
-  /** Name of the public register, for example "ORIAS", "FCA Register", "NIPR". */
+  /** Name of the public register, for example "ORIAS", "REGAFI", "FCA Register", "NIPR". */
   register: string;
   identifier_type: RegisterIdentifierType;
   identifier: string;

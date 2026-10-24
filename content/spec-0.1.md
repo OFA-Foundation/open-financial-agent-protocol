@@ -48,7 +48,7 @@ The session column follows PAP draft 0.2. A read-only tool sets the MCP `readOnl
 
 `get_distributor` returns who sells, and under which licences. Its `domain` MUST match the server's own domain. Each `Licence` names the country, the regulator, the public register and the identifier, and the role. The registers of draft 0.1 are ORIAS in France, the FCA register in the United Kingdom, NIPR in the United States and the DGSFP register in Spain. A licence can apply to subdivisions only, for example some US states. `verification_url` is the public page where anyone can check the entry, and `complaints_url` is where a customer can complain.
 
-The provider of a product or an offer is a `ProviderRef`. It lists its own licences, at least one, so that an agent can check the insurer that carries the risk as well as the distributor. For insurers, the register identifier can be the NAIC company code in the United States, or the LEI in any country.
+The provider of a product or an offer is a `ProviderRef`. It lists its own licences, at least one, so that an agent can check the insurer that carries the risk as well as the distributor. Insurers are in REGAFI in France, where the identifier can be the SIREN or the LEI. In the United Kingdom they are in the FCA register with an FRN, and in the United States the identifier is the NAIC company code. The LEI works in any country.
 
 ## 7. Products and documents
 

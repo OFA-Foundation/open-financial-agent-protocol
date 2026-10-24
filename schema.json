@@ -1076,7 +1076,7 @@
         },
         "register": {
           "type": "string",
-          "description": "Name of the public register, for example \"ORIAS\", \"FCA Register\", \"NIPR\"."
+          "description": "Name of the public register, for example \"ORIAS\", \"REGAFI\", \"FCA Register\", \"NIPR\"."
         },
         "identifier_type": {
           "$ref": "#/definitions/RegisterIdentifierType"
@@ -1972,6 +1972,7 @@
       "type": "string",
       "enum": [
         "orias_number",
+        "siren",
         "fca_frn",
         "npn",
         "dgsfp_key",

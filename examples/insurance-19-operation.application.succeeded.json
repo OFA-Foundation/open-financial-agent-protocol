@@ -17,10 +17,11 @@
           {
             "country": "FR",
             "regulator": "ACPR",
-            "register": "EIOPA register of insurance undertakings",
+            "register": "REGAFI",
             "identifier_type": "lei",
             "identifier": "EXAMPLEMUTUAL0000042",
-            "role": "insurer"
+            "role": "insurer",
+            "verification_url": "https://www.regafi.fr/"
           }
         ]
       },
@@ -264,7 +265,7 @@
               "this_application"
             ]
           },
-          "terms_sha256": "b4ac8a5bb927cf3f51d341b537db3e756ef8dba9f16fb9b216486ae31dd8098d"
+          "terms_sha256": "ede419408847a2ab5875b2c291b33ed749fb9a8ebe9c6999368ab15b0259b242"
         },
         "handoff_url": "https://pets.example.com/a/app-3310"
       }
