@@ -12,7 +12,7 @@ import { EXAMPLE_DEFINITIONS, readExample, type ExampleName } from "./example-fi
 const schema = await Bun.file(join(import.meta.dir, "..", "schema.json")).json();
 const draft07 = new Ajv({ allErrors: true, strict: false });
 addFormats(draft07);
-draft07.addSchema(schema, "ofap");
+draft07.addSchema(schema, "aip");
 const draft2020 = new Ajv2020({ allErrors: true, strict: false });
 addFormats(draft2020);
 
@@ -25,7 +25,7 @@ function check(passed: boolean, message: string): void {
 
 /** Validates data against one definition of schema.json. */
 function matchesDefinition(definition: string, data: unknown): { valid: boolean; errors: string } {
-  const validator = draft07.getSchema(`ofap#/definitions/${definition}`);
+  const validator = draft07.getSchema(`aip#/definitions/${definition}`);
   if (!validator) throw new Error(`schema.json has no definition ${definition}`);
   const valid = validator(data) === true;
   return { valid, errors: valid ? "" : ` ${JSON.stringify(validator.errors?.slice(0, 3))}` };
@@ -63,7 +63,7 @@ const outcomeCheck = matchesDefinition("ApplicationOutcome", outcomeData);
 check(outcomeCheck.valid, `insurance-11 result.data is a valid ApplicationOutcome${outcomeCheck.errors}`);
 const outcome = outcomeData as ApplicationOutcome;
 
-/* Rules R1 to R13 */
+/* Rules R1 to R12 */
 
 const brokenProfiles = PROFILES.filter((profile) => {
   try {
@@ -108,24 +108,20 @@ check(
   "R6 every required document was delivered, same version and digest",
 );
 check(terms.declaration.accuracy_confirmed, "R7 accuracy confirmed before the proposal");
-check(
-  terms.needs_assessment.sector === terms.sector && terms.pricing.sector === terms.sector,
-  "R8 needs assessment and pricing are of the offer's sector",
-);
-check(application.user_approval_required, "R9 the application needs the customer's own approval");
+check(application.user_approval_required, "R8 the application needs the customer's own approval");
 check(
   documents.some((document) => document.type === "ipid" && document.required_before_commitment),
-  "R10 a non-life insurance product has an IPID required before commitment",
+  "R9 a non-life insurance product has an IPID required before commitment",
 );
-check(outcome.evidence.terms_sha256 === canonicalSha256(terms), "R11 evidence terms_sha256 matches the confirmed terms");
+check(outcome.evidence.terms_sha256 === canonicalSha256(terms), "R10 evidence terms_sha256 matches the confirmed terms");
 
 check(
   quote.offers.every((offer) => !offer.subscription_paths.includes("handoff") || offer.handoff_url !== undefined),
-  "R12 handoff offers carry a handoff_url",
+  "R11 handoff offers carry a handoff_url",
 );
 check(
   emptyQuote.offers.length > 0 || (emptyQuote.no_offer?.reason_code ?? "") !== "",
-  "R13 an empty quote gives a no_offer reason",
+  "R12 an empty quote gives a no_offer reason",
 );
 
 console.log(failures ? `\n${failures} check(s) failed` : "\nAll checks passed");

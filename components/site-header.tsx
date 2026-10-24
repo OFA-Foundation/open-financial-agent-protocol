@@ -6,10 +6,10 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <Link href="/" className="brand" aria-label="OFAP home">
+        <Link href="/" className="brand" aria-label="AIP home">
           <BrandMark />
-          <span className="brand-name">OFAP</span>
-          <span className="brand-full">Open Financial Agent Protocol</span>
+          <span className="brand-name">AIP</span>
+          <span className="brand-full">Agentic Insurance Protocol</span>
         </Link>
         <nav className="site-nav" aria-label="Site">
           <Link href={SPEC_HREF}>Spec</Link>

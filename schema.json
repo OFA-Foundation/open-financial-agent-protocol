@@ -1,9 +1,118 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://openfinancialagent.org/schemas/0.1/schema.json",
-  "title": "Open Financial Agent Protocol (OFAP), draft 0.1",
+  "title": "Agentic Insurance Protocol (AIP), draft 0.1",
   "description": "Generated from schema.ts. Do not edit by hand.",
   "definitions": {
+    "AipError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/AipErrorCode"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FieldIssue"
+          }
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false,
+      "description": "Error returned in an MCP tool result with `isError: true`, in `structuredContent.error`. PAP errors (`insufficient_scope`, `sign_in_required`, `terms_changed`) keep their PAP form."
+    },
+    "AipErrorCode": {
+      "type": "string",
+      "enum": [
+        "not_licensed",
+        "not_available_in_region",
+        "product_not_found",
+        "offer_not_found",
+        "offer_expired",
+        "question_set_outdated",
+        "sensitive_field_received",
+        "documents_not_delivered",
+        "accuracy_not_confirmed",
+        "needs_assessment_invalid",
+        "not_supported"
+      ]
+    },
+    "AipProgress": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "licensed_review",
+            "provider_decision",
+            "customer_action_on_distributor_page",
+            "payment_pending"
+          ]
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "expected_by": {
+          "$ref": "#/definitions/DateTimeString"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "AipSettings": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Protocol version the server implements."
+        },
+        "conformance_level": {
+          "$ref": "#/definitions/ConformanceLevel"
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InterfaceKind"
+          }
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductLine"
+          },
+          "description": "Product lines the server can quote."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Countries where the server's products are sold."
+        },
+        "can_conclude": {
+          "type": "boolean",
+          "description": "True when the server can conclude an agreement inside the agent (`conclude`). False when the customer always finishes on the distributor's own page."
+        }
+      },
+      "required": [
+        "version",
+        "conformance_level",
+        "interfaces",
+        "lines",
+        "countries",
+        "can_conclude"
+      ],
+      "additionalProperties": false,
+      "description": "Settings object of the extension. A server puts it under `capabilities.extensions[\"org.openfinancialagent/ofap\"]` in its MCP `server/discover` response, and under the same key in the `extensions` field of its PAP `poppy.json`."
+    },
     "Answers": {
       "type": "object",
       "additionalProperties": {},
@@ -35,7 +144,7 @@
         "properties"
       ],
       "additionalProperties": {},
-      "description": "A JSON Schema (2020-12) object that describes the answers. Each property is one question. OFAP adds these keywords to each property:\n\n- `x-collected-by`: a `CollectedBy` value. Default `agent`.\n- `x-profile-key`: the key of the matching question in the line profile,   when the question is part of the common core.\n- `x-ask`: a short question the agent can ask the customer, in plain words."
+      "description": "A JSON Schema (2020-12) object that describes the answers. Each property is one question. AIP adds these keywords to each property:\n\n- `x-collected-by`: a `CollectedBy` value. Default `agent`.\n- `x-profile-key`: the key of the matching question in the line profile,   when the question is part of the common core.\n- `x-ask`: a short question the agent can ask the customer, in plain words."
     },
     "ApplicationOutcome": {
       "type": "object",
@@ -67,9 +176,6 @@
         "product_id": {
           "type": "string"
         },
-        "sector": {
-          "$ref": "#/definitions/Sector"
-        },
         "provider": {
           "$ref": "#/definitions/ProviderRef"
         },
@@ -95,8 +201,7 @@
           "$ref": "#/definitions/Declaration"
         },
         "needs_assessment": {
-          "$ref": "#/definitions/NeedsAssessment",
-          "description": "It MUST be of the same sector as the offer."
+          "$ref": "#/definitions/NeedsAssessment"
         },
         "documents_delivered": {
           "type": "array",
@@ -116,7 +221,6 @@
       "required": [
         "offer_id",
         "product_id",
-        "sector",
         "provider",
         "pricing",
         "options",
@@ -149,7 +253,7 @@
         "documents": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FinancialDocument"
+            "$ref": "#/definitions/InsuranceDocument"
           }
         }
       },
@@ -256,7 +360,7 @@
         "documents": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FinancialDocument"
+            "$ref": "#/definitions/InsuranceDocument"
           }
         },
         "operation": {
@@ -264,7 +368,7 @@
         }
       },
       "additionalProperties": false,
-      "description": "PROPOSED. Some distributors expose only a company agent. If OFAP accepts them at level 2, each message that carries an OFAP object puts it here, in the message's structured data (`data` in a PAP conversation, `structuredContent` in a chat tool)."
+      "description": "PROPOSED. Some distributors expose only a company agent. If AIP accepts them at level 2, each message that carries an AIP object puts it here, in the message's structured data (`data` in a PAP conversation, `structuredContent` in a chat tool)."
     },
     "CountryCode": {
       "type": "string",
@@ -422,7 +526,7 @@
           "const": "comparator"
         }
       ],
-      "description": "Role of a party in the distribution chain. The provider roles are in `ProviderRole`. A sector module adds its intermediary roles here."
+      "description": "Role of a party in the distribution chain. The provider roles are in `ProviderRole`."
     },
     "DocumentType": {
       "type": "string",
@@ -436,7 +540,7 @@
         "demands_and_needs",
         "proof_of_insurance"
       ],
-      "description": "Kind of document. A sector module adds the documents that the law of its sector asks for."
+      "description": "Kind of document."
     },
     "EvidenceRecord": {
       "type": "object",
@@ -523,53 +627,6 @@
       ],
       "additionalProperties": false
     },
-    "FinancialDocument": {
-      "type": "object",
-      "properties": {
-        "document_id": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/DocumentType"
-        },
-        "title": {
-          "type": "string"
-        },
-        "language": {
-          "$ref": "#/definitions/LanguageTag"
-        },
-        "version": {
-          "type": "string",
-          "description": "Version label set by the distributor. A new text MUST get a new version."
-        },
-        "url": {
-          "$ref": "#/definitions/Url"
-        },
-        "media_type": {
-          "type": "string"
-        },
-        "sha256": {
-          "$ref": "#/definitions/Sha256",
-          "description": "Digest of the exact file at `url`. Used as evidence of what was delivered."
-        },
-        "required_before_commitment": {
-          "type": "boolean",
-          "description": "True when the law requires that the customer receives this document before they commit, for example the IPID."
-        }
-      },
-      "required": [
-        "document_id",
-        "type",
-        "title",
-        "language",
-        "version",
-        "url",
-        "media_type",
-        "sha256",
-        "required_before_commitment"
-      ],
-      "additionalProperties": false
-    },
     "GetDistributorParams": {
       "type": "object",
       "additionalProperties": false,
@@ -611,9 +668,9 @@
           "$ref": "#/definitions/Url",
           "description": "Where a customer can complain. Required by most regulators."
         },
-        "ofap": {
-          "$ref": "#/definitions/OfapSettings",
-          "description": "Settings the server declares for OFAP."
+        "aip": {
+          "$ref": "#/definitions/AipSettings",
+          "description": "Settings the server declares for AIP."
         }
       },
       "required": [
@@ -622,7 +679,7 @@
         "roles",
         "licences",
         "countries",
-        "ofap"
+        "aip"
       ],
       "additionalProperties": false
     },
@@ -670,7 +727,7 @@
         "documents": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FinancialDocument"
+            "$ref": "#/definitions/InsuranceDocument"
           }
         }
       },
@@ -706,100 +763,50 @@
       ],
       "additionalProperties": false
     },
-    "InsuranceNeedsAssessment": {
+    "InsuranceDocument": {
       "type": "object",
       "properties": {
-        "sector": {
-          "type": "string",
-          "const": "insurance"
+        "document_id": {
+          "type": "string"
         },
-        "kind": {
-          "type": "string",
-          "const": "demands_and_needs"
+        "type": {
+          "$ref": "#/definitions/DocumentType"
         },
-        "statement": {
-          "type": "string",
-          "description": "The need in the customer's words or a faithful summary."
+        "title": {
+          "type": "string"
         },
-        "advice_given": {
+        "language": {
+          "$ref": "#/definitions/LanguageTag"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version label set by the distributor. A new text MUST get a new version."
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "Digest of the exact file at `url`. Used as evidence of what was delivered."
+        },
+        "required_before_commitment": {
           "type": "boolean",
-          "description": "True when the distributor gave a personal recommendation (advice)."
-        },
-        "advice_rationale": {
-          "type": "string",
-          "description": "Why the recommended offer meets the need. Required when `advice_given` is true."
-        },
-        "recorded_at": {
-          "$ref": "#/definitions/DateTimeString"
+          "description": "True when the law requires that the customer receives this document before they commit, for example the IPID."
         }
       },
       "required": [
-        "sector",
-        "kind",
-        "statement",
-        "advice_given",
-        "recorded_at"
-      ],
-      "additionalProperties": false,
-      "description": "Demands and needs, recorded before the contract is concluded (IDD Art. 20(1))."
-    },
-    "InsurancePricing": {
-      "type": "object",
-      "properties": {
-        "sector": {
-          "type": "string",
-          "const": "insurance"
-        },
-        "premium": {
-          "$ref": "#/definitions/Premium"
-        },
-        "alternative_premiums": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Premium"
-          },
-          "description": "The same price for another period, when the server can give it."
-        },
-        "cover": {
-          "$ref": "#/definitions/CoverSummary"
-        },
-        "options": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ProductOption"
-          }
-        },
-        "start_date": {
-          "$ref": "#/definitions/DateString"
-        }
-      },
-      "required": [
-        "sector",
-        "premium",
-        "cover"
-      ],
-      "additionalProperties": false
-    },
-    "InsuranceProductDetails": {
-      "type": "object",
-      "properties": {
-        "sector": {
-          "type": "string",
-          "const": "insurance"
-        },
-        "cover": {
-          "$ref": "#/definitions/CoverSummary"
-        },
-        "options": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ProductOption"
-          }
-        }
-      },
-      "required": [
-        "sector",
-        "cover"
+        "document_id",
+        "type",
+        "title",
+        "language",
+        "version",
+        "url",
+        "media_type",
+        "sha256",
+        "required_before_commitment"
       ],
       "additionalProperties": false
     },
@@ -828,7 +835,7 @@
         "business_owners_policy",
         "workers_compensation"
       ],
-      "description": "Lines that have, or will have, a profile in OFAP. A sector module adds its own group."
+      "description": "Lines that have, or will have, a profile in AIP."
     },
     "LanguageTag": {
       "type": "string",
@@ -858,13 +865,6 @@
         "role": {
           "$ref": "#/definitions/DistributorRole"
         },
-        "sectors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Sector"
-          },
-          "description": "Sectors this entry covers."
-        },
         "categories": {
           "type": "array",
           "items": {
@@ -890,8 +890,7 @@
         "register",
         "identifier_type",
         "identifier",
-        "role",
-        "sectors"
+        "role"
       ],
       "additionalProperties": false,
       "description": "One entry in a public register that gives the right to distribute a product."
@@ -901,9 +900,6 @@
       "properties": {
         "country": {
           "$ref": "#/definitions/CountryCode"
-        },
-        "sector": {
-          "$ref": "#/definitions/Sector"
         },
         "line": {
           "$ref": "#/definitions/ProductLine"
@@ -949,8 +945,36 @@
       "additionalProperties": false
     },
     "NeedsAssessment": {
-      "$ref": "#/definitions/InsuranceNeedsAssessment",
-      "description": "Needs assessment that the law of the sector asks for. One member per sector module."
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "demands_and_needs"
+        },
+        "statement": {
+          "type": "string",
+          "description": "The need in the customer's words or a faithful summary."
+        },
+        "advice_given": {
+          "type": "boolean",
+          "description": "True when the distributor gave a personal recommendation (advice)."
+        },
+        "advice_rationale": {
+          "type": "string",
+          "description": "Why the recommended offer meets the need. Required when `advice_given` is true."
+        },
+        "recorded_at": {
+          "$ref": "#/definitions/DateTimeString"
+        }
+      },
+      "required": [
+        "kind",
+        "statement",
+        "advice_given",
+        "recorded_at"
+      ],
+      "additionalProperties": false,
+      "description": "Demands and needs, recorded before the contract is concluded (IDD Art. 20(1))."
     },
     "NoOffer": {
       "type": "object",
@@ -971,123 +995,6 @@
       "additionalProperties": false,
       "description": "Why no offer is possible."
     },
-    "OfapError": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "$ref": "#/definitions/OfapErrorCode"
-        },
-        "message": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FieldIssue"
-          }
-        }
-      },
-      "required": [
-        "code",
-        "message"
-      ],
-      "additionalProperties": false,
-      "description": "Error returned in an MCP tool result with `isError: true`, in `structuredContent.error`. PAP errors (`insufficient_scope`, `sign_in_required`, `terms_changed`) keep their PAP form."
-    },
-    "OfapErrorCode": {
-      "type": "string",
-      "enum": [
-        "not_licensed",
-        "not_available_in_region",
-        "product_not_found",
-        "offer_not_found",
-        "offer_expired",
-        "question_set_outdated",
-        "sensitive_field_received",
-        "documents_not_delivered",
-        "accuracy_not_confirmed",
-        "needs_assessment_invalid",
-        "not_supported"
-      ]
-    },
-    "OfapProgress": {
-      "type": "object",
-      "properties": {
-        "reason": {
-          "type": "string",
-          "enum": [
-            "licensed_review",
-            "provider_decision",
-            "customer_action_on_distributor_page",
-            "payment_pending"
-          ]
-        },
-        "url": {
-          "$ref": "#/definitions/Url"
-        },
-        "expected_by": {
-          "$ref": "#/definitions/DateTimeString"
-        }
-      },
-      "required": [
-        "reason"
-      ],
-      "additionalProperties": false
-    },
-    "OfapSettings": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string",
-          "description": "Protocol version the server implements."
-        },
-        "conformance_level": {
-          "$ref": "#/definitions/ConformanceLevel"
-        },
-        "interfaces": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InterfaceKind"
-          }
-        },
-        "sectors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Sector"
-          },
-          "description": "Sector modules the server implements."
-        },
-        "lines": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ProductLine"
-          },
-          "description": "Product lines the server can quote."
-        },
-        "countries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/CountryCode"
-          },
-          "description": "Countries where the server's products are sold."
-        },
-        "can_conclude": {
-          "type": "boolean",
-          "description": "True when the server can conclude an agreement inside the agent (`conclude`). False when the customer always finishes on the distributor's own page."
-        }
-      },
-      "required": [
-        "version",
-        "conformance_level",
-        "interfaces",
-        "sectors",
-        "lines",
-        "countries",
-        "can_conclude"
-      ],
-      "additionalProperties": false,
-      "description": "Settings object of the extension. A server puts it under `capabilities.extensions[\"org.openfinancialagent/ofap\"]` in its MCP `server/discover` response, and under the same key in the `extensions` field of its PAP `poppy.json`."
-    },
     "Offer": {
       "type": "object",
       "properties": {
@@ -1096,9 +1003,6 @@
         },
         "product_id": {
           "type": "string"
-        },
-        "sector": {
-          "$ref": "#/definitions/Sector"
         },
         "tier": {
           "type": "string",
@@ -1136,7 +1040,6 @@
       "required": [
         "offer_id",
         "product_id",
-        "sector",
         "provider",
         "pricing",
         "indicative",
@@ -1231,9 +1134,9 @@
             }
           ]
         },
-        "ofap_progress": {
-          "$ref": "#/definitions/OfapProgress",
-          "description": "OFAP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know OFAP ignore it."
+        "aip_progress": {
+          "$ref": "#/definitions/AipProgress",
+          "description": "AIP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know AIP ignore it."
         }
       },
       "required": [
@@ -1247,7 +1150,7 @@
         "result"
       ],
       "additionalProperties": false,
-      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `ofap_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an OFAP tool."
+      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `aip_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an AIP tool."
     },
     "OperationState": {
       "type": "string",
@@ -1311,7 +1214,7 @@
         "insured",
         "beneficiary"
       ],
-      "description": "Role of a party in the agreement. A sector module adds the roles of its sector."
+      "description": "Role of a party in the agreement."
     },
     "Premium": {
       "type": "object",
@@ -1345,8 +1248,37 @@
       ]
     },
     "Pricing": {
-      "$ref": "#/definitions/InsurancePricing",
-      "description": "Price in the form of the offer's sector. One member per sector module."
+      "type": "object",
+      "properties": {
+        "premium": {
+          "$ref": "#/definitions/Premium"
+        },
+        "alternative_premiums": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Premium"
+          },
+          "description": "The same price for another period, when the server can give it."
+        },
+        "cover": {
+          "$ref": "#/definitions/CoverSummary"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductOption"
+          }
+        },
+        "start_date": {
+          "$ref": "#/definitions/DateString"
+        }
+      },
+      "required": [
+        "premium",
+        "cover"
+      ],
+      "additionalProperties": false,
+      "description": "The price of an offer, and the cover it buys."
     },
     "Product": {
       "type": "object",
@@ -1356,9 +1288,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "sector": {
-          "$ref": "#/definitions/Sector"
         },
         "line": {
           "$ref": "#/definitions/ProductLine"
@@ -1389,7 +1318,6 @@
       "required": [
         "product_id",
         "name",
-        "sector",
         "line",
         "countries",
         "summary",
@@ -1399,8 +1327,23 @@
       "additionalProperties": false
     },
     "ProductDetails": {
-      "$ref": "#/definitions/InsuranceProductDetails",
-      "description": "Details of the product's sector. One member per sector module."
+      "type": "object",
+      "properties": {
+        "cover": {
+          "$ref": "#/definitions/CoverSummary"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProductOption"
+          }
+        }
+      },
+      "required": [
+        "cover"
+      ],
+      "additionalProperties": false,
+      "description": "What the product covers, and the options a customer can add."
     },
     "ProductLine": {
       "type": "string",
@@ -1456,12 +1399,12 @@
         "role"
       ],
       "additionalProperties": false,
-      "description": "The party that carries the risk or provides the money."
+      "description": "The party that carries the risk."
     },
     "ProviderRole": {
       "type": "string",
       "const": "insurer",
-      "description": "Role of the party that carries the risk or provides the money. A sector module adds its provider role, for example a lender."
+      "description": "Role of the party that carries the risk."
     },
     "QuestionSet": {
       "type": "object",
@@ -1476,15 +1419,12 @@
         "product_id": {
           "type": "string"
         },
-        "sector": {
-          "$ref": "#/definitions/Sector"
-        },
         "line": {
           "$ref": "#/definitions/ProductLine"
         },
         "profile": {
           "type": "string",
-          "description": "Line profile and version this question set builds on, for example \"insurance/pet@0.1\"."
+          "description": "Line profile and version this question set builds on, for example \"pet@0.1\"."
         },
         "answers_schema": {
           "$ref": "#/definitions/AnswersSchema"
@@ -1494,7 +1434,6 @@
         "question_set_id",
         "version",
         "product_id",
-        "sector",
         "line",
         "answers_schema"
       ],
@@ -1664,12 +1603,7 @@
         "dgsfp_key",
         "other"
       ],
-      "description": "Kind of public register identifier. A sector module adds the registers of its sector."
-    },
-    "Sector": {
-      "type": "string",
-      "const": "insurance",
-      "description": "Sector modules of this draft. Draft 0.1 defines one module: insurance (section 9).\n\nThe core is the same for every sector. A sector module adds what the law of its sector asks for. A module MUST define:\n- its value in `Sector`, and its group of lines in `KnownProductLine`;\n- one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with   a `sector` field that holds the module's value;\n- its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`,   `DocumentType` and `PartyRole`, when the sector needs them;\n- which of its documents are `required_before_commitment`;\n- its line profiles in `profiles.ts`, and checks for the rules of its sector   that a JSON Schema cannot express.\n\nA module MUST NOT change a core type or a core rule. The tools, the quote loop, the declaration, the PAP operations and the evidence record stay the same for every sector.\n\nA server declares the modules it implements in `OfapSettings.sectors`. An agent MUST NOT show a product or an offer of a sector it does not implement as if it were of a known sector.\n\nCandidate modules for a later draft:\n- credit: SECCI and ESIS, creditworthiness (CCD Art. 18, MCD Art. 18), APR   and total cost of credit;\n- investment: KID (PRIIPs), suitability or appropriateness (MiFID II Art.   25), fees and risk indicator."
+      "description": "Kind of public register identifier."
     },
     "SessionRequirement": {
       "type": "string",

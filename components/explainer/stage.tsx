@@ -339,7 +339,7 @@ function Wire({ data, script }: Props) {
               <code className={styles.method}>
                 <span>{verb}</span> {rest.join(" ")}
               </code>
-              {call.tool ? <span className={styles.ofapTag}>OFAP tool</span> : null}
+              {call.tool ? <span className={styles.aipTag}>AIP tool</span> : null}
             </span>
             {call.detail ? <code className={styles.detail}>{call.detail}</code> : null}
           </div>
@@ -431,7 +431,7 @@ function PayloadCard({ data, script }: Props) {
   );
 }
 
-/* The distributor: its PAP endpoints and its MCP server with the OFAP tools. */
+/* The distributor: its PAP endpoints and its MCP server with the AIP tools. */
 
 const ENDPOINTS: { id: EndpointId; name: string; layer: "PAP" | "MCP"; path: string }[] = [
   { id: "poppy", name: "poppy.json", layer: "PAP", path: "/.well-known/poppy.json" },
@@ -487,7 +487,7 @@ function Distributor({ data, script }: Props) {
             <code className={styles.endpointPath}>{endpoint.path}</code>
             {endpoint.id === "mcp" ? (
               <ul className={styles.tools}>
-                <li className={styles.toolsLabel}>OFAP tools · level {data.distributor.level}</li>
+                <li className={styles.toolsLabel}>AIP tools · level {data.distributor.level}</li>
                 {data.tools.map((name, toolIndex) => (
                   <li key={name} ref={tool(toolIndex)} className={styles.tool}>
                     <span ref={toolMark(toolIndex)} className={styles.rowMark} />
@@ -515,8 +515,8 @@ function Layers({ data, script }: Props) {
   const [bands, band] = useSlots<HTMLDivElement>();
   const bandsData = [
     {
-      name: "OFAP",
-      role: "The financial terms",
+      name: "AIP",
+      role: "The insurance terms",
       text: "Licences, documents, question sets, offers, the application terms and the evidence record.",
       items: ["get_distributor", "get_documents", "get_question_set", "quote", "submit_application", "EvidenceRecord"],
     },
@@ -529,7 +529,7 @@ function Layers({ data, script }: Props) {
     {
       name: "MCP",
       role: "Every call",
-      text: "Each OFAP tool is an MCP tool, and its result sits in structuredContent.",
+      text: "Each AIP tool is an MCP tool, and its result sits in structuredContent.",
       items: ["tools/call", "structuredContent"],
     },
   ];
@@ -576,12 +576,12 @@ function TitleCards({ script }: { script: Script }) {
     <>
       <div ref={intro} className={styles.title}>
         <BrandMark size={56} />
-        <p className={styles.titleName}>How OFAP works</p>
+        <p className={styles.titleName}>How AIP works</p>
         <p className={styles.titleText}>An AI agent buys pet insurance, on top of MCP and PAP.</p>
       </div>
       <div ref={outro} className={styles.title}>
         <BrandMark size={56} />
-        <p className={styles.titleName}>Open Financial Agent Protocol</p>
+        <p className={styles.titleName}>Agentic Insurance Protocol</p>
         <p className={styles.titleText}>Draft 0.1 · openfinancialagent.org</p>
       </div>
     </>

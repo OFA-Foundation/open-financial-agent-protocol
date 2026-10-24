@@ -1,7 +1,7 @@
 // The opening picture of the home page tells one story in four beats, on one
 // cycle: personal agents come to an insurer's website; they can't use its
 // forms, because a regulated sale needs more than a form; PAP solves identity;
-// MCP with OFAP solves the rest. It is CSS only, and every keyframe in
+// MCP with AIP solves the rest. It is CSS only, and every keyframe in
 // globals.css is a share of that one cycle. Under prefers-reduced-motion the
 // picture shows the last beat, and the four captions show as a list.
 
@@ -15,7 +15,7 @@ const GAP = 16;
 /** The length of the story, in seconds. */
 const STORY_S = 12;
 
-// The personal agents that act for a customer: OFAP and PAP are built for
+// The personal agents that act for a customer: AIP and PAP are built for
 // them. This picture is the one place where the site names real products (see
 // AGENTS.md). The last row stands for every other AI agent (assistants,
 // agentic browsers, bots): it has no logo and no moving call. Narrow screens
@@ -32,23 +32,23 @@ const COMPACT = AGENTS.filter((agent) => !agent.secondary);
 
 const STEPS: { name: string; question: string; answers: { name: string; ours?: boolean }[] }[] = [
   { name: "Identification", question: "Who is this agent, and who does it act for?", answers: [{ name: "PAP" }] },
-  { name: "Communication", question: "How do you give it the full offer?", answers: [{ name: "OFAP", ours: true }, { name: "MCP" }] },
+  { name: "Communication", question: "How do you give it the full offer?", answers: [{ name: "AIP", ours: true }, { name: "MCP" }] },
 ];
 
 // What a sale on the website must check, and which step solves it. `shift` is
 // the share of the story by which an item turns later than the first one.
-const NEEDS: { text: string; solvedBy: "PAP" | "OFAP"; shift: number }[] = [
+const NEEDS: { text: string; solvedBy: "PAP" | "AIP"; shift: number }[] = [
   { text: "Which agent, acting for whom?", solvedBy: "PAP", shift: 0 },
-  { text: "Documents before the price", solvedBy: "OFAP", shift: 0.18 },
-  { text: "Demands and needs on record", solvedBy: "OFAP", shift: 0.2 },
-  { text: "Answers kept as a declaration", solvedBy: "OFAP", shift: 0.22 },
+  { text: "Documents before the price", solvedBy: "AIP", shift: 0.18 },
+  { text: "Demands and needs on record", solvedBy: "AIP", shift: 0.2 },
+  { text: "Answers kept as a declaration", solvedBy: "AIP", shift: 0.22 },
 ];
 
 const BEATS = [
   "Personal agents come to your website.",
   "They can't use its forms. A regulated sale needs more than a form can give.",
   "PAP solves identity: who the agent is, and who it acts for.",
-  "MCP with OFAP solves the rest: the documents, the needs, the declaration and the full offer.",
+  "MCP with AIP solves the rest: the documents, the needs, the declaration and the full offer.",
 ];
 
 // Where the wires meet the boxes, in % of each wire's own box. On wide screens
@@ -198,7 +198,7 @@ export function AgentFlow() {
                       <path d="M3.5 8.5l3 3 6-7" />
                     </svg>
                     <span>{need.text}</span>
-                    <span className={`flow-tag yes${need.solvedBy === "OFAP" ? " ours" : ""}`}>{need.solvedBy}</span>
+                    <span className={`flow-tag yes${need.solvedBy === "AIP" ? " ours" : ""}`}>{need.solvedBy}</span>
                   </li>
                 ))}
               </ul>

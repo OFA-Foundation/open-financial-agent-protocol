@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <p>
-          OFAP draft {VERSION}. Licensed under the <a href={repoFileUrl("LICENSE")}>Apache License 2.0</a>. Companies in the examples are fictional.
+          AIP draft {VERSION}. Licensed under the <a href={repoFileUrl("LICENSE")}>Apache License 2.0</a>. Companies in the examples are fictional.
         </p>
         <nav aria-label="Footer">
           <a href={SCHEMA_HREF}>schema.json</a>

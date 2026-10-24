@@ -3,9 +3,8 @@
     "question_set_id": "qs-pet-fr-essentiel",
     "version": "3",
     "product_id": "pet-fr-essentiel",
-    "sector": "insurance",
     "line": "pet",
-    "profile": "insurance/pet@0.1",
+    "profile": "pet@0.1",
     "answers_schema": {
       "type": "object",
       "properties": {

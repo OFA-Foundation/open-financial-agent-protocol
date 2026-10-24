@@ -12,9 +12,7 @@ body:
           label: Part
           options:
               - README
-              - schema.ts, core
-              - schema.ts, sector modules (section 8)
-              - schema.ts, insurance module
+              - schema.ts, tools and types
               - schema.ts, PAP operations and evidence
               - profiles.ts
               - Examples

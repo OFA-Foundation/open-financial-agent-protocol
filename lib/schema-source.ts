@@ -85,9 +85,9 @@ export function levelNames(): Record<number, string> {
   return names;
 }
 
-/** Each error code with the comment above it in `OfapErrorCode`. */
+/** Each error code with the comment above it in `AipErrorCode`. */
 export function errorCodes(): { code: string; meaning: string }[] {
-  const block = declarationBlock("export type OfapErrorCode =", "");
+  const block = declarationBlock("export type AipErrorCode =", "");
   const codes: { code: string; meaning: string }[] = [];
   let comment = "";
   for (const line of block.split("\n")) {
@@ -96,10 +96,10 @@ export function errorCodes(): { code: string; meaning: string }[] {
       comment = doc[1];
       continue;
     }
-    if (/^\s*\/\*\*/.test(line)) throw new Error("OfapErrorCode comments must fit on one line");
+    if (/^\s*\/\*\*/.test(line)) throw new Error("AipErrorCode comments must fit on one line");
     const member = /^\s*\|\s*"(\w+)"/.exec(line);
     if (member?.[1]) {
-      if (!comment) throw new Error(`OfapErrorCode "${member[1]}" has no comment`);
+      if (!comment) throw new Error(`AipErrorCode "${member[1]}" has no comment`);
       codes.push({ code: member[1], meaning: comment });
       comment = "";
     }

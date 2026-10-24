@@ -121,11 +121,11 @@ const MARKERS: Record<string, () => string> = {
   "readme Open points": () => readmeSection("Open points"),
 };
 
-/** Replaces each `<!-- ofap:name -->` marker with its generated Markdown. */
+/** Replaces each `<!-- aip:name -->` marker with its generated Markdown. */
 export function expandMarkers(markdown: string): string {
-  return markdown.replace(/<!-- ofap:(.+?) -->/g, (_, name: string) => {
+  return markdown.replace(/<!-- aip:(.+?) -->/g, (_, name: string) => {
     const generate = MARKERS[name];
-    if (!generate) throw new Error(`Unknown marker <!-- ofap:${name} -->`);
+    if (!generate) throw new Error(`Unknown marker <!-- aip:${name} -->`);
     return generate();
   });
 }
@@ -206,7 +206,7 @@ export function referenceMarkdown(): string {
   if (unplaced.length) throw new Error(`Definitions with no section in schema.ts: ${unplaced.join(", ")}`);
   return [
     "# Schema reference, draft 0.1",
-    `Every type of OFAP draft 0.1, generated from [\`schema.ts\`](${repoFileUrl("schema.ts")}) through [\`schema.json\`](/schemas/0.1/schema.json). The sections follow \`schema.ts\`. The rules in the descriptions use the RFC 2119 keywords.`,
+    `Every type of AIP draft 0.1, generated from [\`schema.ts\`](${repoFileUrl("schema.ts")}) through [\`schema.json\`](/schemas/0.1/schema.json). The sections follow \`schema.ts\`. The rules in the descriptions use the RFC 2119 keywords.`,
     ...sections,
   ].join("\n\n");
 }
@@ -237,7 +237,7 @@ const STEPS: ExampleStep[] = [
     file: "insurance-03-get_question_set.result",
     title: "Get the questions",
     tool: "get_question_set, result",
-    text: "The questions come as a JSON Schema that builds on the `insurance/pet@0.1` profile. The microchip number is collected on the distributor's page, so the agent never asks for it.",
+    text: "The questions come as a JSON Schema that builds on the `pet@0.1` profile. The microchip number is collected on the distributor's page, so the agent never asks for it.",
   },
   {
     file: "insurance-04-quote.params.partial",

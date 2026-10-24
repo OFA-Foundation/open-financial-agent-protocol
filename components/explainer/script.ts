@@ -1,6 +1,6 @@
 // The storyboard: each call, chat message and caption, with its time in
 // milliseconds. The steps follow the worked example and PAP draft 0.2:
-// discovery, the Session, the OFAP tools over MCP, the operation, the
+// discovery, the Session, the AIP tools over MCP, the operation, the
 // customer's approval, the confirmation and the evidence record.
 
 import type { ExplainerData, PayloadId } from "../../lib/explainer-data";
@@ -112,8 +112,8 @@ export function buildScript(data: ExplainerData): Script {
   wait(300);
   caption(`${customer} asks an AI agent to insure ${pet}, a cat. ${distributor.name} sells pet insurance.`);
   say({ kind: "customer", text: data.firstMessage }, 2_200);
-  caption(`The agent reads ${seller} poppy.json. It lists the MCP server, the PAP operations endpoint and the OFAP level.`);
-  call({ layer: "PAP", endpoint: "poppy", method: "GET /.well-known/poppy.json", response: `poppy.json · OFAP level ${distributor.level}`, payload: "poppy" }, 3_200);
+  caption(`The agent reads ${seller} poppy.json. It lists the MCP server, the PAP operations endpoint and the AIP level.`);
+  call({ layer: "PAP", endpoint: "poppy", method: "GET /.well-known/poppy.json", response: `poppy.json · AIP level ${distributor.level}`, payload: "poppy" }, 3_200);
 
   chapter("PAP Session");
   caption("The agent starts a PAP Session, signed out. Every call after this one carries its Session Token.");
@@ -131,8 +131,8 @@ export function buildScript(data: ExplainerData): Script {
   const session = time;
   wait(3_000);
 
-  chapter("OFAP tools on MCP");
-  caption(`Each OFAP step is an MCP tool. get_distributor says who sells, and under which licence.`);
+  chapter("AIP tools on MCP");
+  caption(`Each AIP step is an MCP tool. get_distributor says who sells, and under which licence.`);
   call(tool("get_distributor", token, { response: `${distributor.name} · ${distributor.role} · ${distributor.register}`, payload: "distributor" }), 2_600);
   caption(`The documents that the law requires come with a version and a hash. The agent gives them to ${customer} before any commitment.`);
   call(tool("get_documents", data.params.product, { response: `${data.documents.length} documents · version and hash`, payload: "documents" }), 600);
@@ -180,7 +180,7 @@ export function buildScript(data: ExplainerData): Script {
   wait(1_400);
 
   chapter("Approval through PAP");
-  caption("Applying commits nothing. The tool returns a PAP operation, and OFAP defines its terms: parties, declaration, needs and documents.");
+  caption("Applying commits nothing. The tool returns a PAP operation, and AIP defines its terms: parties, declaration, needs and documents.");
   call(
     tool("submit_application", data.params.application, {
       status: { word: "proposed", tone: "neutral" },
@@ -196,7 +196,7 @@ export function buildScript(data: ExplainerData): Script {
   wait(900);
   const close = time;
   say({ kind: "approved" }, 700);
-  caption(`The agent confirms revision ${operation.revision} at the PAP operations endpoint, never through an OFAP tool.`);
+  caption(`The agent confirms revision ${operation.revision} at the PAP operations endpoint, never through an AIP tool.`);
   call(
     {
       layer: "PAP",
@@ -219,9 +219,9 @@ export function buildScript(data: ExplainerData): Script {
 
   chapter("Three layers");
   const layers = time;
-  caption("MCP carries the calls. PAP carries the Session and the approval. OFAP defines the financial terms on top of both.");
+  caption("MCP carries the calls. PAP carries the Session and the approval. AIP defines the insurance terms on top of both.");
   wait(5_000);
-  caption("Draft 0.1 covers insurance. Credit and investment can follow as modules, with no change to the core.");
+  caption("Draft 0.1 covers the sale. Changes, renewals, cancellations and claims come in a later draft.");
   wait(4_600);
 
   return { duration: time, chapters, captions, calls, chat, session, sheet: { open, press, close }, chosen, evidence, layers };

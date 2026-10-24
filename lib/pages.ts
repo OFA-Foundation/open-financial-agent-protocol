@@ -16,14 +16,14 @@ export const DOCS_PAGES: DocsPage[] = [
   {
     href: SPEC_HREF,
     navTitle: "Specification",
-    description: "The OFAP draft 0.1 specification: discovery, conformance levels, tools, the quote loop, applications, evidence and the insurance module.",
+    description: "The AIP draft 0.1 specification: discovery, conformance levels, tools, the quote loop, applications and evidence.",
     outlineDepth: 3,
     markdown: specMarkdown,
   },
   {
     href: REFERENCE_HREF,
     navTitle: "Schema reference",
-    description: "Every type of OFAP draft 0.1, generated from schema.ts.",
+    description: "Every type of AIP draft 0.1, generated from schema.ts.",
     outlineDepth: 2,
     markdown: referenceMarkdown,
   },

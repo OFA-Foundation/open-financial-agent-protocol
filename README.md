@@ -1,10 +1,10 @@
-# Open Financial Agent Protocol (OFAP)
+# Agentic Insurance Protocol (AIP)
 
-OFAP defines how an AI agent finds, prices and subscribes to a regulated financial product with any distributor. It also defines the evidence that each step leaves, so that a sale through an agent meets the same rules as a sale on the distributor's own site.
+AIP defines how an AI agent finds, prices and subscribes to an insurance product with any distributor. It also defines the evidence that each step leaves, so that a sale through an agent meets the same rules as a sale on the distributor's own site.
 
-Draft 0.1 covers insurance, and the sale only. Servicing after the sale comes in a later draft. The core does not depend on the sector, and each sector comes as a module on top of it. Credit and investment can follow as modules with no change to the core.
+Draft 0.1 covers the sale only. Servicing after the sale comes in a later draft.
 
-OFAP is an extension on top of two protocols. MCP carries every call. PAP carries the customer's session and every action with a business effect. OFAP defines only what is specific to regulated financial products.
+AIP is an extension on top of two protocols. MCP carries every call. PAP carries the customer's session and every action with a business effect. AIP defines only what is specific to insurance.
 
 Status: **draft 0.1**. A later draft can break this one until 1.0.
 
@@ -21,8 +21,6 @@ MCP and PAP do not cover what insurance regulation asks for:
 - **Parties.** Subscriber, insured, beneficiary and payer can be different people.
 - **Withdrawal period** after a distance sale.
 
-Credit and investment ask for the same kinds of evidence in their own form. That is why the core stays sector-neutral.
-
 ## Files
 
 | File | What it is |
@@ -36,24 +34,17 @@ Credit and investment ask for the same kinds of evidence in their own form. That
 
 Run `bun install`, then `bun run check`. It type-checks the schema and the scripts, so each example must match its schema type. Then it generates `schema.json`, rebuilds the examples, validates them, and runs the rule checks. CI runs the same command on every push. `bun run dev` previews the website, and `bun run build` builds it.
 
-## Core and sector modules
+## What insurance law asks for
 
-The core holds what every regulated financial product needs: the distributor and its licences, products, documents, question sets, the quote loop, parties, the declaration, PAP operations and evidence. A sector module adds what the law of its sector asks for.
+A sale through an agent must leave the same record as a sale on the distributor's own site. `schema.ts` gives a type to each thing that insurance law asks for, and `profiles.ts` holds the common questions of each line.
 
-| What a module adds | Insurance (draft 0.1) |
+| Topic | Draft 0.1 |
 |---|---|
 | Pre-contract documents | IPID, general conditions |
 | Needs assessment | Demands and needs (IDD Art. 20) |
 | Pricing | Premium, cover, limits, excess |
 | Agreement | Policy |
-| Line profiles | `insurance/pet`, `insurance/home` |
-
-Section 8 of `schema.ts` lists what a module must define, and says that a module must not change a core type or a core rule. A server declares the modules it implements in `sectors`, next to its conformance level.
-
-Candidate modules for a later draft:
-
-- **Credit.** SECCI and ESIS before commitment, creditworthiness under the CCD and the MCD, APR and total cost of credit.
-- **Investment.** KID under PRIIPs, suitability or appropriateness under MiFID II, fees and risk indicator.
+| Line profiles | `pet`, `home` |
 
 ## Conformance levels
 
@@ -63,14 +54,14 @@ Candidate modules for a later draft:
 | 2. Quote | + `get_question_set`, `quote` | None, or signed out |
 | 3. Subscribe | + `submit_application` or `conclude` | Signed out is enough. The action is a PAP operation |
 
-A server declares its level, sectors and lines under `capabilities.extensions["org.openfinancialagent/ofap"]` in MCP `server/discover`, and under the same key in PAP `poppy.json`.
+A server declares its level and its lines under `capabilities.extensions["org.openfinancialagent/ofap"]` in MCP `server/discover`, and under the same key in PAP `poppy.json`.
 
 ## Line profiles
 
 | Profile | Derived from |
 |---|---|
-| `insurance/pet@0.1` | A pet insurer (FR, DE, SE) |
-| `insurance/home@0.1` | A home insurer (ES) |
+| `pet@0.1` | A pet insurer (FR, DE, SE) |
+| `home@0.1` | A home insurer (ES) |
 
 A product's question set must include every required question of its profile with the same key. Two products of the same line can then be quoted from one set of answers. Each profile needs a second distributor before it is stable. Commercial lines have no profile yet.
 
@@ -90,23 +81,22 @@ A product's question set must include every required question of its profile wit
 
 ## Rules the checks cover
 
-R1 profiles compile. R2 a question set has every required question of its profile. R3 answers match their question set. R4 no `distributor_page` field in agent answers. R5 `answers_sha256` is the SHA-256 of the canonical JSON (RFC 8785). R6 every document required before commitment was delivered, same version and digest. R7 accuracy confirmed before a proposal. R8 needs assessment and pricing match the offer's sector. R9 an application needs the customer's own approval. R10 a non-life insurance product has an IPID required before commitment. R11 the evidence hash matches the confirmed terms. R12 a handoff offer has a `handoff_url`. R13 an empty quote gives a reason.
+R1 profiles compile. R2 a question set has every required question of its profile. R3 answers match their question set. R4 no `distributor_page` field in agent answers. R5 `answers_sha256` is the SHA-256 of the canonical JSON (RFC 8785). R6 every document required before commitment was delivered, same version and digest. R7 accuracy confirmed before a proposal. R8 an application needs the customer's own approval. R9 a non-life insurance product has an IPID required before commitment. R10 the evidence hash matches the confirmed terms. R11 a handoff offer has a `handoff_url`. R12 an empty quote gives a reason.
 
 ## Open points
 
 1. **Conversation-only distributors.** `ConversationData` is a proposal. Decide whether a distributor that exposes only a company agent can reach level 2 if it returns structured quotes.
 2. **PAP fields.** `Operation` mirrors PAP draft 0.2 and rejects unknown fields. It must accept new PAP fields before 1.0.
-3. **Credit and investment modules.** Draft each one on the rules for sector modules (section 8 of `schema.ts`), with at least two distributors as input.
-4. **Profiles.** A second distributor for the pet and home profiles, and profiles for commercial lines.
-5. **Servicing after the sale.** Draft 0.1 stops at the sale. A later draft adds a level 4 for what comes after it: read and change an agreement, renew it, cancel it, and open and follow a claim.
-6. **Legal review** of the IDD references, country by country.
-7. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
+3. **Profiles.** A second distributor for the pet and home profiles, and profiles for commercial lines.
+4. **Servicing after the sale.** Draft 0.1 stops at the sale. A later draft adds a level 4 for what comes after it: read and change an agreement, renew it, cancel it, and open and follow a claim.
+5. **Legal review** of the IDD references, country by country.
+6. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
 
 ## Related work
 
 - [MCP](https://modelcontextprotocol.io/specification/latest) and its [extensions](https://modelcontextprotocol.io/extensions/overview)
 - [PAP draft 0.2](https://personalagentprotocol.org/docs/0.2/spec) and its [operations extension](https://personalagentprotocol.org/docs/0.2/extensions/operations)
-- [AFSP](https://agenticfinanceprotocol.org/), which covers trust before a bank account opening. OFAP covers the product, the offer and the evidence, so the two can work together.
+- [AFSP](https://agenticfinanceprotocol.org/), which covers trust before a bank account opening. AIP covers the product, the offer and the evidence, so the two can work together.
 - [RFC 8785, JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785)
 
 ## Feedback and contributions

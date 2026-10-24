@@ -10,7 +10,6 @@
     {
       "offer_id": "of-essentiel-70",
       "product_id": "pet-fr-essentiel",
-      "sector": "insurance",
       "tier": "Essentiel 70",
       "provider": {
         "name": "Example Mutual",
@@ -19,7 +18,6 @@
       },
       "indicative": false,
       "pricing": {
-        "sector": "insurance",
         "premium": {
           "amount": {
             "amount": "14.90",
@@ -90,7 +88,6 @@
     {
       "offer_id": "of-essentiel-90",
       "product_id": "pet-fr-essentiel",
-      "sector": "insurance",
       "tier": "Essentiel 90",
       "provider": {
         "name": "Example Mutual",
@@ -99,7 +96,6 @@
       },
       "indicative": false,
       "pricing": {
-        "sector": "insurance",
         "premium": {
           "amount": {
             "amount": "21.40",

@@ -7,19 +7,17 @@
  * products of the same line can then be quoted from the same answers.
  *
  * Each profile comes from an MCP server in production:
- * - insurance/pet: a pet insurer, FR, DE, SE
- * - insurance/home: a home insurer, ES
+ * - pet: a pet insurer, FR, DE, SE
+ * - home: a home insurer, ES
  *
  * A profile needs a second distributor of the same line before it is stable.
- * Draft 0.1 has insurance profiles only. A later sector module adds its own.
  */
 
-import type { AnswersSchema, ProductLine, Sector } from "./schema";
+import type { AnswersSchema, ProductLine } from "./schema";
 
 export interface LineProfile {
-  /** Identifier, for example "insurance/pet@0.1". */
+  /** Identifier, for example "pet@0.1". */
   id: string;
-  sector: Sector;
   line: ProductLine;
   version: string;
   answers_schema: AnswersSchema;
@@ -30,8 +28,7 @@ export interface LineProfile {
 const country = { type: "string", pattern: "^[A-Z]{2}$", "x-ask": "In which country do you live?" };
 
 export const INSURANCE_PET: LineProfile = {
-  id: "insurance/pet@0.1",
-  sector: "insurance",
+  id: "pet@0.1",
   line: "pet",
   version: "0.1",
   derived_from: ["pet insurer, FR, DE, SE"],
@@ -67,8 +64,7 @@ export const INSURANCE_PET: LineProfile = {
 };
 
 export const INSURANCE_HOME: LineProfile = {
-  id: "insurance/home@0.1",
-  sector: "insurance",
+  id: "home@0.1",
   line: "home",
   version: "0.1",
   derived_from: ["home insurer, ES"],

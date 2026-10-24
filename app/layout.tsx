@@ -27,9 +27,9 @@ const mono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: `${SITE_NAME} (OFAP)`, template: "%s · OFAP" },
+  title: { default: `${SITE_NAME} (AIP)`, template: "%s · AIP" },
   description: DESCRIPTION,
-  openGraph: { siteName: SITE_NAME, title: `${SITE_NAME} (OFAP)`, description: DESCRIPTION, url: "/", type: "website" },
+  openGraph: { siteName: SITE_NAME, title: `${SITE_NAME} (AIP)`, description: DESCRIPTION, url: "/", type: "website" },
   alternates: { canonical: "/" },
 };
 

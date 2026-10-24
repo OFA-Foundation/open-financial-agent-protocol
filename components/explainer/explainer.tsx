@@ -25,7 +25,7 @@ export interface ExplainerRecorder {
 
 declare global {
   interface Window {
-    ofapExplainer?: ExplainerRecorder;
+    aipExplainer?: ExplainerRecorder;
   }
 }
 
@@ -55,9 +55,9 @@ export function Explainer({ data }: { data: ExplainerData }) {
     if (!record) return;
     document.documentElement.style.overflow = "hidden";
     clock.set(start);
-    window.ofapExplainer = { start, end, seek: (time) => clock.set(time) };
+    window.aipExplainer = { start, end, seek: (time) => clock.set(time) };
     return () => {
-      delete window.ofapExplainer;
+      delete window.aipExplainer;
     };
   }, [record, clock, start, end]);
 
@@ -146,7 +146,7 @@ export function Explainer({ data }: { data: ExplainerData }) {
 
   return (
     <ClockContext.Provider value={clock}>
-      <figure className={styles.figure} aria-label="How OFAP works on top of MCP and PAP">
+      <figure className={styles.figure} aria-label="How AIP works on top of MCP and PAP">
         <div className={styles.frame} ref={frame} data-record={record ? "" : undefined} aria-hidden="true">
           <div
             style={{

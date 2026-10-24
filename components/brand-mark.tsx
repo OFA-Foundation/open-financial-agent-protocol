@@ -1,12 +1,12 @@
 import { useId } from "react";
 
 /**
- * The OFAP mark: an ink ring, an "O" for Open, with the orange point of the
- * agent on it. The ring takes `--ink` and the point `--accent`, so the mark
- * follows the theme.
+ * The AIP mark: an ink ring, open at the top right, with the orange point of
+ * the agent in the gap. The ring takes `--ink` and the point `--accent`, so
+ * the mark follows the theme.
  */
 export function BrandMark({ size = 28 }: { size?: number }) {
-  const gap = `ofap-gap-${useId().replace(/:/g, "")}`;
+  const gap = `aip-gap-${useId().replace(/:/g, "")}`;
   return (
     <svg className="brand-mark" viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
       <defs>

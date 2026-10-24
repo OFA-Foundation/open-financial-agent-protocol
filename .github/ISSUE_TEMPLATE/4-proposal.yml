@@ -1,20 +1,19 @@
-name: Sector module or new topic
-description: Propose a sector module, such as credit or investment, or something many implementations need that the draft doesn't cover.
+name: New topic
+description: Propose something many implementations need that the draft doesn't cover.
 labels: ["proposal"]
 body:
     - type: markdown
       attributes:
           value: |
-              Check the open points in the [README](https://github.com/OFA-Foundation/open-financial-agent-protocol#open-points) and the existing issues first. If one already covers your idea, add to it there. For a sector module, section 8 of `schema.ts` lists what the module must define.
+              Check the open points in the [README](https://github.com/OFA-Foundation/open-financial-agent-protocol#open-points) and the existing issues first. If one already covers your idea, add to it there.
     - type: dropdown
       id: kind
       attributes:
           label: Kind
           options:
-              - New sector module (credit, investment, other)
-              - Change to the insurance module
-              - Change to the core
               - New topic
+              - Change to a tool or a type
+              - Change to a rule
       validations:
           required: true
     - type: textarea
@@ -44,4 +43,4 @@ body:
       id: prior-art
       attributes:
           label: Prior art
-          description: Optional. Existing protocols or products that solve this, and how OFAP would work with them.
+          description: Optional. Existing protocols or products that solve this, and how AIP would work with them.

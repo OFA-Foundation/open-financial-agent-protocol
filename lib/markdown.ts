@@ -87,7 +87,7 @@ function highlightJson(code: string): ElementContent[] {
   return out;
 }
 
-/** Resolves a type name in inline code, such as `Offer` or `OfapSettings.sectors`, to its definition. */
+/** Resolves a type name in inline code, such as `Offer` or `AipSettings.lines`, to its definition. */
 function definitionFor(code: string, definitions: Set<string>): string | null | undefined {
   const base = code.split(".")[0] ?? "";
   if (!/^[A-Z][A-Za-z0-9]*$/.test(base)) return undefined;

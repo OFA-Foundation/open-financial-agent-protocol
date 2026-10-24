@@ -1,26 +1,20 @@
 /**
- * Open Financial Agent Protocol (OFAP): schema, draft 0.1
+ * Agentic Insurance Protocol (AIP): schema, draft 0.1
  *
- * OFAP defines how an AI agent finds, prices and subscribes to a regulated
- * financial product with any distributor, and what evidence each step leaves.
- * Draft 0.1 covers insurance, and the sale only. Servicing after the sale
- * comes in a later draft.
+ * AIP defines how an AI agent finds, prices and subscribes to an insurance
+ * product with any distributor, and what evidence each step leaves. Draft 0.1
+ * covers the sale only. Servicing after the sale comes in a later draft.
  *
  * This file is the source of truth. `schema.json` is generated from it. Do not
  * edit `schema.json` by hand.
  *
- * OFAP is an extension on top of two protocols:
+ * AIP is an extension on top of two protocols:
  * - MCP (https://modelcontextprotocol.io/specification/2026-07-28) carries every
  *   call. Each tool in this file is an MCP tool. Results go in
  *   `structuredContent`, with a short plain-text summary in `content`.
  * - PAP (https://personalagentprotocol.org/docs/0.2/spec) carries the customer's
  *   session and every action with a business effect, through its `operations`
- *   extension. OFAP defines only the financial `terms` of those operations.
- *
- * The protocol has a sector-neutral core and one module per sector. A module
- * adds the pricing, the needs assessment and the documents that the law of
- * that sector asks for. Draft 0.1 defines one module: insurance. Section 8
- * gives the rules for a later module, for example credit or investment.
+ *   extension. AIP defines only the insurance `terms` of those operations.
  *
  * The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
  * "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" are to be
@@ -39,7 +33,7 @@
 /* ========================================================================== */
 
 /**
- * Identifier of OFAP in MCP `capabilities.extensions` and in the PAP
+ * Identifier of AIP in MCP `capabilities.extensions` and in the PAP
  * `poppy.json` `extensions` field. It uses the reverse domain of
  * openfinancialagent.org, as MCP asks for third-party extensions.
  */
@@ -67,7 +61,7 @@ export type InterfaceKind =
   | "tools"
   /**
    * PROPOSED, NOT DECIDED. The distributor exposes a company agent (a PAP
-   * conversation or a chat tool) and returns OFAP objects in the structured
+   * conversation or a chat tool) and returns AIP objects in the structured
    * data of its messages. See `ConversationData`.
    */
   | "conversation";
@@ -78,13 +72,11 @@ export type InterfaceKind =
  * `server/discover` response, and under the same key in the `extensions` field
  * of its PAP `poppy.json`.
  */
-export interface OfapSettings {
+export interface AipSettings {
   /** Protocol version the server implements. */
   version: string;
   conformance_level: ConformanceLevel;
   interfaces: InterfaceKind[];
-  /** Sector modules the server implements. */
-  sectors: Sector[];
   /** Product lines the server can quote. */
   lines: ProductLine[];
   /** Countries where the server's products are sold. */
@@ -159,9 +151,9 @@ export interface Money {
  */
 export type ProductLine = string;
 
-/** Lines that have, or will have, a profile in OFAP. A sector module adds its own group. */
+/** Lines that have, or will have, a profile in AIP. */
 export type KnownProductLine =
-  // Insurance, personal
+  // Personal
   | "pet"
   | "home"
   | "renters"
@@ -171,30 +163,29 @@ export type KnownProductLine =
   | "life"
   | "funeral"
   | "borrower_insurance"
-  // Insurance, commercial
+  // Commercial
   | "professional_liability"
   | "general_liability"
   | "business_owners_policy"
   | "workers_compensation";
 
 /* ========================================================================== */
-/* 3. Distributor (core, level 1)                                             */
+/* 3. Distributor (level 1)                                                   */
 /* ========================================================================== */
 
 /**
  * Role of a party in the distribution chain. The provider roles are in
- * `ProviderRole`. A sector module adds its intermediary roles here.
+ * `ProviderRole`.
  */
 export type DistributorRole =
   | ProviderRole
-  // Insurance intermediaries
+  // Intermediaries
   | "broker"
   | "agent"
   | "mga"
-  // Any sector
   | "comparator";
 
-/** Kind of public register identifier. A sector module adds the registers of its sector. */
+/** Kind of public register identifier. */
 export type RegisterIdentifierType =
   /** France, ORIAS (insurance intermediaries). */
   | "orias_number"
@@ -217,8 +208,6 @@ export interface Licence {
   identifier_type: RegisterIdentifierType;
   identifier: string;
   role: DistributorRole;
-  /** Sectors this entry covers. */
-  sectors: Sector[];
   /**
    * Register categories, for example ORIAS "COA" (insurance broker) or "AGA"
    * (tied insurance agent).
@@ -247,21 +236,18 @@ export interface GetDistributorResult {
   countries: CountryCode[];
   /** Where a customer can complain. Required by most regulators. */
   complaints_url?: Url;
-  /** Settings the server declares for OFAP. */
-  ofap: OfapSettings;
+  /** Settings the server declares for AIP. */
+  aip: AipSettings;
 }
 
 /* ========================================================================== */
-/* 4. Products (core, level 1)                                                */
+/* 4. Products (level 1)                                                      */
 /* ========================================================================== */
 
-/**
- * Role of the party that carries the risk or provides the money. A sector
- * module adds its provider role, for example a lender.
- */
+/** Role of the party that carries the risk. */
 export type ProviderRole = "insurer";
 
-/** The party that carries the risk or provides the money. */
+/** The party that carries the risk. */
 export interface ProviderRef {
   name: string;
   legal_name?: string;
@@ -281,7 +267,6 @@ export type SubscriptionPath =
 export interface Product {
   product_id: string;
   name: string;
-  sector: Sector;
   line: ProductLine;
   /** Provider of the product, when it is not the distributor. */
   provider?: ProviderRef;
@@ -291,12 +276,14 @@ export interface Product {
   subscription_paths: SubscriptionPath[];
 }
 
-/** Details of the product's sector. One member per sector module. */
-export type ProductDetails = InsuranceProductDetails;
+/** What the product covers, and the options a customer can add. */
+export interface ProductDetails {
+  cover: CoverSummary;
+  options?: ProductOption[];
+}
 
 export interface ListProductsParams {
   country?: CountryCode;
-  sector?: Sector;
   line?: ProductLine;
   cursor?: string;
 }
@@ -307,16 +294,14 @@ export interface ListProductsResult {
 }
 
 /* ========================================================================== */
-/* 5. Documents (core, level 1)                                               */
+/* 5. Documents (level 1)                                                     */
 /* ========================================================================== */
 
-/** Kind of document. A sector module adds the documents that the law of its sector asks for. */
+/** Kind of document. */
 export type DocumentType =
-  // Any sector
   | "pre_contract_information"
   | "terms_of_business"
   | "other"
-  // Insurance
   /** EU Insurance Product Information Document (IDD). */
   | "ipid"
   | "general_conditions"
@@ -326,7 +311,7 @@ export type DocumentType =
   | "demands_and_needs"
   | "proof_of_insurance";
 
-export interface FinancialDocument {
+export interface InsuranceDocument {
   document_id: string;
   type: DocumentType;
   title: string;
@@ -350,11 +335,11 @@ export type GetDocumentsParams =
   | { offer_id: string; language?: LanguageTag };
 
 export interface GetDocumentsResult {
-  documents: FinancialDocument[];
+  documents: InsuranceDocument[];
 }
 
 /* ========================================================================== */
-/* 6. Question sets (core, level 2)                                           */
+/* 6. Question sets (level 2)                                                 */
 /* ========================================================================== */
 
 /**
@@ -368,7 +353,7 @@ export type CollectedBy = "agent" | "distributor_page";
 
 /**
  * A JSON Schema (2020-12) object that describes the answers. Each property is
- * one question. OFAP adds these keywords to each property:
+ * one question. AIP adds these keywords to each property:
  *
  * - `x-collected-by`: a `CollectedBy` value. Default `agent`.
  * - `x-profile-key`: the key of the matching question in the line profile,
@@ -387,9 +372,8 @@ export interface QuestionSet {
   /** Version of this question set. A change in any question MUST change it. */
   version: string;
   product_id: string;
-  sector: Sector;
   line: ProductLine;
-  /** Line profile and version this question set builds on, for example "insurance/pet@0.1". */
+  /** Line profile and version this question set builds on, for example "pet@0.1". */
   profile?: string;
   answers_schema: AnswersSchema;
 }
@@ -414,7 +398,7 @@ export interface Answers {
 }
 
 /* ========================================================================== */
-/* 7. Quote (core, level 2)                                                   */
+/* 7. Quote (level 2)                                                         */
 /* ========================================================================== */
 
 /**
@@ -447,7 +431,6 @@ export type QuoteParams =
 export interface Offer {
   offer_id: string;
   product_id: string;
-  sector: Sector;
   /** Name of the tier or plan, for example "Terceros Ampliado" or "Band B". */
   tier?: string;
   provider: ProviderRef;
@@ -465,9 +448,6 @@ export interface Offer {
   /** True when the distributor recommends this offer after advice. */
   recommended?: boolean;
 }
-
-/** Price in the form of the offer's sector. One member per sector module. */
-export type Pricing = InsurancePricing;
 
 export type QuoteResult =
   | {
@@ -514,42 +494,7 @@ export interface FieldIssue {
 }
 
 /* ========================================================================== */
-/* 8. Sector modules                                                          */
-/* ========================================================================== */
-
-/**
- * Sector modules of this draft. Draft 0.1 defines one module: insurance
- * (section 9).
- *
- * The core is the same for every sector. A sector module adds what the law of
- * its sector asks for. A module MUST define:
- * - its value in `Sector`, and its group of lines in `KnownProductLine`;
- * - one member of `ProductDetails`, `Pricing` and `NeedsAssessment`, each with
- *   a `sector` field that holds the module's value;
- * - its values in `ProviderRole`, `DistributorRole`, `RegisterIdentifierType`,
- *   `DocumentType` and `PartyRole`, when the sector needs them;
- * - which of its documents are `required_before_commitment`;
- * - its line profiles in `profiles.ts`, and checks for the rules of its sector
- *   that a JSON Schema cannot express.
- *
- * A module MUST NOT change a core type or a core rule. The tools, the quote
- * loop, the declaration, the PAP operations and the evidence record stay the
- * same for every sector.
- *
- * A server declares the modules it implements in `OfapSettings.sectors`. An
- * agent MUST NOT show a product or an offer of a sector it does not implement
- * as if it were of a known sector.
- *
- * Candidate modules for a later draft:
- * - credit: SECCI and ESIS, creditworthiness (CCD Art. 18, MCD Art. 18), APR
- *   and total cost of credit;
- * - investment: KID (PRIIPs), suitability or appropriateness (MiFID II Art.
- *   25), fees and risk indicator.
- */
-export type Sector = "insurance";
-
-/* ========================================================================== */
-/* 9. Insurance module                                                        */
+/* 8. Premium and cover                                                       */
 /* ========================================================================== */
 
 export type PremiumPeriod = "month" | "quarter" | "half_year" | "year" | "single";
@@ -588,14 +533,8 @@ export interface ProductOption {
   price?: Premium | Money;
 }
 
-export interface InsuranceProductDetails {
-  sector: "insurance";
-  cover: CoverSummary;
-  options?: ProductOption[];
-}
-
-export interface InsurancePricing {
-  sector: "insurance";
+/** The price of an offer, and the cover it buys. */
+export interface Pricing {
   premium: Premium;
   /** The same price for another period, when the server can give it. */
   alternative_premiums?: Premium[];
@@ -604,31 +543,12 @@ export interface InsurancePricing {
   start_date?: DateString;
 }
 
-/** Demands and needs, recorded before the contract is concluded (IDD Art. 20(1)). */
-export interface InsuranceNeedsAssessment {
-  sector: "insurance";
-  kind: "demands_and_needs";
-  /** The need in the customer's words or a faithful summary. */
-  statement: string;
-  /** True when the distributor gave a personal recommendation (advice). */
-  advice_given: boolean;
-  /** Why the recommended offer meets the need. Required when `advice_given` is true. */
-  advice_rationale?: string;
-  recorded_at: DateTimeString;
-}
-
 /* ========================================================================== */
-/* 10. Parties, needs and consent (core)                                      */
+/* 9. Parties, needs and consent                                              */
 /* ========================================================================== */
 
-/** Role of a party in the agreement. A sector module adds the roles of its sector. */
-export type PartyRole =
-  // Any sector
-  | "subscriber"
-  | "payer"
-  // Insurance
-  | "insured"
-  | "beneficiary";
+/** Role of a party in the agreement. */
+export type PartyRole = "subscriber" | "payer" | "insured" | "beneficiary";
 
 /**
  * A person or organisation in the agreement. Data in a party MUST be limited
@@ -647,8 +567,17 @@ export interface Party {
   country_of_residence?: CountryCode;
 }
 
-/** Needs assessment that the law of the sector asks for. One member per sector module. */
-export type NeedsAssessment = InsuranceNeedsAssessment;
+/** Demands and needs, recorded before the contract is concluded (IDD Art. 20(1)). */
+export interface NeedsAssessment {
+  kind: "demands_and_needs";
+  /** The need in the customer's words or a faithful summary. */
+  statement: string;
+  /** True when the distributor gave a personal recommendation (advice). */
+  advice_given: boolean;
+  /** Why the recommended offer meets the need. Required when `advice_given` is true. */
+  advice_rationale?: string;
+  recorded_at: DateTimeString;
+}
 
 /** The customer's choice about later contact. */
 export interface ContactConsent {
@@ -682,7 +611,7 @@ export interface Declaration {
 }
 
 /* ========================================================================== */
-/* 11. PAP operations with financial terms (level 3)                         */
+/* 10. PAP operations with insurance terms (level 3)                          */
 /* ========================================================================== */
 
 export type OperationState =
@@ -695,11 +624,11 @@ export type OperationState =
 
 /**
  * A PAP operation. This mirrors the PAP operations extension (version 1). PAP
- * is the authority for every field here except `terms` and `ofap_progress`.
+ * is the authority for every field here except `terms` and `aip_progress`.
  * When the two differ, PAP wins.
  *
  * An MCP tool returns it in `structuredContent.operation`. The agent confirms
- * it at the PAP operations endpoint, never through an OFAP tool.
+ * it at the PAP operations endpoint, never through an AIP tool.
  */
 export interface Operation<TTerms> {
   operation_id: string;
@@ -721,13 +650,13 @@ export interface Operation<TTerms> {
   };
   result: null | { summary: string; data?: { [key: string]: unknown } };
   /**
-   * OFAP reason why the operation is `in_progress`. Not a PAP field. Clients
-   * that do not know OFAP ignore it.
+   * AIP reason why the operation is `in_progress`. Not a PAP field. Clients
+   * that do not know AIP ignore it.
    */
-  ofap_progress?: OfapProgress;
+  aip_progress?: AipProgress;
 }
 
-export interface OfapProgress {
+export interface AipProgress {
   reason:
     /** A licensed person reviews the application. */
     | "licensed_review"
@@ -748,14 +677,12 @@ export interface OfapProgress {
 export interface ApplicationTerms {
   offer_id: string;
   product_id: string;
-  sector: Sector;
   provider: ProviderRef;
   pricing: Pricing;
   options: string[];
   start_date?: DateString;
   parties: Party[];
   declaration: Declaration;
-  /** It MUST be of the same sector as the offer. */
   needs_assessment: NeedsAssessment;
   /**
    * Documents delivered before this revision was proposed. Every document of
@@ -803,11 +730,11 @@ export interface ConcludeResult {
 export interface ConcludeOutcome {
   agreement_number: string;
   evidence: EvidenceRecord;
-  documents: FinancialDocument[];
+  documents: InsuranceDocument[];
 }
 
 /* ========================================================================== */
-/* 12. Evidence (core)                                                        */
+/* 11. Evidence                                                               */
 /* ========================================================================== */
 
 /**
@@ -837,11 +764,11 @@ export interface EvidenceRecord {
 }
 
 /* ========================================================================== */
-/* 13. Errors (core)                                                          */
+/* 12. Errors                                                                 */
 /* ========================================================================== */
 
-export type OfapErrorCode =
-  /** The distributor holds no licence for this country, subdivision, sector or line. */
+export type AipErrorCode =
+  /** The distributor holds no licence for this country, subdivision or line. */
   | "not_licensed"
   /** The product is not sold where the customer is. */
   | "not_available_in_region"
@@ -859,7 +786,7 @@ export type OfapErrorCode =
   | "documents_not_delivered"
   /** The declaration does not have `accuracy_confirmed: true`. */
   | "accuracy_not_confirmed"
-  /** The needs assessment is missing, of another sector, or its outcome does not allow the application. */
+  /** The needs assessment is missing, or its outcome does not allow the application. */
   | "needs_assessment_invalid"
   /** The tool is above the conformance level the server declares. */
   | "not_supported";
@@ -869,31 +796,31 @@ export type OfapErrorCode =
  * `structuredContent.error`. PAP errors (`insufficient_scope`,
  * `sign_in_required`, `terms_changed`) keep their PAP form.
  */
-export interface OfapError {
-  code: OfapErrorCode;
+export interface AipError {
+  code: AipErrorCode;
   message: string;
   fields?: FieldIssue[];
 }
 
 /* ========================================================================== */
-/* 14. Conversation binding (PROPOSED, NOT DECIDED)                           */
+/* 13. Conversation binding (PROPOSED, NOT DECIDED)                           */
 /* ========================================================================== */
 
 /**
  * PROPOSED. Some distributors expose only a company agent. If
- * OFAP accepts them at level 2, each message that carries an OFAP object puts
+ * AIP accepts them at level 2, each message that carries an AIP object puts
  * it here, in the message's structured data (`data` in a PAP conversation,
  * `structuredContent` in a chat tool).
  */
 export interface ConversationData {
   question?: { field: string; ask: string; schema: { [keyword: string]: unknown } };
   quote?: QuoteResult;
-  documents?: FinancialDocument[];
+  documents?: InsuranceDocument[];
   operation?: Operation<ApplicationTerms>;
 }
 
 /* ========================================================================== */
-/* 15. Tool index                                                             */
+/* 14. Tool index                                                             */
 /* ========================================================================== */
 
 export const TOOL_NAMES = {

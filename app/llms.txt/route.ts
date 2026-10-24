@@ -6,7 +6,7 @@ export const dynamic = "force-static";
 export function GET() {
   const pages = DOCS_PAGES.map((page) => `- [${page.navTitle}](${SITE_URL}${page.href}.md): ${page.description}`);
   const body = [
-    `# ${SITE_NAME} (OFAP)`,
+    `# ${SITE_NAME} (AIP)`,
     "",
     `> ${DESCRIPTION}`,
     "",
@@ -16,7 +16,7 @@ export function GET() {
     "",
     "## Source",
     "",
-    `- [schema.json](${SITE_URL}${SCHEMA_HREF}): JSON Schema of every OFAP type, generated from schema.ts`,
+    `- [schema.json](${SITE_URL}${SCHEMA_HREF}): JSON Schema of every AIP type, generated from schema.ts`,
     `- [Repository](${REPO_URL}): schema.ts, line profiles, worked example and checks`,
     "",
   ].join("\n");

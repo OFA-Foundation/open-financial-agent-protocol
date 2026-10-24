@@ -32,7 +32,7 @@ for (const name of names) Object.assign(definitions, generator.createSchema(name
 const schema = {
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "https://openfinancialagent.org/schemas/0.1/schema.json",
-  title: "Open Financial Agent Protocol (OFAP), draft 0.1",
+  title: "Agentic Insurance Protocol (AIP), draft 0.1",
   description: "Generated from schema.ts. Do not edit by hand.",
   definitions: Object.fromEntries(
     Object.keys(definitions)

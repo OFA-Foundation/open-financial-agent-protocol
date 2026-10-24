@@ -1,4 +1,4 @@
-// The figures and payloads that the explainer shows. The OFAP values come
+// The figures and payloads that the explainer shows. The AIP values come
 // from the worked example, so that the animation and the spec cannot disagree.
 // The PAP values (poppy.json, the Session Token) follow PAP draft 0.2.
 import type { Examples, ExampleName } from "../scripts/example-files";
@@ -147,7 +147,7 @@ export function explainerData(): ExplainerData {
   const country = new Intl.DisplayNames(["en"], { type: "region" }).of(text("country")) ?? text("country");
   const female = text("sex") === "female";
   const domain = distributor.domain;
-  const level = distributor.ofap.conformance_level;
+  const level = distributor.aip.conformance_level;
   const firstOffer = offers[0];
   if (!firstOffer) throw new Error("the worked example has no offer");
   const productId = firstOffer.product_id;
@@ -172,7 +172,7 @@ export function explainerData(): ExplainerData {
       level,
     },
     tools: (Object.keys(TOOLS) as ToolName[]).filter(
-      (tool) => TOOLS[tool].level <= level && !(tool === "conclude" && !distributor.ofap.can_conclude),
+      (tool) => TOOLS[tool].level <= level && !(tool === "conclude" && !distributor.aip.can_conclude),
     ),
     documents: documents.map((document) => ({ title: document.title, version: document.version })),
     questionSet: { version: questionSet.version, questions: Object.keys(questionSet.answers_schema.properties).length },
@@ -213,10 +213,9 @@ export function explainerData(): ExplainerData {
           extensions: {
             operations: { version: "1", endpoint: `https://${domain}/poppy/operations` },
             [EXTENSION_ID]: {
-              version: distributor.ofap.version,
+              version: distributor.aip.version,
               conformance_level: level,
-              sectors: distributor.ofap.sectors,
-              lines: distributor.ofap.lines,
+              lines: distributor.aip.lines,
               [MORE]: 0,
             },
           },
@@ -241,7 +240,6 @@ export function explainerData(): ExplainerData {
               register: licence.register,
               identifier: licence.identifier,
               role: licence.role,
-              sectors: licence.sectors,
               [MORE]: 0,
             },
           ],

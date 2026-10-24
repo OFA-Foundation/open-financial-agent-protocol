@@ -7,14 +7,12 @@
     "terms": {
       "offer_id": "of-essentiel-70",
       "product_id": "pet-fr-essentiel",
-      "sector": "insurance",
       "provider": {
         "name": "Example Mutual",
         "legal_name": "Example Mutual Assurances SA",
         "role": "insurer"
       },
       "pricing": {
-        "sector": "insurance",
         "premium": {
           "amount": {
             "amount": "14.90",
@@ -111,7 +109,6 @@
         "accuracy_confirmed": true
       },
       "needs_assessment": {
-        "sector": "insurance",
         "kind": "demands_and_needs",
         "statement": "Cover vet bills for an indoor cat, with a budget under 20 EUR a month.",
         "advice_given": false,
@@ -180,7 +177,6 @@
           },
           "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
           "needs_assessment": {
-            "sector": "insurance",
             "kind": "demands_and_needs",
             "statement": "Cover vet bills for an indoor cat, with a budget under 20 EUR a month.",
             "advice_given": false,
@@ -196,7 +192,7 @@
               "this_application"
             ]
           },
-          "terms_sha256": "20d1f65771484f5ede6dff46f793b821d6705cea266e3b91e3585d7bc7696dae"
+          "terms_sha256": "188b5b7d8bdca957b0dd1df87c656ff2947d1235012f0335d8d166655935b4d1"
         },
         "handoff_url": "https://pets.example.com/a/app-3310"
       }

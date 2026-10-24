@@ -10,8 +10,8 @@ import type {
   DeliveredDocument,
   DateTimeString,
   EvidenceRecord,
-  FinancialDocument,
-  InsuranceNeedsAssessment,
+  InsuranceDocument,
+  NeedsAssessment,
   Offer,
   Operation,
   Party,
@@ -27,7 +27,7 @@ async function write<K extends ExampleName>(name: K, data: Examples[K]): Promise
   await Bun.write(examplePath(name), JSON.stringify(data, null, 2) + "\n");
 }
 
-function delivered(documents: FinancialDocument[], deliveredAt: DateTimeString): DeliveredDocument[] {
+function delivered(documents: InsuranceDocument[], deliveredAt: DateTimeString): DeliveredDocument[] {
   return documents.map((document) => ({
     document_id: document.document_id,
     version: document.version,
@@ -53,25 +53,23 @@ await write("insurance-01-get_distributor.result", {
       identifier_type: "orias_number",
       identifier: "00000000",
       role: "broker",
-      sectors: ["insurance"],
       categories: ["COA"],
       verification_url: "https://www.orias.fr/",
     },
   ],
   countries: ["FR"],
   complaints_url: "https://pets.example.com/complaints",
-  ofap: {
+  aip: {
     version: "0.1",
     conformance_level: 3,
     interfaces: ["tools"],
-    sectors: ["insurance"],
     lines: ["pet"],
     countries: ["FR"],
     can_conclude: false,
   },
 });
 
-const ipid: FinancialDocument = {
+const ipid: InsuranceDocument = {
   document_id: "doc-ipid-pet-fr",
   type: "ipid",
   title: "IPID Example Pets Essentiel",
@@ -82,7 +80,7 @@ const ipid: FinancialDocument = {
   sha256: sha256("ipid-essentiel-2026-09"),
   required_before_commitment: true,
 };
-const generalConditions: FinancialDocument = {
+const generalConditions: InsuranceDocument = {
   document_id: "doc-cg-pet-fr",
   type: "general_conditions",
   title: "Conditions générales",
@@ -102,9 +100,8 @@ const questionSet: QuestionSet = {
   question_set_id: "qs-pet-fr-essentiel",
   version: "3",
   product_id: "pet-fr-essentiel",
-  sector: "insurance",
   line: "pet",
-  profile: "insurance/pet@0.1",
+  profile: "pet@0.1",
   answers_schema: {
     type: "object",
     properties: {
@@ -199,12 +196,10 @@ const prevention: ProductOption = {
 const offer70: Offer = {
   offer_id: "of-essentiel-70",
   product_id: "pet-fr-essentiel",
-  sector: "insurance",
   tier: "Essentiel 70",
   provider: insurer,
   indicative: false,
   pricing: {
-    sector: "insurance",
     premium: { amount: { amount: "14.90", currency: "EUR" }, period: "month", taxes_included: true },
     alternative_premiums: [{ amount: { amount: "171.00", currency: "EUR" }, period: "year", taxes_included: true }],
     cover: cover70,
@@ -280,8 +275,7 @@ const declaration: Declaration = {
   answers_sha256: canonicalSha256(answers),
   accuracy_confirmed: true,
 };
-const needs: InsuranceNeedsAssessment = {
-  sector: "insurance",
+const needs: NeedsAssessment = {
   kind: "demands_and_needs",
   statement: "Cover vet bills for an indoor cat, with a budget under 20 EUR a month.",
   advice_given: false,
@@ -308,7 +302,6 @@ await write("insurance-09-submit_application.params", {
 const terms: ApplicationTerms = {
   offer_id: offer70.offer_id,
   product_id: offer70.product_id,
-  sector: "insurance",
   provider: insurer,
   pricing: offer70.pricing,
   options: [],

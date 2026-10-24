@@ -13,9 +13,6 @@
       "identifier_type": "orias_number",
       "identifier": "00000000",
       "role": "broker",
-      "sectors": [
-        "insurance"
-      ],
       "categories": [
         "COA"
       ],
@@ -26,14 +23,11 @@
     "FR"
   ],
   "complaints_url": "https://pets.example.com/complaints",
-  "ofap": {
+  "aip": {
     "version": "0.1",
     "conformance_level": 3,
     "interfaces": [
       "tools"
-    ],
-    "sectors": [
-      "insurance"
     ],
     "lines": [
       "pet"

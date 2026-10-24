@@ -34,7 +34,6 @@
     "accuracy_confirmed": true
   },
   "needs_assessment": {
-    "sector": "insurance",
     "kind": "demands_and_needs",
     "statement": "Cover vet bills for an indoor cat, with a budget under 20 EUR a month.",
     "advice_given": false,

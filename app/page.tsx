@@ -13,14 +13,14 @@ const PROBLEMS: { name: string; question: string; text: string; answers: { name:
   {
     name: "Identification",
     question: "Who is this agent, and what does it want?",
-    text: "On your site, a customer signs in and you know who they are. An agent needs the same: proof of who it is, who it acts for and what it may do. PAP defines this on top of OAuth, and OFAP uses PAP as it is.",
+    text: "On your site, a customer signs in and you know who they are. An agent needs the same: proof of who it is, who it acts for and what it may do. PAP defines this on top of OAuth, and AIP uses PAP as it is.",
     answers: [{ name: "PAP" }],
   },
   {
     name: "Communication",
     question: "How do you give the agent the full offer?",
-    text: "An agent calls tools, the way a program calls an API. MCP carries those calls, but it does not say which tools an insurer needs. Each insurer picks its own, and the nine quote tools we studied have nine names and nine sets of inputs. OFAP defines the tools and what each one returns.",
-    answers: [{ name: "OFAP", ours: true }, { name: "MCP" }],
+    text: "An agent calls tools, the way a program calls an API. MCP carries those calls, but it does not say which tools an insurer needs. Each insurer picks its own, and the nine quote tools we studied have nine names and nine sets of inputs. AIP defines the tools and what each one returns.",
+    answers: [{ name: "AIP", ours: true }, { name: "MCP" }],
   },
 ];
 
@@ -60,32 +60,11 @@ const ISSUE_FORMS = [
   { template: "1-feedback.yml", title: "Spec feedback", text: "A gap, an ambiguity or a risk in the schema or the rules." },
   { template: "2-implementation-report.yml", title: "Implementation report", text: "What you ran into as an agent or a distributor." },
   { template: "3-line-profile.yml", title: "Line profile data", text: "The questions your tariff asks, so that a profile becomes stable." },
-  { template: "4-proposal.yml", title: "Sector module or new topic", text: "Credit, investment, or something the draft does not cover." },
-];
-
-const SECTORS = [
-  {
-    name: "Insurance",
-    status: "Draft 0.1",
-    current: true,
-    items: ["IPID and general conditions before commitment", "Demands and needs (IDD Art. 20)", "Premium, cover, limits and excess", "Line profiles for pet and home"],
-  },
-  {
-    name: "Credit",
-    status: "Candidate module",
-    current: false,
-    items: ["SECCI and ESIS before commitment", "Creditworthiness under the CCD and the MCD", "APR and total cost of credit"],
-  },
-  {
-    name: "Investment",
-    status: "Candidate module",
-    current: false,
-    items: ["KID under PRIIPs", "Suitability or appropriateness under MiFID II", "Fees and risk indicator"],
-  },
+  { template: "4-proposal.yml", title: "New topic", text: "Something many implementations need that the draft does not cover." },
 ];
 
 function serverDeclaration(): string {
-  const settings = readRepoJson<GetDistributorResult>("examples/insurance-01-get_distributor.result.json").ofap;
+  const settings = readRepoJson<GetDistributorResult>("examples/insurance-01-get_distributor.result.json").aip;
   const json = JSON.stringify({ capabilities: { extensions: { [EXTENSION_ID]: settings } } }, null, 2);
   // Short arrays of values fit on one line.
   return json.replace(/\[\s+([^[\]{}]*?)\s+\]/g, (_, items: string) => `[${items.split(/,\s+/).join(", ")}]`);
@@ -111,11 +90,11 @@ export default function Home() {
     <div className="home">
       <section className="hero">
         <div className="hero-text">
-          <p className="label">Draft 0.1 · Insurance first</p>
+          <p className="label">Draft 0.1</p>
           <h1 className="display">An open standard to sell insurance through AI agents.</h1>
           <p className="lede body-lg">
             People now ask AI agents to find, compare and buy insurance. The agents visit websites that were made for people, and they often bring back a
-            bare price without the cover or the conditions behind it. OFAP gives insurers one open way to give agents the full offer, and to keep each
+            bare price without the cover or the conditions behind it. AIP gives insurers one open way to give agents the full offer, and to keep each
             sale compliant.
           </p>
           <div className="actions">
@@ -176,11 +155,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section" id="ofap">
+      <section className="section" id="tools">
         <header className="section-head">
-          <h2 className="title-2">The tools OFAP defines</h2>
+          <h2 className="title-2">The tools AIP defines</h2>
           <p>
-            OFAP tells an insurer which tools to put in its MCP server, and what each one returns. Draft 0.1 covers acquisition, from the first question
+            AIP tells an insurer which tools to put in its MCP server, and what each one returns. Draft 0.1 covers acquisition, from the first question
             to the signed contract. Changes, renewals, cancellations and claims come in a later draft.
           </p>
         </header>
@@ -214,7 +193,7 @@ export default function Home() {
       <section className="section" id="how-it-works">
         <header className="section-head">
           <h2 className="title-2">How it works</h2>
-          <p>One pet insurance sale, from discovery to the evidence record. The OFAP data on screen comes from the worked example in the spec.</p>
+          <p>One pet insurance sale, from discovery to the evidence record. The AIP data on screen comes from the worked example in the spec.</p>
         </header>
         <Explainer data={explainerData()} />
       </section>
@@ -251,33 +230,13 @@ export default function Home() {
           <div>
             <h3 className="title-3">What a server declares</h3>
             <p>
-              A server declares its level, its sectors and its product lines in MCP <code>server/discover</code>, and under the same key in PAP{" "}
+              A server declares its level, its product lines and its countries in MCP <code>server/discover</code>, and under the same key in PAP{" "}
               <code>poppy.json</code>. This declaration comes from the worked example.
             </p>
           </div>
           <pre className="declaration">
             <code dangerouslySetInnerHTML={{ __html: highlightJsonHtml(serverDeclaration()) }} />
           </pre>
-        </div>
-      </section>
-
-      <section className="section" id="sectors">
-        <header className="section-head">
-          <h2 className="title-2">Insurance first</h2>
-          <p>Draft 0.1 defines one sector module. The core does not depend on the sector, so credit and investment can follow as modules with no change to it.</p>
-        </header>
-        <div className="sectors">
-          {SECTORS.map((sector) => (
-            <div className={`sector ${sector.current ? "current" : ""}`} key={sector.name}>
-              <span className={`pill ${sector.current ? "positive" : ""}`}>{sector.status}</span>
-              <h3 className="title-3">{sector.name}</h3>
-              <ul>
-                {sector.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
         </div>
       </section>
 

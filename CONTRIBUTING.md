@@ -1,20 +1,20 @@
 # Contributing
 
-OFAP is a draft. Feedback on the specification, line profile data from distributors, and fixes to the schema, the examples and the checks are welcome.
+AIP is a draft. Feedback on the specification, line profile data from distributors, and fixes to the schema, the examples and the checks are welcome.
 
 ## Feedback on the specification
 
 Open an issue with the [spec feedback](https://github.com/OFA-Foundation/open-financial-agent-protocol/issues/new?template=1-feedback.yml) template. Give the file and the type or rule, the kind of problem, and a suggested change if you have one.
 
-If you implemented OFAP as an agent or a distributor, send an [implementation report](https://github.com/OFA-Foundation/open-financial-agent-protocol/issues/new?template=2-implementation-report.yml). Reports are useful at any stage, including if you stopped partway.
+If you implemented AIP as an agent or a distributor, send an [implementation report](https://github.com/OFA-Foundation/open-financial-agent-protocol/issues/new?template=2-implementation-report.yml). Reports are useful at any stage, including if you stopped partway.
 
 ## Line profiles
 
 A line profile needs a second distributor of the same line before it is stable. If you distribute a product in a line that has a profile, or in a line with no profile yet, open a [line profile](https://github.com/OFA-Foundation/open-financial-agent-protocol/issues/new?template=3-line-profile.yml) issue with the questions your tariff asks. Do not include customer data, internal tool names, or anything under a confidentiality agreement.
 
-## New sector modules
+## New topics
 
-Draft 0.1 covers insurance. To propose a credit or investment module, or another extension, open a [proposal](https://github.com/OFA-Foundation/open-financial-agent-protocol/issues/new?template=4-proposal.yml). Section 8 of `schema.ts` lists what a module must define.
+To propose something that many implementations need and the draft does not cover, open a [new topic](https://github.com/OFA-Foundation/open-financial-agent-protocol/issues/new?template=4-proposal.yml) issue.
 
 ## Security
 
