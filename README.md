@@ -27,9 +27,10 @@ MCP and PAP do not cover what insurance regulation asks for:
 | File | What it is |
 |---|---|
 | `schema.ts` | Source of truth. Every type, with the rules in RFC 2119 keywords |
-| `schema.json` | JSON Schema generated from `schema.ts`. Do not edit it by hand |
+| `registry.ts` | The registry: its tools, its types and its rules, with the conventions of `schema.ts` |
+| `schema.json` | JSON Schema generated from `schema.ts` and `registry.ts`. Do not edit it by hand |
 | `profiles.ts` | Line profiles: the common core of questions per product line |
-| `examples/` | A worked pet insurance flow with fictional data: find the product and its scope, quote a cat, quote an older dog and a pet outside the scope that get no offer, validate the answers, get binding offers, apply, keep the evidence |
+| `examples/` | A worked pet insurance flow with fictional data: find the product and its scope, quote a cat, quote an older dog and a pet outside the scope that get no offer, validate the answers, get binding offers, apply, keep the evidence. The `registry-` files show a search, three licence checks and the rules of France |
 | `scripts/` | Generate the schema, build the examples, run the checks |
 | `content/`, `app/`, `components/`, `lib/` | The website at [openfinancialagent.org](https://openfinancialagent.org). See `AGENTS.md` |
 
@@ -58,6 +59,12 @@ A sale through an agent must leave the same record as a sale on the distributor'
 | 3. Subscribe | + `submit_application` or `conclude` | Signed out is enough. The action is a PAP operation |
 
 A server declares its level and its lines under `capabilities.extensions["org.openfinancialagent/ofap"]` in MCP `server/discover`, and under the same key in PAP `poppy.json`.
+
+## Registry
+
+One central MCP server helps a buying agent before it calls any seller. `search_distributors` finds the sellers that speak AIP in a country. `verify_licence` checks a seller, or the insurer behind an offer, in the public registers, and gives a verdict: `licensed`, `not_licensed` or `unknown`. `get_country_rules` returns the rules of a country for the buyer skill. The registry needs no customer data and no session. It works for a seller that it does not list, because an agent can find a seller anywhere on the web.
+
+The registry lists a server only when the server proves its domain with `poppy.json`, holds an active licence in a public register, and has every tool of its level. [`content/registry-0.1.md`](content/registry-0.1.md) gives the rules and the public registers of the United States, the United Kingdom and France. Checks RG1 to RG8 cover its rules.
 
 ## Line profiles
 
@@ -93,6 +100,8 @@ A product's question set must include every required question of its profile wit
 ## Rules the checks cover
 
 R1 profiles compile. R2 a question set has every required question of its profile. R3 answers match their question set. R4 no `distributor_page` field in agent answers. R5 `answers_sha256` and `answer_sources_sha256` are the SHA-256 of the canonical JSON (RFC 8785). R6 every document required before commitment was delivered, same version and digest. R7 accuracy confirmed before a proposal. R8 an application and a validation need the customer's own approval. R9 a non-life insurance product has an IPID required before commitment. R10 the evidence hash matches the confirmed terms. R11 a handoff offer has a `handoff_url`. R12 an empty quote gives a reason. R13 each subdivision of an underwriting scope is in its countries, and each kind is a value of the profile's kind question. R14 `list_products` returns only the products that match its filters. R15 offers cover only risks inside the structured scope, and a risk outside it gets `outside_underwriting_scope`. R16 the agent quotes only inside the structured scope. R17 every answer has one source, and every source has an answer. R18 a binding offer comes from a quote with the customer's validation of the same answers and sources. R19 the declaration of an application carries a succeeded validation of the same answers and sources. R20 the evidence keeps the hash of the sources, the validation and the scope version of the offer. R21 a binding offer gives the excess and the limits of its cover. R22 the pricing of an application is the pricing of its offer.
+
+RG1 a search returns only listed servers that match every param. RG2 the verdict of a licence check follows from the entries it read and from the domain link. RG3 every entry was read at most seven days before the verdict. RG4 a licence check repeats the params of the call. RG5 a check in a country where licences apply per subdivision gives the subdivision. RG6 the hash and the front matter of a rules file match the file. RG7 the rules start with the file of the country. RG8 the registry tools need no session, and their params hold no customer data.
 
 ## Open points
 

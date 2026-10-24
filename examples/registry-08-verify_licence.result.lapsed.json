@@ -18,7 +18,7 @@
   "licences": [
     {
       "country": "US",
-      "register": "NIPR",
+      "register": "NIPR Producer Database",
       "identifier_type": "npn",
       "identifier": "00000000",
       "role": "agent",
@@ -33,7 +33,7 @@
         "pet"
       ],
       "name_in_register": "EXAMPLE PET AGENCY LLC",
-      "access": "web_page",
+      "access": "api",
       "checked_at": "2026-10-21T15:40:00-05:00",
       "source_url": "https://nipr.com/",
       "regulator": "Texas Department of Insurance",
@@ -46,7 +46,7 @@
     },
     {
       "country": "US",
-      "register": "NIPR",
+      "register": "NIPR Producer Database",
       "identifier_type": "npn",
       "identifier": "00000000",
       "role": "agent",
@@ -61,7 +61,7 @@
         "pet"
       ],
       "name_in_register": "EXAMPLE PET AGENCY LLC",
-      "access": "web_page",
+      "access": "api",
       "checked_at": "2026-10-21T15:40:00-05:00",
       "source_url": "https://nipr.com/",
       "regulator": "Oklahoma Insurance Department",

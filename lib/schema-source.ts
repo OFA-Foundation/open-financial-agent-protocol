@@ -1,5 +1,5 @@
 // Reads what the site needs from the source files of the spec: schema.ts,
-// schema.json, profiles.ts, README.md and examples/. The site copies nothing
+// registry.ts, schema.json, profiles.ts, README.md and examples/. The site copies nothing
 // by hand, so it cannot drift from the source.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -39,10 +39,13 @@ export interface SchemaSection {
   types: string[];
 }
 
-/** The numbered sections of schema.ts, each with the types it exports. */
-export function schemaSections(): SchemaSection[] {
+/** The files that hold the types, in the order of the schema reference. */
+export type TypeSource = "schema.ts" | "registry.ts";
+
+/** The numbered sections of a source file, each with the types it exports. */
+export function schemaSections(file: TypeSource = "schema.ts"): SchemaSection[] {
   const sections: SchemaSection[] = [];
-  for (const line of readRepoFile("schema.ts").split("\n")) {
+  for (const line of readRepoFile(file).split("\n")) {
     const header = /^\/\* (\d+)\. (.+?)\s*\*\/$/.exec(line);
     if (header?.[1] && header[2]) {
       sections.push({ number: Number(header[1]), title: header[2], types: [] });
@@ -56,18 +59,21 @@ export function schemaSections(): SchemaSection[] {
 }
 
 /** Text of the declaration that starts with `start`, up to the first line that is exactly `end`. */
-function declarationBlock(start: string, end: string): string {
-  const source = readRepoFile("schema.ts");
+function declarationBlock(start: string, end: string, file: TypeSource): string {
+  const source = readRepoFile(file);
   const from = source.indexOf(start);
-  if (from < 0) throw new Error(`schema.ts has no "${start}"`);
+  if (from < 0) throw new Error(`${file} has no "${start}"`);
   const to = source.indexOf(`\n${end}\n`, from);
   return source.slice(from, to < 0 ? undefined : to);
 }
 
-/** Params and result type of each tool, from `ToolSignatures`. */
-export function toolSignatures(): Record<string, { params: string; result: string }> {
+/** Params and result type of each tool, from `ToolSignatures` or another interface of the same form. */
+export function toolSignatures(
+  name = "ToolSignatures",
+  file: TypeSource = "schema.ts",
+): Record<string, { params: string; result: string }> {
   const signatures: Record<string, { params: string; result: string }> = {};
-  const block = declarationBlock("export interface ToolSignatures", "}");
+  const block = declarationBlock(`export interface ${name}`, "}", file);
   for (const match of block.matchAll(/^\s+(\w+): \{ params: (\w+); result: (\w+) \};$/gm)) {
     if (match[1] && match[2] && match[3]) signatures[match[1]] = { params: match[2], result: match[3] };
   }
@@ -85,9 +91,9 @@ export function levelNames(): Record<number, string> {
   return names;
 }
 
-/** Each error code with the comment above it in `AipErrorCode`. */
-export function errorCodes(): { code: string; meaning: string }[] {
-  const block = declarationBlock("export type AipErrorCode =", "");
+/** Each error code with the comment above it in `AipErrorCode`, or in another union of the same form. */
+export function errorCodes(name = "AipErrorCode", file: TypeSource = "schema.ts"): { code: string; meaning: string }[] {
+  const block = declarationBlock(`export type ${name} =`, "", file);
   const codes: { code: string; meaning: string }[] = [];
   let comment = "";
   for (const line of block.split("\n")) {
@@ -96,10 +102,10 @@ export function errorCodes(): { code: string; meaning: string }[] {
       comment = doc[1];
       continue;
     }
-    if (/^\s*\/\*\*/.test(line)) throw new Error("AipErrorCode comments must fit on one line");
+    if (/^\s*\/\*\*/.test(line)) throw new Error(`${name} comments must fit on one line`);
     const member = /^\s*\|\s*"(\w+)"/.exec(line);
     if (member?.[1]) {
-      if (!comment) throw new Error(`AipErrorCode "${member[1]}" has no comment`);
+      if (!comment) throw new Error(`${name} "${member[1]}" has no comment`);
       codes.push({ code: member[1], meaning: comment });
       comment = "";
     }

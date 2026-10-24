@@ -1,7 +1,9 @@
-// Builds the Markdown of each docs page. The spec page is hand-written in
-// content/, with markers that this file replaces by tables generated from the
-// source. The reference and the worked example are generated in full.
+// Builds the Markdown of each docs page. The spec and registry pages are
+// hand-written in content/, with markers that this file replaces by tables
+// generated from the source. The reference and the worked example are
+// generated in full.
 import { PROFILES } from "../profiles";
+import { REGISTRY_TOOLS, type RegistryToolName } from "../registry";
 import { TOOLS, type ConformanceLevel, type SessionRequirement, type ToolName } from "../schema";
 import type { ExampleName } from "../scripts/example-files";
 import {
@@ -13,6 +15,7 @@ import {
   schemaSections,
   toolSignatures,
   type JsonSchema,
+  type TypeSource,
 } from "./schema-source";
 import { REFERENCE_HREF, repoFileUrl } from "./site";
 
@@ -104,12 +107,44 @@ function profilesSection(): string {
   }).join("\n\n");
 }
 
-/** README "Rules the checks cover" is one paragraph. The site shows one rule per line. */
-function rulesList(): string {
+/**
+ * README "Rules the checks cover" lists the rules in running text: R1, R2… for
+ * the insurer tools, then RG1, RG2… for the registry. The site shows the rules
+ * of one prefix, one per line.
+ */
+function rulesList(prefix: "R" | "RG"): string {
   return readmeSection("Rules the checks cover")
-    .split(/(?<=\.) (?=R\d+ )/)
-    .map((rule) => rule.replace(/^(R\d+) /, "- **$1** "))
+    .split(/(?<=\.)\s+(?=RG?\d+ )/)
+    .filter((rule) => new RegExp(`^${prefix}\\d+ `).test(rule))
+    .map((rule) => rule.replace(/^(RG?\d+) /, "- **$1** "))
     .join("\n");
+}
+
+const registryToolNames = Object.keys(REGISTRY_TOOLS) as RegistryToolName[];
+
+function registryToolsTable(): string {
+  const signatures = toolSignatures("RegistryToolSignatures", "registry.ts");
+  return table(
+    ["Tool", "Session (PAP)", "Effect", "Params → result"],
+    registryToolNames.map((tool) => {
+      const { session, readOnlyHint } = REGISTRY_TOOLS[tool];
+      const signature = signatures[tool];
+      if (!signature) throw new Error(`RegistryToolSignatures has no entry for ${tool}`);
+      return [
+        `\`${tool}\``,
+        SESSION_LABELS[session],
+        readOnlyHint ? "Read-only" : "Changes data",
+        `\`${signature.params}\` → \`${signature.result}\``,
+      ];
+    }),
+  );
+}
+
+function registryErrorsTable(): string {
+  return table(
+    ["Code", "Meaning"],
+    errorCodes("RegistryErrorCode", "registry.ts").map(({ code, meaning }) => [`\`${code}\``, meaning]),
+  );
 }
 
 const MARKERS: Record<string, () => string> = {
@@ -117,8 +152,12 @@ const MARKERS: Record<string, () => string> = {
   tools: toolsTable,
   errors: errorsTable,
   profiles: profilesSection,
-  "readme Rules the checks cover": rulesList,
+  "readme Rules the checks cover": () => rulesList("R"),
   "readme Open points": () => readmeSection("Open points"),
+  "registry tools": registryToolsTable,
+  "registry errors": registryErrorsTable,
+  "registry rules": () => rulesList("RG"),
+  "registry example": registryExampleSection,
 };
 
 /** Replaces each `<!-- aip:name -->` marker with its generated Markdown. */
@@ -132,6 +171,10 @@ export function expandMarkers(markdown: string): string {
 
 export function specMarkdown(): string {
   return expandMarkers(readRepoFile("content/spec-0.1.md"));
+}
+
+export function registryMarkdown(): string {
+  return expandMarkers(readRepoFile("content/registry-0.1.md"));
 }
 
 /* Schema reference */
@@ -194,19 +237,26 @@ function definitionMarkdown(name: string, schema: JsonSchema): string {
 export function referenceMarkdown(): string {
   const definitions = schemaDefinitions();
   const placed = new Set<string>();
-  const sections = schemaSections().map((section) => {
-    const names = section.types.flatMap((type) =>
-      Object.keys(definitions).filter((name) => name === type || name.startsWith(`${type}<`)),
-    );
-    names.forEach((name) => placed.add(name));
-    const body = names.map((name) => definitionMarkdown(name, definitions[name] ?? {})).join("\n\n");
-    return `## ${section.number}. ${section.title}\n\n${body || "No types."}`;
-  });
+  // The registry sections come after the sections of schema.ts, numbered R1, R2…
+  const sources: { file: TypeSource; prefix: string }[] = [
+    { file: "schema.ts", prefix: "" },
+    { file: "registry.ts", prefix: "R" },
+  ];
+  const sections = sources.flatMap(({ file, prefix }) =>
+    schemaSections(file).map((section) => {
+      const names = section.types.flatMap((type) =>
+        Object.keys(definitions).filter((name) => !placed.has(name) && (name === type || name.startsWith(`${type}<`))),
+      );
+      names.forEach((name) => placed.add(name));
+      const body = names.map((name) => definitionMarkdown(name, definitions[name] ?? {})).join("\n\n");
+      return `## ${prefix}${section.number}. ${section.title}\n\n${body || "No types."}`;
+    }),
+  );
   const unplaced = Object.keys(definitions).filter((name) => !placed.has(name));
-  if (unplaced.length) throw new Error(`Definitions with no section in schema.ts: ${unplaced.join(", ")}`);
+  if (unplaced.length) throw new Error(`Definitions with no section in schema.ts or registry.ts: ${unplaced.join(", ")}`);
   return [
     "# Schema reference, draft 0.1",
-    `Every type of AIP draft 0.1, generated from [\`schema.ts\`](${repoFileUrl("schema.ts")}) through [\`schema.json\`](/schemas/0.1/schema.json). The sections follow \`schema.ts\`. The rules in the descriptions use the RFC 2119 keywords.`,
+    `Every type of AIP draft 0.1, generated from [\`schema.ts\`](${repoFileUrl("schema.ts")}) and [\`registry.ts\`](${repoFileUrl("registry.ts")}) through [\`schema.json\`](/schemas/0.1/schema.json). The sections follow \`schema.ts\`, then \`registry.ts\` from R1. The rules in the descriptions use the RFC 2119 keywords.`,
     ...sections,
   ].join("\n\n");
 }
@@ -351,4 +401,57 @@ export function exampleMarkdown(): string {
     `A broker, Example Pets, sells the pet insurance of an insurer, Example Mutual, in France. An agent finds the product, quotes a cat called Miso for Camille Martin, has her validate the answers, and applies for the first binding offer. All companies, people and prices are fictional. The repository writes these files with [\`scripts/examples.ts\`](${repoFileUrl("scripts/examples.ts")}) and checks them against the [schema](${REFERENCE_HREF}) and the rules on every push.`,
     ...steps,
   ].join("\n\n");
+}
+
+/* Registry example */
+
+interface RegistryStep {
+  title: string;
+  tool: RegistryToolName;
+  files: ExampleName[];
+  text: string;
+}
+
+const REGISTRY_STEPS: RegistryStep[] = [
+  {
+    title: "Find the sellers",
+    tool: "search_distributors",
+    files: ["registry-01-search_distributors.params", "registry-02-search_distributors.result"],
+    text: "Camille lives in France and wants to insure her cat. The agent asks the registry for the sellers of pet insurance in France that can at least quote. The registry returns Example Pets, with the register entry that its listing rests on.",
+  },
+  {
+    title: "Check a listed seller",
+    tool: "verify_licence",
+    files: ["registry-03-verify_licence.params.licensed", "registry-04-verify_licence.result.licensed"],
+    text: "Before it sends any answer, the agent checks the domain that will receive them. The registry reads the ORIAS entry again, and the entry gives the website of Example Pets, so the link is `register`. The verdict is `licensed`. The agent keeps this result with the record of the sale.",
+  },
+  {
+    title: "Check a seller found on the web",
+    tool: "verify_licence",
+    files: ["registry-05-verify_licence.params.no_licence", "registry-06-verify_licence.result.no_licence"],
+    text: "Another site sells pet cover and gives an ORIAS number in its legal notice. ORIAS has no such entry. The verdict is `not_licensed`, so the agent sends nothing to that site and tells Camille why.",
+  },
+  {
+    title: "Check a seller whose licence lapsed",
+    tool: "verify_licence",
+    files: ["registry-07-verify_licence.params.lapsed", "registry-08-verify_licence.result.lapsed"],
+    text: "In the United States a licence applies per state, so the agent gives the state. The operator confirmed the agency's domain when it listed it. The Texas licence lapsed, and the Oklahoma licence does not cover a customer in Texas. The verdict is `not_licensed`, and the reason comes from the Texas entry.",
+  },
+  {
+    title: "Load the rules of the country",
+    tool: "get_country_rules",
+    files: ["registry-09-get_country_rules.params", "registry-10-get_country_rules.result"],
+    text: "The agent loads the rules of France. The file is the one of the buyer skill, with its version, its owner, its status and its hash. This example shows the start of a draft file.",
+  },
+];
+
+function registryExampleSection(): string {
+  return REGISTRY_STEPS.map((step) =>
+    [
+      `### ${step.title}`,
+      `*${step.tool}* · ${step.files.map((file) => `[\`examples/${file}.json\`](${repoFileUrl(`examples/${file}.json`)})`).join(" · ")}`,
+      step.text,
+      ...step.files.map((file) => "```json\n" + readRepoFile(`examples/${file}.json`).trimEnd() + "\n```"),
+    ].join("\n\n"),
+  ).join("\n\n");
 }

@@ -906,7 +906,7 @@
         "files"
       ],
       "additionalProperties": false,
-      "description": "Result of `get_country_rules`.\n\n- `files` MUST start with the file of the country. The file of the   subdivision and then the file of the line follow, when they exist.\n- Each file MUST be the same text as the file of the same version in the   skill, so that `sha256` is the same in both places.\n- An agent MUST follow every file of the result. When the registry does not   answer, the agent uses the copy in its installed skill, and SHOULD tell the   customer which version it used."
+      "description": "Result of `get_country_rules`.\n\n- `files` MUST start with the file of the country. The file of the   subdivision and then the file of the line follow, when they exist.\n- For a country with no rules file, the registry MUST return the error   \"country_not_covered\".\n- Each file MUST be the same text as the file of the same version in the   skill, so that `sha256` is the same in both places.\n- An agent MUST follow every file of the result. When the registry does not   answer, the agent uses the copy in its installed skill, and SHOULD tell the   customer which version it used."
     },
     "GetDistributorParams": {
       "type": "object",
@@ -1335,6 +1335,7 @@
       "type": "string",
       "enum": [
         "active",
+        "pending",
         "lapsed",
         "suspended",
         "revoked",
@@ -2803,7 +2804,7 @@
         "distributors"
       ],
       "additionalProperties": false,
-      "description": "Result of `search_distributors`.\n\n- Each server in `distributors` MUST match every param of the search: the   country is in its `countries`, the line is in its `lines`, the subdivision   is in its `subdivisions` when it has some, the insured family is in its   `insured_families`, and its level is not below `min_conformance_level`.\n- The registry MUST return every listed server that matches, across the   pages.\n- The order carries no meaning. The registry MUST NOT rank a server for a   payment or for any commercial link. It SHOULD shuffle the order for each   new search, and keep that order across the pages of the same search.\n- An agent MUST NOT show the order to the customer as a ranking.\n- A search result is not a licence check. An agent checks the seller with   `verify_licence` before it sends any of the customer's answers."
+      "description": "Result of `search_distributors`.\n\n- Each server in `distributors` MUST match every param of the search: the   country is in its `countries`, the line is in its `lines`, the subdivision   is in its `subdivisions` when it has some, the insured family is in its   `insured_families`, and its level is not below `min_conformance_level`.\n- The registry MUST return every listed server that matches, across the   pages.\n- For a country where it lists no server, the registry MUST return the error   \"country_not_covered\", so that an agent does not read an empty list as   \"no seller exists\".\n- The order carries no meaning. The registry MUST NOT rank a server for a   payment or for any commercial link. It SHOULD shuffle the order for each   new search, and keep that order across the pages of the same search.\n- An agent MUST NOT show the order to the customer as a ranking.\n- A search result is not a licence check. An agent checks the seller with   `verify_licence` before it sends any of the customer's answers."
     },
     "SellerSubject": {
       "type": "object",
@@ -2847,7 +2848,7 @@
         "bulk_file",
         "web_page"
       ],
-      "description": "How the registry reads a public register."
+      "description": "How the registry reads a public register. The registry MUST read a register only through an access that the terms of the register allow, and under an agreement when the terms ask for one. Most registers forbid robots on their web pages."
     },
     "SubdivisionCode": {
       "type": "string",

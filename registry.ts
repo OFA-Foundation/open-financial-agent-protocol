@@ -84,9 +84,14 @@ export interface RegistrySettings {
   policy_url: Url;
 }
 
-/** How the registry reads a public register. */
+/**
+ * How the registry reads a public register. The registry MUST read a register
+ * only through an access that the terms of the register allow, and under an
+ * agreement when the terms ask for one. Most registers forbid robots on their
+ * web pages.
+ */
 export type SourceAccess =
-  /** An official API of the register. */
+  /** An official API or web service of the register. */
   | "api"
   /** A file that the register publishes for download. */
   | "bulk_file"
@@ -252,6 +257,9 @@ export interface SearchDistributorsParams {
  *   `insured_families`, and its level is not below `min_conformance_level`.
  * - The registry MUST return every listed server that matches, across the
  *   pages.
+ * - For a country where it lists no server, the registry MUST return the error
+ *   "country_not_covered", so that an agent does not read an empty list as
+ *   "no seller exists".
  * - The order carries no meaning. The registry MUST NOT rank a server for a
  *   payment or for any commercial link. It SHOULD shuffle the order for each
  *   new search, and keep that order across the pages of the same search.
@@ -350,6 +358,8 @@ export type VerifyLicenceParams = DistributorCheckParams | ProviderCheckParams;
 export type LicenceStatus =
   /** The entry is in force. */
   | "active"
+  /** The regulator has not approved the entry yet. */
+  | "pending"
   /** The entry ended with no sanction: not renewed, expired, or removed at the holder's request. */
   | "lapsed"
   /** The regulator suspended the entry for a time. */
@@ -440,7 +450,7 @@ export interface CheckedSubject {
 export type NotLicensedReason =
   /** The registers of the country have no entry for the party. */
   | "no_entry"
-  /** Every entry found is lapsed, suspended or revoked. */
+  /** The entry that covers the rest of the question is pending, lapsed, suspended or revoked. */
   | "licence_not_active"
   /** An entry is active, but its name does not match the name that the seller declares or shows. */
   | "name_mismatch"
@@ -610,6 +620,8 @@ export interface RulesFile {
  *
  * - `files` MUST start with the file of the country. The file of the
  *   subdivision and then the file of the line follow, when they exist.
+ * - For a country with no rules file, the registry MUST return the error
+ *   "country_not_covered".
  * - Each file MUST be the same text as the file of the same version in the
  *   skill, so that `sha256` is the same in both places.
  * - An agent MUST follow every file of the result. When the registry does not

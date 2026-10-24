@@ -613,7 +613,7 @@ await write("registry-04-verify_licence.result.licensed", {
   subject: {
     legal_name: distributor.legal_name,
     domain: distributor.domain,
-    domain_link: "confirmed",
+    domain_link: "register",
     listed: true,
     mcp_url: examplePetsListing.mcp_url,
   },
@@ -629,7 +629,7 @@ await write("registry-04-verify_licence.result.licensed", {
       register_status: "Inscrit",
       categories: orias.categories ?? [],
       name_in_register: "EXAMPLE PETS SAS",
-      access: "web_page",
+      access: "api",
       checked_at: checkedAt,
       source_url: "https://www.orias.fr/",
     },
@@ -665,7 +665,7 @@ await write("registry-06-verify_licence.result.no_licence", {
       identifier_type: "orias_number",
       identifier: "00000001",
       status: "not_found",
-      access: "web_page",
+      access: "api",
       checked_at: "2026-10-20T10:12:00+02:00",
       source_url: "https://www.orias.fr/",
     },
@@ -689,14 +689,14 @@ const lapsedParams: VerifyLicenceParams = {
 };
 const agencyLicence = {
   country: "US",
-  register: "NIPR",
+  register: "NIPR Producer Database",
   identifier_type: "npn",
   identifier: "00000000",
   role: "agent",
   categories: ["Property", "Casualty"],
   lines: ["home", "renters", "motor", "pet"],
   name_in_register: "EXAMPLE PET AGENCY LLC",
-  access: "web_page",
+  access: "api",
   checked_at: "2026-10-21T15:40:00-05:00",
   source_url: "https://nipr.com/",
 } satisfies Partial<LicenceCheck>;

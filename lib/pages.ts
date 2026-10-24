@@ -1,7 +1,7 @@
 import { renderMarkdown, type RenderedMarkdown } from "./markdown";
 import { schemaDefinitions } from "./schema-source";
-import { EXAMPLE_HREF, REFERENCE_HREF, SCHEMA_HREF, SITE_URL, SPEC_HREF } from "./site";
-import { exampleMarkdown, referenceMarkdown, specMarkdown } from "./spec-content";
+import { EXAMPLE_HREF, REFERENCE_HREF, REGISTRY_HREF, SCHEMA_HREF, SITE_URL, SPEC_HREF } from "./site";
+import { exampleMarkdown, referenceMarkdown, registryMarkdown, specMarkdown } from "./spec-content";
 
 export interface DocsPage {
   href: string;
@@ -21,9 +21,17 @@ export const DOCS_PAGES: DocsPage[] = [
     markdown: specMarkdown,
   },
   {
+    href: REGISTRY_HREF,
+    navTitle: "Registry",
+    description:
+      "The AIP registry, draft 0.1: how an agent finds the sellers of a country, checks a licence in the public registers, and loads the rules of a country.",
+    outlineDepth: 3,
+    markdown: registryMarkdown,
+  },
+  {
     href: REFERENCE_HREF,
     navTitle: "Schema reference",
-    description: "Every type of AIP draft 0.1, generated from schema.ts.",
+    description: "Every type of AIP draft 0.1, generated from schema.ts and registry.ts.",
     outlineDepth: 2,
     markdown: referenceMarkdown,
   },
