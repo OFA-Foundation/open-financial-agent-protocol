@@ -344,55 +344,6 @@
       "additionalProperties": false,
       "description": "Terms of an application or a conclusion. Every field the law needs as evidence is here, so that a confirmed revision records exactly what the customer accepted."
     },
-    "CheckCapacity": {
-      "type": "string",
-      "enum": [
-        "distributor",
-        "provider"
-      ],
-      "description": "In which capacity the agent checks a party."
-    },
-    "CheckSubject": {
-      "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "domain": {
-              "$ref": "#/definitions/DomainName",
-              "description": "Domain of the seller's website or MCP server."
-            },
-            "identifier": {
-              "$ref": "#/definitions/RegisterIdentifier"
-            },
-            "legal_name": {
-              "type": "string",
-              "description": "Legal name that the seller shows, for example in the legal notice of its website."
-            }
-          },
-          "required": [
-            "domain"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "identifier": {
-              "$ref": "#/definitions/RegisterIdentifier"
-            },
-            "legal_name": {
-              "type": "string",
-              "description": "Legal name that the seller shows, for example in the legal notice of its website."
-            }
-          },
-          "required": [
-            "identifier"
-          ],
-          "additionalProperties": false
-        }
-      ],
-      "description": "The party to check. Give a domain, a register entry, or both."
-    },
     "CheckedSubject": {
       "type": "object",
       "properties": {
@@ -711,6 +662,36 @@
       ],
       "additionalProperties": false
     },
+    "DistributorCheckParams": {
+      "type": "object",
+      "properties": {
+        "capacity": {
+          "type": "string",
+          "const": "distributor"
+        },
+        "subject": {
+          "$ref": "#/definitions/SellerSubject"
+        },
+        "country": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "Country where the customer buys."
+        },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Subdivision where the customer buys. REQUIRED for a country in `PER_SUBDIVISION_COUNTRIES`, such as the United States."
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        }
+      },
+      "required": [
+        "capacity",
+        "subject",
+        "country"
+      ],
+      "additionalProperties": false,
+      "description": "Params of `verify_licence` for a seller. Every distribution role counts, including an insurer that sells its own products.\n\nThe check MUST work for a seller that the registry does not list. An agent can find a seller anywhere on the web, and the check matters most then."
+    },
     "DistributorRole": {
       "anyOf": [
         {
@@ -752,11 +733,12 @@
     "DomainLink": {
       "type": "string",
       "enum": [
-        "aip_server",
         "register",
+        "confirmed",
+        "claimed",
         "not_linked"
       ],
-      "description": "How the registry tied a domain to register entries."
+      "description": "How the registry tied a domain to register entries. Only \"register\" and \"confirmed\" support the verdict \"licensed\"."
     },
     "DomainName": {
       "type": "string",
@@ -2149,6 +2131,36 @@
       "additionalProperties": false,
       "description": "An option the customer can add (optional cover, extra service)."
     },
+    "ProviderCheckParams": {
+      "type": "object",
+      "properties": {
+        "capacity": {
+          "type": "string",
+          "const": "provider"
+        },
+        "subject": {
+          "$ref": "#/definitions/ProviderSubject"
+        },
+        "country": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "Country where the customer buys."
+        },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Subdivision where the customer buys. REQUIRED for a country in `PER_SUBDIVISION_COUNTRIES`, such as the United States."
+        },
+        "line": {
+          "$ref": "#/definitions/ProductLine"
+        }
+      },
+      "required": [
+        "capacity",
+        "subject",
+        "country"
+      ],
+      "additionalProperties": false,
+      "description": "Params of `verify_licence` for the party that carries the risk, for example the insurer in `Offer.provider`. Only a provider role counts."
+    },
     "ProviderRef": {
       "type": "object",
       "properties": {
@@ -2190,6 +2202,44 @@
       "type": "string",
       "const": "insurer",
       "description": "Role of the party that carries the risk."
+    },
+    "ProviderSubject": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "domain": {
+              "$ref": "#/definitions/DomainName"
+            },
+            "identifier": {
+              "$ref": "#/definitions/RegisterIdentifier"
+            },
+            "legal_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "domain"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "identifier": {
+              "$ref": "#/definitions/RegisterIdentifier"
+            },
+            "legal_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "identifier"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "A provider to check, for example from `Offer.provider`. Give its domain, a register entry, or both."
     },
     "QuestionSet": {
       "type": "object",
@@ -2755,6 +2805,28 @@
       "additionalProperties": false,
       "description": "Result of `search_distributors`.\n\n- Each server in `distributors` MUST match every param of the search: the   country is in its `countries`, the line is in its `lines`, the subdivision   is in its `subdivisions` when it has some, the insured family is in its   `insured_families`, and its level is not below `min_conformance_level`.\n- The registry MUST return every listed server that matches, across the   pages.\n- The order carries no meaning. The registry MUST NOT rank a server for a   payment or for any commercial link. It SHOULD shuffle the order for each   new search, and keep that order across the pages of the same search.\n- An agent MUST NOT show the order to the customer as a ranking.\n- A search result is not a licence check. An agent checks the seller with   `verify_licence` before it sends any of the customer's answers."
     },
+    "SellerSubject": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "$ref": "#/definitions/DomainName",
+          "description": "Domain of the MCP server or the website that receives the customer's answers."
+        },
+        "identifier": {
+          "$ref": "#/definitions/RegisterIdentifier",
+          "description": "Register entry that the seller shows, for example in the legal notice of its website."
+        },
+        "legal_name": {
+          "type": "string",
+          "description": "Legal name that the seller shows."
+        }
+      },
+      "required": [
+        "domain"
+      ],
+      "additionalProperties": false,
+      "description": "A seller to check. The domain is where the customer's answers go."
+    },
     "SessionRequirement": {
       "type": "string",
       "enum": [
@@ -3150,33 +3222,15 @@
       "description": "Terms of a validation: the answers that the customer validates, and their sources. The `summary` of the operation MUST show each answer and its source in plain words, so that the customer can check each one."
     },
     "VerifyLicenceParams": {
-      "type": "object",
-      "properties": {
-        "subject": {
-          "$ref": "#/definitions/CheckSubject"
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DistributorCheckParams"
         },
-        "country": {
-          "$ref": "#/definitions/CountryCode",
-          "description": "Country where the customer buys."
-        },
-        "subdivision": {
-          "$ref": "#/definitions/SubdivisionCode",
-          "description": "Subdivision where the customer buys. REQUIRED for a country in `PER_SUBDIVISION_COUNTRIES`, such as the United States."
-        },
-        "line": {
-          "$ref": "#/definitions/ProductLine"
-        },
-        "capacity": {
-          "$ref": "#/definitions/CheckCapacity",
-          "description": "Default \"distributor\"."
+        {
+          "$ref": "#/definitions/ProviderCheckParams"
         }
-      },
-      "required": [
-        "subject",
-        "country"
       ],
-      "additionalProperties": false,
-      "description": "Params of `verify_licence`. The params name a company and a market, never a person.\n\nThe check MUST work for a seller that the registry does not list. An agent can find a seller anywhere on the web, and the check matters most then."
+      "description": "Params of `verify_licence`. The params name a company and a market, never a person. A seller check always names the domain that receives the customer's answers, because a register number alone does not prove who runs a website."
     },
     "VerifyLicenceResult": {
       "type": "object",
@@ -3216,7 +3270,7 @@
         "checked_at"
       ],
       "additionalProperties": false,
-      "description": "Result of `verify_licence`.\n\nThe registry tests each entry in this order. An entry covers the question when it passes all five tests: 1. Country: the entry exists, and its `country` is the country asked or its    `passports` include it. 2. Subdivision: it has no `subdivisions`, or they include the subdivision    asked. 3. Line: it has no `lines`, or no line is asked, or its `lines` include the    line. 4. Role: for the capacity \"provider\", its role is a provider role. 5. Status: its status is \"active\".\n\nThe verdict:\n- \"licensed\" when at least one entry covers the question and, if the params   give a domain, `domain_link` is not \"not_linked\".\n- \"unknown\" when no entry covers the question and the registry could not   read every register that applies, or could not identify the party. Also   when an entry covers the question but the domain is not linked to it.\n- \"not_licensed\" in every other case: the registry read every register that   applies, and no entry covers the question. The reason comes from the entry   that passed the most tests, and names the first test it failed: country   \"no_entry\", subdivision \"subdivision_not_covered\", line   \"line_not_covered\", role \"role_not_covered\", status \"name_mismatch\" or   \"licence_not_active\".\n\nRules for the registry:\n- `licences` MUST list every entry that the registry read for the party in   the registers that apply, including the entries that are not active.\n- A verdict MUST rest only on reads made at most `MAX_READ_AGE_DAYS` days   before `checked_at`. The registry SHOULD read the register again for each   call when the register has an API or a web page.\n- The registry SHOULD keep each result under its `check_id` for at least five   years, so that it can confirm later what it said.\n\nRules for the agent:\n- An agent MUST check the seller, in the capacity \"distributor\", with the   customer's country, before it sends any of the customer's answers to that   seller. It MUST give the subdivision where licences apply per subdivision,   and SHOULD give the line.\n- An agent MUST check the provider of an offer, in the capacity \"provider\",   before it applies or concludes, when the provider is not the seller.\n- On \"not_licensed\", the agent MUST NOT send the customer's answers to that   party, and MUST NOT apply or conclude through it. It MUST tell the customer   why.\n- On \"unknown\", the agent MUST tell the customer that the licence could not be   checked, and why. It MUST NOT apply or conclude, and SHOULD NOT send the   customer's answers. It MAY ask the seller for its register identifier and   check again.\n- An agent MUST keep each result that it relies on with the record of the   sale, and SHOULD give the customer a copy."
+      "description": "Result of `verify_licence`.\n\nThe registry tests each entry in this order. An entry covers the question when it passes all five tests: 1. Country: the entry exists, and its `country` is the country asked or its    `passports` include it. 2. Subdivision: it has no `subdivisions`, or they include the subdivision    asked. 3. Line: it has no `lines`, or no line is asked, or its `lines` include the    line. 4. Role: for the capacity \"provider\", its role is a provider role. 5. Status: its status is \"active\".\n\nThe verdict:\n- \"licensed\" when at least one entry covers the question and, if the params   give a domain, `domain_link` is \"register\" or \"confirmed\".\n- \"unknown\" when no entry covers the question and the registry could not   read every register that applies, or could not identify the party. Also   when an entry covers the question but the domain link is \"claimed\" or   \"not_linked\".\n- \"not_licensed\" in every other case: the registry read every register that   applies, and no entry covers the question. The reason comes from the entry   that passed the most tests, and names the first test it failed: country   \"no_entry\", subdivision \"subdivision_not_covered\", line   \"line_not_covered\", role \"role_not_covered\", status \"name_mismatch\" or   \"licence_not_active\".\n\nRules for the registry:\n- `licences` MUST list every entry that the registry read for the party in   the registers that apply, including the entries that are not active.\n- A verdict MUST rest only on reads made at most `MAX_READ_AGE_DAYS` days   before `checked_at`. The registry SHOULD read the register again for each   call when the register has an API or a web page.\n- The registry SHOULD keep each result under its `check_id` for at least five   years, so that it can confirm later what it said.\n\nRules for the agent:\n- An agent MUST check the seller, in the capacity \"distributor\", before it   sends any of the customer's answers to that seller. The domain MUST be the   domain of the server or the website that receives the answers. The agent   gives the customer's country, the subdivision where licences apply per   subdivision, and SHOULD give the line.\n- An agent MUST check the provider of an offer, in the capacity \"provider\",   before it applies or concludes, when the provider is not the seller.\n- On \"not_licensed\", the agent MUST NOT send the customer's answers to that   party, and MUST NOT apply or conclude through it. It MUST tell the customer   why.\n- On \"unknown\", the agent MUST tell the customer that the licence could not be   checked, and why. It MUST NOT apply or conclude, and SHOULD NOT send the   customer's answers. It MAY ask the seller for its register identifier and   check again.\n- An agent MUST keep each result that it relies on with the record of the   sale, and SHOULD give the customer a copy."
     }
   }
 }

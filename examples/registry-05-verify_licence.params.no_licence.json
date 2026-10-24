@@ -1,4 +1,5 @@
 {
+  "capacity": "distributor",
   "subject": {
     "domain": "petcover.example.com",
     "identifier": {

@@ -150,7 +150,12 @@ export interface RegisterIdentifier {
  *    `url` of the `apis` entry whose `type` is "mcp". The `domain` of the
  *    result MUST be the domain.
  * 4. It checks each licence of the result in the public register of its
- *    country, as `verify_licence` does.
+ *    country, as `verify_licence` does. It also confirms that the holder of
+ *    each entry controls the domain: the register gives the domain for the
+ *    entry, or the operator confirms it with the holder, through contact
+ *    details that the register or the regulator gives. The claim in
+ *    `get_distributor` alone is not enough, because any domain can claim any
+ *    entry.
  * 5. It checks that the server has every tool of the level it declares
  *    (`TOOLS` in `schema.ts`), and that the results of the level 1 tools match
  *    `schema.json`.
@@ -161,6 +166,8 @@ export interface RegisterIdentifier {
  *   lacks one tool of its level MUST NOT be listed.
  * - The registry MUST NOT list a server that claims a licence whose status is
  *   "not_found" or "name_mismatch".
+ * - The registry MUST NOT link a register entry to a second domain unless the
+ *   holder of the entry confirms the second domain too.
  * - A listed server appears in a search for a country only while its verdict
  *   for that country, and for the subdivision and line asked, is "licensed".
  * - The registry MUST check each listed server again at least every
@@ -273,43 +280,38 @@ export const MAX_READ_AGE_DAYS = 7;
  */
 export const PER_SUBDIVISION_COUNTRIES: CountryCode[] = ["US"];
 
-/** The party to check. Give a domain, a register entry, or both. */
-export type CheckSubject =
+/** A seller to check. The domain is where the customer's answers go. */
+export interface SellerSubject {
+  /** Domain of the MCP server or the website that receives the customer's answers. */
+  domain: DomainName;
+  /** Register entry that the seller shows, for example in the legal notice of its website. */
+  identifier?: RegisterIdentifier;
+  /** Legal name that the seller shows. */
+  legal_name?: string;
+}
+
+/** A provider to check, for example from `Offer.provider`. Give its domain, a register entry, or both. */
+export type ProviderSubject =
   | {
-      /** Domain of the seller's website or MCP server. */
       domain: DomainName;
       identifier?: RegisterIdentifier;
-      /** Legal name that the seller shows, for example in the legal notice of its website. */
       legal_name?: string;
     }
   | {
       identifier: RegisterIdentifier;
-      /** Legal name that the seller shows, for example in the legal notice of its website. */
       legal_name?: string;
     };
 
-/** In which capacity the agent checks a party. */
-export type CheckCapacity =
-  /**
-   * The party sells the product. Every distribution role counts, including an
-   * insurer that sells its own products.
-   */
-  | "distributor"
-  /**
-   * The party carries the risk, for example the insurer in `Offer.provider`.
-   * Only a provider role counts.
-   */
-  | "provider";
-
 /**
- * Params of `verify_licence`. The params name a company and a market, never a
- * person.
+ * Params of `verify_licence` for a seller. Every distribution role counts,
+ * including an insurer that sells its own products.
  *
  * The check MUST work for a seller that the registry does not list. An agent
  * can find a seller anywhere on the web, and the check matters most then.
  */
-export interface VerifyLicenceParams {
-  subject: CheckSubject;
+export interface DistributorCheckParams {
+  capacity: "distributor";
+  subject: SellerSubject;
   /** Country where the customer buys. */
   country: CountryCode;
   /**
@@ -318,9 +320,31 @@ export interface VerifyLicenceParams {
    */
   subdivision?: SubdivisionCode;
   line?: ProductLine;
-  /** Default "distributor". */
-  capacity?: CheckCapacity;
 }
+
+/**
+ * Params of `verify_licence` for the party that carries the risk, for example
+ * the insurer in `Offer.provider`. Only a provider role counts.
+ */
+export interface ProviderCheckParams {
+  capacity: "provider";
+  subject: ProviderSubject;
+  /** Country where the customer buys. */
+  country: CountryCode;
+  /**
+   * Subdivision where the customer buys. REQUIRED for a country in
+   * `PER_SUBDIVISION_COUNTRIES`, such as the United States.
+   */
+  subdivision?: SubdivisionCode;
+  line?: ProductLine;
+}
+
+/**
+ * Params of `verify_licence`. The params name a company and a market, never a
+ * person. A seller check always names the domain that receives the customer's
+ * answers, because a register number alone does not prove who runs a website.
+ */
+export type VerifyLicenceParams = DistributorCheckParams | ProviderCheckParams;
 
 /** Status of one register entry, as the registry reads it. */
 export type LicenceStatus =
@@ -380,13 +404,21 @@ export interface LicenceCheck {
   source_url: Url;
 }
 
-/** How the registry tied a domain to register entries. */
+/**
+ * How the registry tied a domain to register entries. Only "register" and
+ * "confirmed" support the verdict "licensed".
+ */
 export type DomainLink =
-  /** The domain serves `poppy.json` and an AIP server whose `get_distributor` claims the entries. */
-  | "aip_server"
   /** The register gives this domain for the entry. */
   | "register"
-  /** The registry could not tie the domain to the entries. Only the seller says that they belong together. */
+  /**
+   * The operator confirmed with the holder of the entry that the domain is
+   * theirs, through contact details that the register or the regulator gives.
+   */
+  | "confirmed"
+  /** Only the domain says that the entries are its own, for example in the `get_distributor` result of its AIP server. */
+  | "claimed"
+  /** Nothing ties the domain to the entries. */
   | "not_linked";
 
 /** What the registry found about the party it checked. */
@@ -429,7 +461,7 @@ export type UnknownReason =
   | "register_unavailable"
   /** The params give only a domain, and the registry could not tie it to any entry. */
   | "subject_not_identified"
-  /** An entry covers the question, but the registry could not tie it to the domain. */
+  /** An entry covers the question, but neither the register nor the holder of the entry confirms the domain. */
   | "domain_not_linked";
 
 /** The answer to the question of the agent. */
@@ -468,10 +500,11 @@ export type LicenceVerdict =
  *
  * The verdict:
  * - "licensed" when at least one entry covers the question and, if the params
- *   give a domain, `domain_link` is not "not_linked".
+ *   give a domain, `domain_link` is "register" or "confirmed".
  * - "unknown" when no entry covers the question and the registry could not
  *   read every register that applies, or could not identify the party. Also
- *   when an entry covers the question but the domain is not linked to it.
+ *   when an entry covers the question but the domain link is "claimed" or
+ *   "not_linked".
  * - "not_licensed" in every other case: the registry read every register that
  *   applies, and no entry covers the question. The reason comes from the entry
  *   that passed the most tests, and names the first test it failed: country
@@ -489,10 +522,11 @@ export type LicenceVerdict =
  *   years, so that it can confirm later what it said.
  *
  * Rules for the agent:
- * - An agent MUST check the seller, in the capacity "distributor", with the
- *   customer's country, before it sends any of the customer's answers to that
- *   seller. It MUST give the subdivision where licences apply per subdivision,
- *   and SHOULD give the line.
+ * - An agent MUST check the seller, in the capacity "distributor", before it
+ *   sends any of the customer's answers to that seller. The domain MUST be the
+ *   domain of the server or the website that receives the answers. The agent
+ *   gives the customer's country, the subdivision where licences apply per
+ *   subdivision, and SHOULD give the line.
  * - An agent MUST check the provider of an offer, in the capacity "provider",
  *   before it applies or concludes, when the provider is not the seller.
  * - On "not_licensed", the agent MUST NOT send the customer's answers to that

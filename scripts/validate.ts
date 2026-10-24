@@ -381,15 +381,16 @@ for (const [paramsName, resultName] of verifications) {
   const result = await readExample(resultName);
   const fromEntries = verdictFromEntries(result);
   const domainGiven = "domain" in result.params.subject;
+  const domainLinked = result.subject.domain_link === "register" || result.subject.domain_link === "confirmed";
   const { outcome } = result;
   let follows: boolean;
   if (outcome.verdict === "unknown") {
     follows =
       outcome.reason === "domain_not_linked"
-        ? fromEntries.verdict === "licensed" && result.subject.domain_link === "not_linked"
+        ? fromEntries.verdict === "licensed" && domainGiven && !domainLinked
         : fromEntries.verdict === "not_licensed";
   } else if (outcome.verdict === "licensed") {
-    follows = fromEntries.verdict === "licensed" && !(domainGiven && result.subject.domain_link === "not_linked");
+    follows = fromEntries.verdict === "licensed" && (!domainGiven || domainLinked);
   } else {
     follows = fromEntries.verdict === "not_licensed" && fromEntries.reason === outcome.reason;
   }

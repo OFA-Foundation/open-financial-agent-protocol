@@ -600,7 +600,12 @@ const searchParams: SearchDistributorsParams = { country: "FR", line: "pet", min
 await write("registry-01-search_distributors.params", searchParams);
 await write("registry-02-search_distributors.result", { distributors: [examplePetsListing] });
 
-const licensedParams: VerifyLicenceParams = { subject: { domain: distributor.domain }, country: "FR", line: "pet" };
+const licensedParams: VerifyLicenceParams = {
+  capacity: "distributor",
+  subject: { domain: distributor.domain },
+  country: "FR",
+  line: "pet",
+};
 await write("registry-03-verify_licence.params.licensed", licensedParams);
 await write("registry-04-verify_licence.result.licensed", {
   check_id: "chk-4d1e",
@@ -608,7 +613,7 @@ await write("registry-04-verify_licence.result.licensed", {
   subject: {
     legal_name: distributor.legal_name,
     domain: distributor.domain,
-    domain_link: "aip_server",
+    domain_link: "confirmed",
     listed: true,
     mcp_url: examplePetsListing.mcp_url,
   },
@@ -638,6 +643,7 @@ await write("registry-04-verify_licence.result.licensed", {
 
 // A seller that the agent found on the web. Its legal notice gives an ORIAS number that does not exist.
 const noLicenceParams: VerifyLicenceParams = {
+  capacity: "distributor",
   subject: {
     domain: "petcover.example.com",
     identifier: { country: "FR", identifier_type: "orias_number", identifier: "00000001" },
@@ -673,8 +679,9 @@ await write("registry-06-verify_licence.result.no_licence", {
   checked_at: "2026-10-20T10:12:01+02:00",
 });
 
-// A US agency with an AIP server. Its Texas licence lapsed, so the registry removed it from the listing.
+// A US agency that the registry listed. Its Texas licence lapsed, so the registry removed it from the listing.
 const lapsedParams: VerifyLicenceParams = {
+  capacity: "distributor",
   subject: { domain: "agency.example.com" },
   country: "US",
   subdivision: "US-TX",
@@ -697,7 +704,7 @@ await write("registry-07-verify_licence.params.lapsed", lapsedParams);
 await write("registry-08-verify_licence.result.lapsed", {
   check_id: "chk-7b90",
   params: lapsedParams,
-  subject: { legal_name: "Example Pet Agency LLC", domain: "agency.example.com", domain_link: "aip_server", listed: false },
+  subject: { legal_name: "Example Pet Agency LLC", domain: "agency.example.com", domain_link: "confirmed", listed: false },
   licences: [
     {
       ...agencyLicence,

@@ -1,6 +1,7 @@
 {
   "check_id": "chk-4d1e",
   "params": {
+    "capacity": "distributor",
     "subject": {
       "domain": "pets.example.com"
     },
@@ -10,7 +11,7 @@
   "subject": {
     "legal_name": "Example Pets SAS",
     "domain": "pets.example.com",
-    "domain_link": "aip_server",
+    "domain_link": "confirmed",
     "listed": true,
     "mcp_url": "https://pets.example.com/mcp"
   },

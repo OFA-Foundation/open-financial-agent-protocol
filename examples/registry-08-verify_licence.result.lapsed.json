@@ -1,6 +1,7 @@
 {
   "check_id": "chk-7b90",
   "params": {
+    "capacity": "distributor",
     "subject": {
       "domain": "agency.example.com"
     },
@@ -11,7 +12,7 @@
   "subject": {
     "legal_name": "Example Pet Agency LLC",
     "domain": "agency.example.com",
-    "domain_link": "aip_server",
+    "domain_link": "confirmed",
     "listed": false
   },
   "licences": [

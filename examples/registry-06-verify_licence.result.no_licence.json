@@ -1,6 +1,7 @@
 {
   "check_id": "chk-4d2a",
   "params": {
+    "capacity": "distributor",
     "subject": {
       "domain": "petcover.example.com",
       "identifier": {
