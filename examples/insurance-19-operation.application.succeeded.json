@@ -5,12 +5,24 @@
     "state": "succeeded",
     "summary": "Apply for Essentiel 70 cat insurance for Miso with Example Mutual, 14.90 EUR a month from 1 November 2026. You finish on Example Pets' site.",
     "terms": {
-      "offer_id": "of-essentiel-70",
+      "offer_id": "of-5d10",
       "product_id": "pet-fr-essentiel",
       "provider": {
         "name": "Example Mutual",
         "legal_name": "Example Mutual Assurances SA",
-        "role": "insurer"
+        "role": "insurer",
+        "domain": "mutual.example.com",
+        "lei": "EXAMPLEMUTUAL0000042",
+        "licences": [
+          {
+            "country": "FR",
+            "regulator": "ACPR",
+            "register": "EIOPA register of insurance undertakings",
+            "identifier_type": "lei",
+            "identifier": "EXAMPLEMUTUAL0000042",
+            "role": "insurer"
+          }
+        ]
       },
       "pricing": {
         "premium": {
@@ -105,8 +117,59 @@
           "lifestyle": "indoor",
           "currently_insured": false
         },
+        "answer_sources": {
+          "country": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "postal_code": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "species": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "pet_name": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "breed": {
+            "origin": "agent",
+            "validated_by_customer": false
+          },
+          "sex": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "is_neutered": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "date_of_birth": {
+            "origin": "third_party",
+            "validated_by_customer": false,
+            "source_name": "veterinary clinic record (FR)"
+          },
+          "lifestyle": {
+            "origin": "customer",
+            "validated_by_customer": true
+          },
+          "currently_insured": {
+            "origin": "customer",
+            "validated_by_customer": true
+          }
+        },
         "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
-        "accuracy_confirmed": true
+        "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d",
+        "accuracy_confirmed": true,
+        "validation": {
+          "operation_id": "op-2d71",
+          "revision": 1,
+          "validated_at": "2026-10-20T10:04:10+02:00",
+          "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+          "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d"
+        }
       },
       "needs_assessment": {
         "kind": "demands_and_needs",
@@ -176,6 +239,15 @@
             "version": "3"
           },
           "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+          "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d",
+          "validation": {
+            "operation_id": "op-2d71",
+            "revision": 1,
+            "validated_at": "2026-10-20T10:04:10+02:00",
+            "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+            "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d"
+          },
+          "underwriting_scope_version": "2026-09",
           "needs_assessment": {
             "kind": "demands_and_needs",
             "statement": "Cover vet bills for an indoor cat, with a budget under 20 EUR a month.",
@@ -192,7 +264,7 @@
               "this_application"
             ]
           },
-          "terms_sha256": "188b5b7d8bdca957b0dd1df87c656ff2947d1235012f0335d8d166655935b4d1"
+          "terms_sha256": "b4ac8a5bb927cf3f51d341b537db3e756ef8dba9f16fb9b216486ae31dd8098d"
         },
         "handoff_url": "https://pets.example.com/a/app-3310"
       }

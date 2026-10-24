@@ -1,0 +1,96 @@
+{
+  "products": [
+    {
+      "product_id": "pet-fr-essentiel",
+      "name": "Essentiel",
+      "line": "pet",
+      "provider": {
+        "name": "Example Mutual",
+        "legal_name": "Example Mutual Assurances SA",
+        "role": "insurer",
+        "domain": "mutual.example.com",
+        "lei": "EXAMPLEMUTUAL0000042",
+        "licences": [
+          {
+            "country": "FR",
+            "regulator": "ACPR",
+            "register": "EIOPA register of insurance undertakings",
+            "identifier_type": "lei",
+            "identifier": "EXAMPLEMUTUAL0000042",
+            "role": "insurer"
+          }
+        ]
+      },
+      "underwriting_scope": {
+        "version": "2026-09",
+        "geography": {
+          "countries": [
+            "FR"
+          ]
+        },
+        "insured": [
+          {
+            "family": "pet",
+            "kinds": [
+              "cat",
+              "dog"
+            ]
+          }
+        ],
+        "conditions": [
+          "The pet lives with the subscriber, in France.",
+          "The pet is identified by a microchip or a tattoo.",
+          "Not for a dog of category 1 or 2 under French law (attack, guard and defence dogs).",
+          "Not for a pet kept for breeding or for professional use."
+        ]
+      },
+      "summary": "Pays back the vet costs of a cat or a dog after an accident or an illness, at 70% or 90%.",
+      "details": {
+        "cover": {
+          "included": [
+            "Accident",
+            "Illness",
+            "Surgery"
+          ],
+          "limits": [
+            {
+              "key": "vet_costs_per_year",
+              "label": "Frais vétérinaires par an",
+              "limit": {
+                "amount": "1500.00",
+                "currency": "EUR"
+              },
+              "reimbursement_rate": 0.7
+            }
+          ],
+          "excess": {
+            "amount": "0.00",
+            "currency": "EUR"
+          },
+          "main_exclusions": [
+            "Pre-existing conditions"
+          ],
+          "waiting_period_days": 45
+        },
+        "options": [
+          {
+            "key": "prevention",
+            "label": "Forfait prévention",
+            "price": {
+              "amount": {
+                "amount": "3.00",
+                "currency": "EUR"
+              },
+              "period": "month",
+              "taxes_included": true
+            }
+          }
+        ]
+      },
+      "subscription_paths": [
+        "application",
+        "handoff"
+      ]
+    }
+  ]
+}

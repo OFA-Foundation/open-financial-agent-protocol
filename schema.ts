@@ -46,12 +46,13 @@ export const PROTOCOL_VERSION = "0.1";
  * Conformance level that a distributor declares.
  *
  * - 1 Inform: `get_distributor`, `list_products`, `get_documents`
- * - 2 Quote: level 1, plus `get_question_set` and `quote`
+ * - 2 Quote: level 1, plus `get_question_set`, `quote` and `validate_answers`
  * - 3 Subscribe: level 2, plus `submit_application` or `conclude`
  *
  * A server that declares a level MUST implement every tool of that level and
  * of the levels below it, except that level 3 needs only one of
- * `submit_application` and `conclude`.
+ * `submit_application` and `conclude`. A server at level 2 can give binding
+ * offers, because it implements `validate_answers`.
  */
 export type ConformanceLevel = 1 | 2 | 3;
 
@@ -100,10 +101,22 @@ export interface AipSettings {
 export type CountryCode = string;
 
 /**
+ * ISO 3166-2 subdivision code, upper case, for example "US-CA" for California.
+ * @pattern ^[A-Z]{2}-[A-Z0-9]{1,3}$
+ */
+export type SubdivisionCode = string;
+
+/**
  * ISO 4217 currency code.
  * @pattern ^[A-Z]{3}$
  */
 export type CurrencyCode = string;
+
+/**
+ * Legal Entity Identifier (ISO 17442): 18 letters or digits, then 2 check digits.
+ * @pattern ^[A-Z0-9]{18}[0-9]{2}$
+ */
+export type Lei = string;
 
 /**
  * BCP 47 language tag, for example `fr` or `es-ES`.
@@ -169,6 +182,31 @@ export type KnownProductLine =
   | "business_owners_policy"
   | "workers_compensation";
 
+/**
+ * Family of what a product insures: a kind of person, or a kind of good.
+ * Servers SHOULD use a value of `KnownInsuredFamily`. Other values MUST be lower
+ * case with underscores.
+ * @pattern ^[a-z][a-z0-9_]*$
+ */
+export type InsuredFamily = string;
+
+/** Families that the known product lines need. */
+export type KnownInsuredFamily =
+  // People
+  /** A person, for example in travel, health, life, funeral and borrower insurance. */
+  | "person"
+  /** A company or another organisation, in the commercial lines. */
+  | "organisation"
+  // Goods
+  /** A pet. Kinds, for example "cat" and "dog". */
+  | "pet"
+  /** A building where people live. Kinds, for example "house" and "apartment". */
+  | "dwelling"
+  /** The furniture and the belongings in a home. */
+  | "contents"
+  /** A vehicle. Kinds, for example "car", "motorcycle" and "van". */
+  | "vehicle";
+
 /* ========================================================================== */
 /* 3. Distributor (level 1)                                                   */
 /* ========================================================================== */
@@ -195,10 +233,14 @@ export type RegisterIdentifierType =
   | "npn"
   /** Spain, DGSFP registration key (insurance). */
   | "dgsfp_key"
+  /** United States, NAIC company code of an insurer (5 digits). */
+  | "naic_cocode"
+  /** Legal Entity Identifier (ISO 17442), any country. Use it when the register lists the entry by its LEI. */
+  | "lei"
   /** Any other register. Name it in `register`. */
   | "other";
 
-/** One entry in a public register that gives the right to distribute a product. */
+/** One entry in a public register that gives the right to sell a product, or to carry its risk. */
 export interface Licence {
   country: CountryCode;
   /** Supervising authority, for example "ACPR", "FCA", "DGSFP". */
@@ -217,7 +259,7 @@ export interface Licence {
    * Subdivisions where the licence applies, for example US states as ISO
    * 3166-2 codes ("US-CA"). Omit when the licence covers the whole country.
    */
-  subdivisions?: string[];
+  subdivisions?: SubdivisionCode[];
   /** Public page where anyone can check the entry. */
   verification_url?: Url;
 }
@@ -230,6 +272,8 @@ export interface GetDistributorResult {
   trading_name?: string;
   /** Domain the distributor controls. It MUST match the server's own domain. */
   domain: string;
+  /** Legal Entity Identifier, when the distributor has one. The registry uses it to match one company across registers. */
+  lei?: Lei;
   roles: DistributorRole[];
   /** Every licence the distributor relies on to sell the listed products. */
   licences: Licence[];
@@ -252,7 +296,16 @@ export interface ProviderRef {
   name: string;
   legal_name?: string;
   role: ProviderRole;
-  licence?: Licence;
+  /** Domain the provider controls, so that an agent can find it in the registry. */
+  domain?: string;
+  /** Legal Entity Identifier, when the provider has one. */
+  lei?: Lei;
+  /**
+   * The register entries that allow the provider to carry the risk, for
+   * example its authorisation as an insurer. At least one.
+   * @minItems 1
+   */
+  licences: Licence[];
 }
 
 /** How a customer can subscribe to a product. */
@@ -270,10 +323,65 @@ export interface Product {
   line: ProductLine;
   /** Provider of the product, when it is not the distributor. */
   provider?: ProviderRef;
-  countries: CountryCode[];
+  /** The risks the product can cover. A product MUST publish it. */
+  underwriting_scope: UnderwritingScope;
   summary: string;
   details: ProductDetails;
   subscription_paths: SubscriptionPath[];
+}
+
+/**
+ * The risks a product can cover. `list_products` gives it with no customer
+ * data, so that an agent can drop a product that cannot cover the customer
+ * before it asks a question.
+ *
+ * `geography` and `insured` are the structured part, which a machine can check
+ * against the answers. A server MUST NOT return an offer for a risk outside the
+ * structured part. An agent MUST NOT send answers to `quote` for a product
+ * whose structured part excludes the customer. `conditions` holds the rest.
+ */
+export interface UnderwritingScope {
+  /** Version of the scope. A change in any part MUST change it. */
+  version: string;
+  geography: Geography;
+  /**
+   * What the product insures. At least one.
+   * @minItems 1
+   */
+  insured: InsuredType[];
+  /**
+   * The conditions that a machine cannot check, in plain words, for example
+   * "Houses built after 1950 only" or "Not for people over 70". Empty when there
+   * are none. An agent SHOULD check them against what the customer said before
+   * it quotes, and ask the customer when it is not sure.
+   */
+  conditions: string[];
+}
+
+/** Where the insured person lives, or where the insured good is. */
+export interface Geography {
+  /**
+   * Countries the product covers. At least one.
+   * @minItems 1
+   */
+  countries: CountryCode[];
+  /**
+   * Subdivisions the product covers, for example US states. Each one MUST
+   * belong to a country in `countries`. The product covers the whole of each
+   * country that has no subdivision in this list.
+   */
+  subdivisions?: SubdivisionCode[];
+}
+
+/** A family of insured, and the kinds of it that a product covers. */
+export interface InsuredType {
+  family: InsuredFamily;
+  /**
+   * Kinds that the product covers, for example "cat" and "dog". Omit when it
+   * covers every kind. When the line profile names a `kind_key` for this family,
+   * each kind MUST be a value that this question accepts.
+   */
+  kinds?: string[];
 }
 
 /** What the product covers, and the options a customer can add. */
@@ -282,9 +390,17 @@ export interface ProductDetails {
   options?: ProductOption[];
 }
 
+/**
+ * Params of `list_products`. Each filter is optional. The server MUST return
+ * only the products whose line and underwriting scope match every filter given.
+ */
 export interface ListProductsParams {
   country?: CountryCode;
+  /** Products that cover this subdivision. */
+  subdivision?: SubdivisionCode;
   line?: ProductLine;
+  /** Products that insure this family. */
+  insured_family?: InsuredFamily;
   cursor?: string;
 }
 
@@ -397,6 +513,40 @@ export interface Answers {
   [key: string]: unknown;
 }
 
+/** Who produced the value of an answer. */
+export type AnswerOrigin =
+  /** The customer gave the value. */
+  | "customer"
+  /** The agent produced the value, for example from a photo or from earlier messages. */
+  | "agent"
+  /** A third party gave the value, for example a vehicle register or the previous insurer. */
+  | "third_party";
+
+/**
+ * Where one answer comes from. `validated_by_customer` is true when the
+ * customer confirmed this value before the agent sent it. A value that the
+ * customer gave is confirmed by them. An agent MUST NOT set
+ * `validated_by_customer` to true when the customer did not validate that answer.
+ */
+export type AnswerSource =
+  | { origin: "customer"; validated_by_customer: true }
+  | { origin: "agent"; validated_by_customer: boolean }
+  | {
+      origin: "third_party";
+      validated_by_customer: boolean;
+      /** The third party, by its kind and country, for example "vehicle register (FR)". */
+      source_name: string;
+    };
+
+/**
+ * The source of each answer, keyed like `answers`. An agent MUST give a source
+ * for each answer, and no source for a key that has no answer. Otherwise the
+ * server returns `answers_invalid`.
+ */
+export interface AnswerSources {
+  [key: string]: AnswerSource;
+}
+
 /* ========================================================================== */
 /* 7. Quote (level 2)                                                         */
 /* ========================================================================== */
@@ -409,6 +559,10 @@ export interface Answers {
  * This one loop replaces the multi-step flow tools (`action`, `stateUpdates`,
  * `sessionId`) that most servers use. Some servers already work this way.
  *
+ * Without `validation`, every offer is indicative. To get binding offers, the
+ * agent first has the customer validate the answers with `validate_answers`,
+ * then sends the same answers and sources with that `validation`.
+ *
  * To read a quote that is still in progress, send only `quote_request_id`.
  */
 export type QuoteParams =
@@ -416,6 +570,14 @@ export type QuoteParams =
       product_id: string;
       question_set: QuestionSetRef;
       answers: Answers;
+      /** Where each answer comes from, keyed like `answers`. */
+      answer_sources: AnswerSources;
+      /**
+       * The customer's validation of these answers and sources, from a
+       * succeeded `validate_answers` operation. When it does not match them,
+       * the server returns `answers_not_validated`.
+       */
+      validation?: AnswersValidation;
       /** Options the customer wants priced, by key (optional covers, extra services). */
       options?: string[];
       language?: LanguageTag;
@@ -434,8 +596,18 @@ export interface Offer {
   /** Name of the tier or plan, for example "Terceros Ampliado" or "Band B". */
   tier?: string;
   provider: ProviderRef;
+  /** Version of the product's underwriting scope that the server applied. */
+  underwriting_scope_version: string;
+  /**
+   * The price and the cover. A binding offer MUST give `cover.excess` and
+   * `cover.limits`. An empty `limits` means that the cover has no limit.
+   */
   pricing: Pricing;
-  /** True when the offer is indicative and can change after checks. */
+  /**
+   * True when the offer is indicative and can change after checks. False makes
+   * the offer binding. A server MUST NOT return a binding offer unless the
+   * quote carries the customer's validation of its answers and sources.
+   */
   indicative: boolean;
   /** Last moment the offer can be accepted at this price. */
   valid_until: DateTimeString;
@@ -456,6 +628,10 @@ export type QuoteResult =
       question_set: QuestionSetRef;
       /** SHA-256 of the canonical JSON (RFC 8785) of the answers used. */
       answers_sha256: Sha256;
+      /** SHA-256 of the canonical JSON (RFC 8785) of the answer sources used. */
+      answer_sources_sha256: Sha256;
+      /** The validation the server applied. Required when an offer is binding. */
+      validation?: AnswersValidation;
       offers: Offer[];
       /** Required when `offers` is empty. */
       no_offer?: NoOffer;
@@ -477,14 +653,94 @@ export type QuoteResult =
 
 /** Why no offer is possible. */
 export interface NoOffer {
-  /**
-   * Stable reason code, for example "risk_not_accepted", "age_not_accepted",
-   * "breed_not_accepted", "claims_history_not_accepted",
-   * "not_available_in_region".
-   */
-  reason_code: string;
+  reason_code: NoOfferReason;
   /** Plain-language explanation the agent can pass to the customer. */
   message: string;
+}
+
+/**
+ * Stable reason why no offer is possible. Servers SHOULD use a value of
+ * `KnownNoOfferReason`. Other values MUST be lower case with underscores.
+ * @pattern ^[a-z][a-z0-9_]*$
+ */
+export type NoOfferReason = string;
+
+export type KnownNoOfferReason =
+  /**
+   * The risk is outside the product's underwriting scope: its geography, its
+   * insured types or its conditions. A quote outside the structured part MUST
+   * get this reason.
+   */
+  | "outside_underwriting_scope"
+  /** The insurer does not accept the risk, and gives no more precise reason. */
+  | "risk_not_accepted"
+  /** The age of the insured person or animal is outside the insurer's limits. */
+  | "age_not_accepted"
+  | "breed_not_accepted"
+  | "claims_history_not_accepted";
+
+/* ========================================================================== */
+/* 8. Validation of the answers (level 2)                                     */
+/* ========================================================================== */
+
+/**
+ * Params of `validate_answers`. The agent calls it before it asks for binding
+ * offers, and before an application. The answers MUST be complete for the
+ * question set. Otherwise the server returns `answers_invalid`.
+ */
+export interface ValidateAnswersParams {
+  product_id: string;
+  question_set: QuestionSetRef;
+  answers: Answers;
+  /** Where each answer comes from, keyed like `answers`. */
+  answer_sources: AnswerSources;
+  /** Language of the operation `summary`. */
+  language?: LanguageTag;
+}
+
+/**
+ * Terms of a validation: the answers that the customer validates, and their
+ * sources. The `summary` of the operation MUST show each answer and its source
+ * in plain words, so that the customer can check each one.
+ */
+export interface ValidationTerms {
+  product_id: string;
+  question_set: QuestionSetRef;
+  answers: Answers;
+  answer_sources: AnswerSources;
+  /** SHA-256 of the canonical JSON (RFC 8785) of `answers`. */
+  answers_sha256: Sha256;
+  /** SHA-256 of the canonical JSON (RFC 8785) of `answer_sources`. */
+  answer_sources_sha256: Sha256;
+}
+
+/**
+ * Result of `validate_answers`. The operation MUST have
+ * `user_approval_required: true`, because only the customer can validate their
+ * answers. The agent MUST ask the person who will be the subscriber to approve
+ * it. When it succeeds, `result.data` holds a `ValidationOutcome`.
+ */
+export interface ValidateAnswersResult {
+  operation: Operation<ValidationTerms>;
+}
+
+export interface ValidationOutcome {
+  validation: AnswersValidation;
+}
+
+/**
+ * The record that the customer validated a set of answers and their sources:
+ * a succeeded `validate_answers` operation. The server keeps it. The agent
+ * copies it into `quote` to get binding offers, and into the declaration of an
+ * application.
+ */
+export interface AnswersValidation {
+  operation_id: string;
+  revision: number;
+  /** When the customer approved the operation: its `confirmation.confirmed_at`. */
+  validated_at: DateTimeString;
+  answers_sha256: Sha256;
+  answer_sources_sha256: Sha256;
 }
 
 export interface FieldIssue {
@@ -494,7 +750,7 @@ export interface FieldIssue {
 }
 
 /* ========================================================================== */
-/* 8. Premium and cover                                                       */
+/* 9. Premium and cover                                                       */
 /* ========================================================================== */
 
 export type PremiumPeriod = "month" | "quarter" | "half_year" | "year" | "single";
@@ -544,7 +800,7 @@ export interface Pricing {
 }
 
 /* ========================================================================== */
-/* 9. Parties, needs and consent                                              */
+/* 10. Parties, needs and consent                                             */
 /* ========================================================================== */
 
 /** Role of a party in the agreement. */
@@ -598,20 +854,29 @@ export interface DeliveredDocument {
   delivered_at: DateTimeString;
 }
 
-/** The answers the customer commits to. */
+/** The answers the customer commits to, with their sources and the customer's validation. */
 export interface Declaration {
   question_set: QuestionSetRef;
   answers: Answers;
+  /** Where each answer comes from, keyed like `answers`. */
+  answer_sources: AnswerSources;
   answers_sha256: Sha256;
+  answer_sources_sha256: Sha256;
   /**
    * True when the customer confirmed that the answers are true and complete.
    * The agent MUST NOT set it to true for invented or test data.
    */
   accuracy_confirmed: boolean;
+  /**
+   * The customer's validation of these answers and sources. Its hashes MUST be
+   * `answers_sha256` and `answer_sources_sha256`, and its operation MUST have
+   * succeeded. Otherwise the server returns `answers_not_validated`.
+   */
+  validation: AnswersValidation;
 }
 
 /* ========================================================================== */
-/* 10. PAP operations with insurance terms (level 3)                          */
+/* 11. PAP operations and applications (level 3)                              */
 /* ========================================================================== */
 
 export type OperationState =
@@ -678,6 +943,7 @@ export interface ApplicationTerms {
   offer_id: string;
   product_id: string;
   provider: ProviderRef;
+  /** The pricing of the offer, unchanged. It MUST be the `pricing` that `quote` returned for `offer_id`. */
   pricing: Pricing;
   options: string[];
   start_date?: DateString;
@@ -734,14 +1000,15 @@ export interface ConcludeOutcome {
 }
 
 /* ========================================================================== */
-/* 11. Evidence                                                               */
+/* 12. Evidence                                                               */
 /* ========================================================================== */
 
 /**
  * What the distributor keeps when an operation succeeds. It links the exact
- * revision the customer accepted to the documents, the declaration, the needs
- * assessment and the consent. The distributor MUST keep it for the period the
- * law requires.
+ * revision the customer accepted to the documents, the declaration with its
+ * sources and its validation, the needs assessment, the consent and the
+ * underwriting scope. The distributor MUST keep it for the period the law
+ * requires.
  *
  * A PAP confirmation proves that an agent stated the customer approved a
  * revision. It does not prove that the customer saw the terms. This record
@@ -757,6 +1024,12 @@ export interface EvidenceRecord {
   documents_delivered: DeliveredDocument[];
   question_set: QuestionSetRef;
   answers_sha256: Sha256;
+  /** SHA-256 of the canonical JSON (RFC 8785) of the answer sources. The server MUST keep the sources with the declaration. */
+  answer_sources_sha256: Sha256;
+  /** The customer's validation of the answers and their sources. */
+  validation: AnswersValidation;
+  /** Version of the underwriting scope that the offer applied. */
+  underwriting_scope_version: string;
   needs_assessment: NeedsAssessment;
   contact_consent: ContactConsent;
   /** SHA-256 of the canonical JSON (RFC 8785) of the confirmed `terms`. */
@@ -764,13 +1037,13 @@ export interface EvidenceRecord {
 }
 
 /* ========================================================================== */
-/* 12. Errors                                                                 */
+/* 13. Errors                                                                 */
 /* ========================================================================== */
 
 export type AipErrorCode =
   /** The distributor holds no licence for this country, subdivision or line. */
   | "not_licensed"
-  /** The product is not sold where the customer is. */
+  /** The product is not sold in the country or subdivision of the request. In `quote`, a risk outside the scope gets `no_offer` instead. */
   | "not_available_in_region"
   /** No product has this `product_id`. */
   | "product_not_found"
@@ -784,6 +1057,10 @@ export type AipErrorCode =
   | "sensitive_field_received"
   /** A document with `required_before_commitment` is not in `documents_delivered`. */
   | "documents_not_delivered"
+  /** An answer has no source, a source has no answer, or the answers to `validate_answers` are not complete. `fields` lists each one. */
+  | "answers_invalid"
+  /** A binding offer or an application asks for a validation that is missing, did not succeed, or does not match the answers and their sources. */
+  | "answers_not_validated"
   /** The declaration does not have `accuracy_confirmed: true`. */
   | "accuracy_not_confirmed"
   /** The needs assessment is missing, or its outcome does not allow the application. */
@@ -803,7 +1080,7 @@ export interface AipError {
 }
 
 /* ========================================================================== */
-/* 13. Conversation binding (PROPOSED, NOT DECIDED)                           */
+/* 14. Conversation binding (PROPOSED, NOT DECIDED)                           */
 /* ========================================================================== */
 
 /**
@@ -820,7 +1097,7 @@ export interface ConversationData {
 }
 
 /* ========================================================================== */
-/* 14. Tool index                                                             */
+/* 15. Tool index                                                             */
 /* ========================================================================== */
 
 export const TOOL_NAMES = {
@@ -829,6 +1106,7 @@ export const TOOL_NAMES = {
   get_documents: "get_documents",
   get_question_set: "get_question_set",
   quote: "quote",
+  validate_answers: "validate_answers",
   submit_application: "submit_application",
   conclude: "conclude",
 } as const;
@@ -852,6 +1130,7 @@ export const TOOLS: {
   get_documents: { level: 1, session: "none", readOnlyHint: true, returnsOperation: false },
   get_question_set: { level: 2, session: "none", readOnlyHint: true, returnsOperation: false },
   quote: { level: 2, session: "signed_out_or_none", readOnlyHint: true, returnsOperation: false },
+  validate_answers: { level: 2, session: "signed_out_or_none", readOnlyHint: false, returnsOperation: true },
   submit_application: { level: 3, session: "signed_out_or_none", readOnlyHint: false, returnsOperation: true },
   conclude: { level: 3, session: "signed_out_or_none", readOnlyHint: false, returnsOperation: true },
 };
@@ -863,6 +1142,7 @@ export interface ToolSignatures {
   get_documents: { params: GetDocumentsParams; result: GetDocumentsResult };
   get_question_set: { params: GetQuestionSetParams; result: GetQuestionSetResult };
   quote: { params: QuoteParams; result: QuoteResult };
+  validate_answers: { params: ValidateAnswersParams; result: ValidateAnswersResult };
   submit_application: { params: SubmitApplicationParams; result: SubmitApplicationResult };
   conclude: { params: ConcludeParams; result: ConcludeResult };
 }

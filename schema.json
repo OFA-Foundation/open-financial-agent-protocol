@@ -38,6 +38,8 @@
         "question_set_outdated",
         "sensitive_field_received",
         "documents_not_delivered",
+        "answers_invalid",
+        "answers_not_validated",
         "accuracy_not_confirmed",
         "needs_assessment_invalid",
         "not_supported"
@@ -113,6 +115,84 @@
       "additionalProperties": false,
       "description": "Settings object of the extension. A server puts it under `capabilities.extensions[\"org.openfinancialagent/ofap\"]` in its MCP `server/discover` response, and under the same key in the `extensions` field of its PAP `poppy.json`."
     },
+    "AnswerOrigin": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "agent",
+        "third_party"
+      ],
+      "description": "Who produced the value of an answer."
+    },
+    "AnswerSource": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "origin": {
+              "type": "string",
+              "const": "customer"
+            },
+            "validated_by_customer": {
+              "type": "boolean",
+              "const": true
+            }
+          },
+          "required": [
+            "origin",
+            "validated_by_customer"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "origin": {
+              "type": "string",
+              "const": "agent"
+            },
+            "validated_by_customer": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "origin",
+            "validated_by_customer"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "origin": {
+              "type": "string",
+              "const": "third_party"
+            },
+            "validated_by_customer": {
+              "type": "boolean"
+            },
+            "source_name": {
+              "type": "string",
+              "description": "The third party, by its kind and country, for example \"vehicle register (FR)\"."
+            }
+          },
+          "required": [
+            "origin",
+            "validated_by_customer",
+            "source_name"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "Where one answer comes from. `validated_by_customer` is true when the customer confirmed this value before the agent sent it. A value that the customer gave is confirmed by them. An agent MUST NOT set `validated_by_customer` to true when the customer did not validate that answer."
+    },
+    "AnswerSources": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/AnswerSource"
+      },
+      "description": "The source of each answer, keyed like `answers`. An agent MUST give a source for each answer, and no source for a key that has no answer. Otherwise the server returns `answers_invalid`."
+    },
     "Answers": {
       "type": "object",
       "additionalProperties": {},
@@ -145,6 +225,36 @@
       ],
       "additionalProperties": {},
       "description": "A JSON Schema (2020-12) object that describes the answers. Each property is one question. AIP adds these keywords to each property:\n\n- `x-collected-by`: a `CollectedBy` value. Default `agent`.\n- `x-profile-key`: the key of the matching question in the line profile,   when the question is part of the common core.\n- `x-ask`: a short question the agent can ask the customer, in plain words."
+    },
+    "AnswersValidation": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number"
+        },
+        "validated_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "When the customer approved the operation: its `confirmation.confirmed_at`."
+        },
+        "answers_sha256": {
+          "$ref": "#/definitions/Sha256"
+        },
+        "answer_sources_sha256": {
+          "$ref": "#/definitions/Sha256"
+        }
+      },
+      "required": [
+        "operation_id",
+        "revision",
+        "validated_at",
+        "answers_sha256",
+        "answer_sources_sha256"
+      ],
+      "additionalProperties": false,
+      "description": "The record that the customer validated a set of answers and their sources: a succeeded `validate_answers` operation. The server keeps it. The agent copies it into `quote` to get binding offers, and into the declaration of an application."
     },
     "ApplicationOutcome": {
       "type": "object",
@@ -180,7 +290,8 @@
           "$ref": "#/definitions/ProviderRef"
         },
         "pricing": {
-          "$ref": "#/definitions/Pricing"
+          "$ref": "#/definitions/Pricing",
+          "description": "The pricing of the offer, unchanged. It MUST be the `pricing` that `quote` returned for `offer_id`."
         },
         "options": {
           "type": "array",
@@ -287,7 +398,7 @@
         2,
         3
       ],
-      "description": "Conformance level that a distributor declares.\n\n- 1 Inform: `get_distributor`, `list_products`, `get_documents`\n- 2 Quote: level 1, plus `get_question_set` and `quote`\n- 3 Subscribe: level 2, plus `submit_application` or `conclude`\n\nA server that declares a level MUST implement every tool of that level and of the levels below it, except that level 3 needs only one of `submit_application` and `conclude`."
+      "description": "Conformance level that a distributor declares.\n\n- 1 Inform: `get_distributor`, `list_products`, `get_documents`\n- 2 Quote: level 1, plus `get_question_set`, `quote` and `validate_answers`\n- 3 Subscribe: level 2, plus `submit_application` or `conclude`\n\nA server that declares a level MUST implement every tool of that level and of the levels below it, except that level 3 needs only one of `submit_application` and `conclude`. A server at level 2 can give binding offers, because it implements `validate_answers`."
     },
     "ContactConsent": {
       "type": "object",
@@ -463,22 +574,36 @@
         "answers": {
           "$ref": "#/definitions/Answers"
         },
+        "answer_sources": {
+          "$ref": "#/definitions/AnswerSources",
+          "description": "Where each answer comes from, keyed like `answers`."
+        },
         "answers_sha256": {
+          "$ref": "#/definitions/Sha256"
+        },
+        "answer_sources_sha256": {
           "$ref": "#/definitions/Sha256"
         },
         "accuracy_confirmed": {
           "type": "boolean",
           "description": "True when the customer confirmed that the answers are true and complete. The agent MUST NOT set it to true for invented or test data."
+        },
+        "validation": {
+          "$ref": "#/definitions/AnswersValidation",
+          "description": "The customer's validation of these answers and sources. Its hashes MUST be `answers_sha256` and `answer_sources_sha256`, and its operation MUST have succeeded. Otherwise the server returns `answers_not_validated`."
         }
       },
       "required": [
         "question_set",
         "answers",
+        "answer_sources",
         "answers_sha256",
-        "accuracy_confirmed"
+        "answer_sources_sha256",
+        "accuracy_confirmed",
+        "validation"
       ],
       "additionalProperties": false,
-      "description": "The answers the customer commits to."
+      "description": "The answers the customer commits to, with their sources and the customer's validation."
     },
     "DeliveredDocument": {
       "type": "object",
@@ -576,6 +701,18 @@
         "answers_sha256": {
           "$ref": "#/definitions/Sha256"
         },
+        "answer_sources_sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "SHA-256 of the canonical JSON (RFC 8785) of the answer sources. The server MUST keep the sources with the declaration."
+        },
+        "validation": {
+          "$ref": "#/definitions/AnswersValidation",
+          "description": "The customer's validation of the answers and their sources."
+        },
+        "underwriting_scope_version": {
+          "type": "string",
+          "description": "Version of the underwriting scope that the offer applied."
+        },
         "needs_assessment": {
           "$ref": "#/definitions/NeedsAssessment"
         },
@@ -596,12 +733,15 @@
         "documents_delivered",
         "question_set",
         "answers_sha256",
+        "answer_sources_sha256",
+        "validation",
+        "underwriting_scope_version",
         "needs_assessment",
         "contact_consent",
         "terms_sha256"
       ],
       "additionalProperties": false,
-      "description": "What the distributor keeps when an operation succeeds. It links the exact revision the customer accepted to the documents, the declaration, the needs assessment and the consent. The distributor MUST keep it for the period the law requires.\n\nA PAP confirmation proves that an agent stated the customer approved a revision. It does not prove that the customer saw the terms. This record adds what was delivered and what was declared. It still does not prove that the customer read the documents."
+      "description": "What the distributor keeps when an operation succeeds. It links the exact revision the customer accepted to the documents, the declaration with its sources and its validation, the needs assessment, the consent and the underwriting scope. The distributor MUST keep it for the period the law requires.\n\nA PAP confirmation proves that an agent stated the customer approved a revision. It does not prove that the customer saw the terms. This record adds what was delivered and what was declared. It still does not prove that the customer read the documents."
     },
     "FieldIssue": {
       "type": "object",
@@ -627,6 +767,31 @@
       ],
       "additionalProperties": false
     },
+    "Geography": {
+      "type": "object",
+      "properties": {
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CountryCode"
+          },
+          "description": "Countries the product covers. At least one.",
+          "minItems": 1
+        },
+        "subdivisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubdivisionCode"
+          },
+          "description": "Subdivisions the product covers, for example US states. Each one MUST belong to a country in `countries`. The product covers the whole of each country that has no subdivision in this list."
+        }
+      },
+      "required": [
+        "countries"
+      ],
+      "additionalProperties": false,
+      "description": "Where the insured person lives, or where the insured good is."
+    },
     "GetDistributorParams": {
       "type": "object",
       "additionalProperties": false,
@@ -644,6 +809,10 @@
         "domain": {
           "type": "string",
           "description": "Domain the distributor controls. It MUST match the server's own domain."
+        },
+        "lei": {
+          "$ref": "#/definitions/Lei",
+          "description": "Legal Entity Identifier, when the distributor has one. The registry uses it to match one company across registers."
         },
         "roles": {
           "type": "array",
@@ -810,6 +979,31 @@
       ],
       "additionalProperties": false
     },
+    "InsuredFamily": {
+      "type": "string",
+      "description": "Family of what a product insures: a kind of person, or a kind of good. Servers SHOULD use a value of `KnownInsuredFamily`. Other values MUST be lower case with underscores.",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "InsuredType": {
+      "type": "object",
+      "properties": {
+        "family": {
+          "$ref": "#/definitions/InsuredFamily"
+        },
+        "kinds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Kinds that the product covers, for example \"cat\" and \"dog\". Omit when it covers every kind. When the line profile names a `kind_key` for this family, each kind MUST be a value that this question accepts."
+        }
+      },
+      "required": [
+        "family"
+      ],
+      "additionalProperties": false,
+      "description": "A family of insured, and the kinds of it that a product covers."
+    },
     "InterfaceKind": {
       "type": "string",
       "enum": [
@@ -817,6 +1011,28 @@
         "conversation"
       ],
       "description": "How a distributor exposes the protocol."
+    },
+    "KnownInsuredFamily": {
+      "type": "string",
+      "enum": [
+        "person",
+        "organisation",
+        "pet",
+        "dwelling",
+        "contents",
+        "vehicle"
+      ],
+      "description": "Families that the known product lines need."
+    },
+    "KnownNoOfferReason": {
+      "type": "string",
+      "enum": [
+        "outside_underwriting_scope",
+        "risk_not_accepted",
+        "age_not_accepted",
+        "breed_not_accepted",
+        "claims_history_not_accepted"
+      ]
     },
     "KnownProductLine": {
       "type": "string",
@@ -841,6 +1057,11 @@
       "type": "string",
       "description": "BCP 47 language tag, for example `fr` or `es-ES`.",
       "pattern": "^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$"
+    },
+    "Lei": {
+      "type": "string",
+      "description": "Legal Entity Identifier (ISO 17442): 18 letters or digits, then 2 check digits.",
+      "pattern": "^[A-Z0-9]{18}[0-9]{2}$"
     },
     "Licence": {
       "type": "object",
@@ -875,7 +1096,7 @@
         "subdivisions": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/SubdivisionCode"
           },
           "description": "Subdivisions where the licence applies, for example US states as ISO 3166-2 codes (\"US-CA\"). Omit when the licence covers the whole country."
         },
@@ -893,7 +1114,7 @@
         "role"
       ],
       "additionalProperties": false,
-      "description": "One entry in a public register that gives the right to distribute a product."
+      "description": "One entry in a public register that gives the right to sell a product, or to carry its risk."
     },
     "ListProductsParams": {
       "type": "object",
@@ -901,14 +1122,23 @@
         "country": {
           "$ref": "#/definitions/CountryCode"
         },
+        "subdivision": {
+          "$ref": "#/definitions/SubdivisionCode",
+          "description": "Products that cover this subdivision."
+        },
         "line": {
           "$ref": "#/definitions/ProductLine"
+        },
+        "insured_family": {
+          "$ref": "#/definitions/InsuredFamily",
+          "description": "Products that insure this family."
         },
         "cursor": {
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Params of `list_products`. Each filter is optional. The server MUST return only the products whose line and underwriting scope match every filter given."
     },
     "ListProductsResult": {
       "type": "object",
@@ -980,8 +1210,7 @@
       "type": "object",
       "properties": {
         "reason_code": {
-          "type": "string",
-          "description": "Stable reason code, for example \"risk_not_accepted\", \"age_not_accepted\", \"breed_not_accepted\", \"claims_history_not_accepted\", \"not_available_in_region\"."
+          "$ref": "#/definitions/NoOfferReason"
         },
         "message": {
           "type": "string",
@@ -994,6 +1223,11 @@
       ],
       "additionalProperties": false,
       "description": "Why no offer is possible."
+    },
+    "NoOfferReason": {
+      "type": "string",
+      "description": "Stable reason why no offer is possible. Servers SHOULD use a value of `KnownNoOfferReason`. Other values MUST be lower case with underscores.",
+      "pattern": "^[a-z][a-z0-9_]*$"
     },
     "Offer": {
       "type": "object",
@@ -1011,12 +1245,17 @@
         "provider": {
           "$ref": "#/definitions/ProviderRef"
         },
+        "underwriting_scope_version": {
+          "type": "string",
+          "description": "Version of the product's underwriting scope that the server applied."
+        },
         "pricing": {
-          "$ref": "#/definitions/Pricing"
+          "$ref": "#/definitions/Pricing",
+          "description": "The price and the cover. A binding offer MUST give `cover.excess` and `cover.limits`. An empty `limits` means that the cover has no limit."
         },
         "indicative": {
           "type": "boolean",
-          "description": "True when the offer is indicative and can change after checks."
+          "description": "True when the offer is indicative and can change after checks. False makes the offer binding. A server MUST NOT return a binding offer unless the quote carries the customer's validation of its answers and sources."
         },
         "valid_until": {
           "$ref": "#/definitions/DateTimeString",
@@ -1041,6 +1280,7 @@
         "offer_id",
         "product_id",
         "provider",
+        "underwriting_scope_version",
         "pricing",
         "indicative",
         "valid_until",
@@ -1068,6 +1308,109 @@
         },
         "terms": {
           "$ref": "#/definitions/ApplicationTerms"
+        },
+        "expires_at": {
+          "$ref": "#/definitions/DateTimeString",
+          "description": "Required while `proposed`."
+        },
+        "user_approval_required": {
+          "type": "boolean",
+          "description": "When true, a standing permission is not enough. The customer MUST approve this revision."
+        },
+        "url": {
+          "$ref": "#/definitions/Url"
+        },
+        "confirmation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "revision": {
+                  "type": "number"
+                },
+                "approved_by": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "standing_permission"
+                  ]
+                },
+                "confirmed_at": {
+                  "$ref": "#/definitions/DateTimeString"
+                }
+              },
+              "required": [
+                "revision",
+                "approved_by",
+                "confirmed_at"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "summary": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "summary"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "aip_progress": {
+          "$ref": "#/definitions/AipProgress",
+          "description": "AIP reason why the operation is `in_progress`. Not a PAP field. Clients that do not know AIP ignore it."
+        }
+      },
+      "required": [
+        "operation_id",
+        "revision",
+        "state",
+        "summary",
+        "terms",
+        "user_approval_required",
+        "confirmation",
+        "result"
+      ],
+      "additionalProperties": false,
+      "description": "A PAP operation. This mirrors the PAP operations extension (version 1). PAP is the authority for every field here except `terms` and `aip_progress`. When the two differ, PAP wins.\n\nAn MCP tool returns it in `structuredContent.operation`. The agent confirms it at the PAP operations endpoint, never through an AIP tool."
+    },
+    "Operation<ValidationTerms>": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "number",
+          "description": "Starts at 1. Increases when the terms change. Only the latest revision can be confirmed."
+        },
+        "state": {
+          "$ref": "#/definitions/OperationState"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Plain-language terms that the customer can decide from alone."
+        },
+        "terms": {
+          "$ref": "#/definitions/ValidationTerms"
         },
         "expires_at": {
           "$ref": "#/definitions/DateTimeString",
@@ -1296,11 +1639,9 @@
           "$ref": "#/definitions/ProviderRef",
           "description": "Provider of the product, when it is not the distributor."
         },
-        "countries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/CountryCode"
-          }
+        "underwriting_scope": {
+          "$ref": "#/definitions/UnderwritingScope",
+          "description": "The risks the product can cover. A product MUST publish it."
         },
         "summary": {
           "type": "string"
@@ -1319,7 +1660,7 @@
         "product_id",
         "name",
         "line",
-        "countries",
+        "underwriting_scope",
         "summary",
         "details",
         "subscription_paths"
@@ -1390,13 +1731,27 @@
         "role": {
           "$ref": "#/definitions/ProviderRole"
         },
-        "licence": {
-          "$ref": "#/definitions/Licence"
+        "domain": {
+          "type": "string",
+          "description": "Domain the provider controls, so that an agent can find it in the registry."
+        },
+        "lei": {
+          "$ref": "#/definitions/Lei",
+          "description": "Legal Entity Identifier, when the provider has one."
+        },
+        "licences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Licence"
+          },
+          "description": "The register entries that allow the provider to carry the risk, for example its authorisation as an insurer. At least one.",
+          "minItems": 1
         }
       },
       "required": [
         "name",
-        "role"
+        "role",
+        "licences"
       ],
       "additionalProperties": false,
       "description": "The party that carries the risk."
@@ -1469,6 +1824,14 @@
             "answers": {
               "$ref": "#/definitions/Answers"
             },
+            "answer_sources": {
+              "$ref": "#/definitions/AnswerSources",
+              "description": "Where each answer comes from, keyed like `answers`."
+            },
+            "validation": {
+              "$ref": "#/definitions/AnswersValidation",
+              "description": "The customer's validation of these answers and sources, from a succeeded `validate_answers` operation. When it does not match them, the server returns `answers_not_validated`."
+            },
             "options": {
               "type": "array",
               "items": {
@@ -1483,7 +1846,8 @@
           "required": [
             "product_id",
             "question_set",
-            "answers"
+            "answers",
+            "answer_sources"
           ],
           "additionalProperties": false
         },
@@ -1500,7 +1864,7 @@
           "additionalProperties": false
         }
       ],
-      "description": "Params of `quote`.\n\nThe agent MAY send partial answers. The server then returns `needs_input` with the missing fields, and the agent calls `quote` again with more answers. This one loop replaces the multi-step flow tools (`action`, `stateUpdates`, `sessionId`) that most servers use. Some servers already work this way.\n\nTo read a quote that is still in progress, send only `quote_request_id`."
+      "description": "Params of `quote`.\n\nThe agent MAY send partial answers. The server then returns `needs_input` with the missing fields, and the agent calls `quote` again with more answers. This one loop replaces the multi-step flow tools (`action`, `stateUpdates`, `sessionId`) that most servers use. Some servers already work this way.\n\nWithout `validation`, every offer is indicative. To get binding offers, the agent first has the customer validate the answers with `validate_answers`, then sends the same answers and sources with that `validation`.\n\nTo read a quote that is still in progress, send only `quote_request_id`."
     },
     "QuoteResult": {
       "anyOf": [
@@ -1521,6 +1885,14 @@
               "$ref": "#/definitions/Sha256",
               "description": "SHA-256 of the canonical JSON (RFC 8785) of the answers used."
             },
+            "answer_sources_sha256": {
+              "$ref": "#/definitions/Sha256",
+              "description": "SHA-256 of the canonical JSON (RFC 8785) of the answer sources used."
+            },
+            "validation": {
+              "$ref": "#/definitions/AnswersValidation",
+              "description": "The validation the server applied. Required when an offer is binding."
+            },
             "offers": {
               "type": "array",
               "items": {
@@ -1537,6 +1909,7 @@
             "quote_request_id",
             "question_set",
             "answers_sha256",
+            "answer_sources_sha256",
             "offers"
           ],
           "additionalProperties": false
@@ -1601,6 +1974,8 @@
         "fca_frn",
         "npn",
         "dgsfp_key",
+        "naic_cocode",
+        "lei",
         "other"
       ],
       "description": "Kind of public register identifier."
@@ -1617,6 +1992,11 @@
       "type": "string",
       "description": "Lower-case hex SHA-256 digest.",
       "pattern": "^[a-f0-9]{64}$"
+    },
+    "SubdivisionCode": {
+      "type": "string",
+      "description": "ISO 3166-2 subdivision code, upper case, for example \"US-CA\" for California.",
+      "pattern": "^[A-Z]{2}-[A-Z0-9]{1,3}$"
     },
     "SubmitApplicationParams": {
       "type": "object",
@@ -1695,6 +2075,7 @@
         "get_documents",
         "get_question_set",
         "quote",
+        "validate_answers",
         "submit_application",
         "conclude"
       ]
@@ -1782,6 +2163,22 @@
           ],
           "additionalProperties": false
         },
+        "validate_answers": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/definitions/ValidateAnswersParams"
+            },
+            "result": {
+              "$ref": "#/definitions/ValidateAnswersResult"
+            }
+          },
+          "required": [
+            "params",
+            "result"
+          ],
+          "additionalProperties": false
+        },
         "submit_application": {
           "type": "object",
           "properties": {
@@ -1821,15 +2218,141 @@
         "get_documents",
         "get_question_set",
         "quote",
+        "validate_answers",
         "submit_application",
         "conclude"
       ],
       "additionalProperties": false,
       "description": "Params and result type of each tool."
     },
+    "UnderwritingScope": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Version of the scope. A change in any part MUST change it."
+        },
+        "geography": {
+          "$ref": "#/definitions/Geography"
+        },
+        "insured": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InsuredType"
+          },
+          "description": "What the product insures. At least one.",
+          "minItems": 1
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The conditions that a machine cannot check, in plain words, for example \"Houses built after 1950 only\" or \"Not for people over 70\". Empty when there are none. An agent SHOULD check them against what the customer said before it quotes, and ask the customer when it is not sure."
+        }
+      },
+      "required": [
+        "version",
+        "geography",
+        "insured",
+        "conditions"
+      ],
+      "additionalProperties": false,
+      "description": "The risks a product can cover. `list_products` gives it with no customer data, so that an agent can drop a product that cannot cover the customer before it asks a question.\n\n`geography` and `insured` are the structured part, which a machine can check against the answers. A server MUST NOT return an offer for a risk outside the structured part. An agent MUST NOT send answers to `quote` for a product whose structured part excludes the customer. `conditions` holds the rest."
+    },
     "Url": {
       "type": "string",
       "format": "uri"
+    },
+    "ValidateAnswersParams": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "question_set": {
+          "$ref": "#/definitions/QuestionSetRef"
+        },
+        "answers": {
+          "$ref": "#/definitions/Answers"
+        },
+        "answer_sources": {
+          "$ref": "#/definitions/AnswerSources",
+          "description": "Where each answer comes from, keyed like `answers`."
+        },
+        "language": {
+          "$ref": "#/definitions/LanguageTag",
+          "description": "Language of the operation `summary`."
+        }
+      },
+      "required": [
+        "product_id",
+        "question_set",
+        "answers",
+        "answer_sources"
+      ],
+      "additionalProperties": false,
+      "description": "Params of `validate_answers`. The agent calls it before it asks for binding offers, and before an application. The answers MUST be complete for the question set. Otherwise the server returns `answers_invalid`."
+    },
+    "ValidateAnswersResult": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "$ref": "#/definitions/Operation%3CValidationTerms%3E"
+        }
+      },
+      "required": [
+        "operation"
+      ],
+      "additionalProperties": false,
+      "description": "Result of `validate_answers`. The operation MUST have `user_approval_required: true`, because only the customer can validate their answers. The agent MUST ask the person who will be the subscriber to approve it. When it succeeds, `result.data` holds a `ValidationOutcome`."
+    },
+    "ValidationOutcome": {
+      "type": "object",
+      "properties": {
+        "validation": {
+          "$ref": "#/definitions/AnswersValidation"
+        }
+      },
+      "required": [
+        "validation"
+      ],
+      "additionalProperties": false
+    },
+    "ValidationTerms": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "question_set": {
+          "$ref": "#/definitions/QuestionSetRef"
+        },
+        "answers": {
+          "$ref": "#/definitions/Answers"
+        },
+        "answer_sources": {
+          "$ref": "#/definitions/AnswerSources"
+        },
+        "answers_sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "SHA-256 of the canonical JSON (RFC 8785) of `answers`."
+        },
+        "answer_sources_sha256": {
+          "$ref": "#/definitions/Sha256",
+          "description": "SHA-256 of the canonical JSON (RFC 8785) of `answer_sources`."
+        }
+      },
+      "required": [
+        "product_id",
+        "question_set",
+        "answers",
+        "answer_sources",
+        "answers_sha256",
+        "answer_sources_sha256"
+      ],
+      "additionalProperties": false,
+      "description": "Terms of a validation: the answers that the customer validates, and their sources. The `summary` of the operation MUST show each answer and its source in plain words, so that the customer can check each one."
     }
   }
 }

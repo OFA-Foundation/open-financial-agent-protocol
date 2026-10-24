@@ -6,16 +6,37 @@
     "version": "3"
   },
   "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+  "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d",
+  "validation": {
+    "operation_id": "op-2d71",
+    "revision": 1,
+    "validated_at": "2026-10-20T10:04:10+02:00",
+    "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+    "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d"
+  },
   "offers": [
     {
-      "offer_id": "of-essentiel-70",
+      "offer_id": "of-5d10",
       "product_id": "pet-fr-essentiel",
       "tier": "Essentiel 70",
       "provider": {
         "name": "Example Mutual",
         "legal_name": "Example Mutual Assurances SA",
-        "role": "insurer"
+        "role": "insurer",
+        "domain": "mutual.example.com",
+        "lei": "EXAMPLEMUTUAL0000042",
+        "licences": [
+          {
+            "country": "FR",
+            "regulator": "ACPR",
+            "register": "EIOPA register of insurance undertakings",
+            "identifier_type": "lei",
+            "identifier": "EXAMPLEMUTUAL0000042",
+            "role": "insurer"
+          }
+        ]
       },
+      "underwriting_scope_version": "2026-09",
       "indicative": false,
       "pricing": {
         "premium": {
@@ -83,17 +104,30 @@
         "application",
         "handoff"
       ],
-      "handoff_url": "https://pets.example.com/q/of-essentiel-70"
+      "handoff_url": "https://pets.example.com/q/of-5d10"
     },
     {
-      "offer_id": "of-essentiel-90",
+      "offer_id": "of-5d11",
       "product_id": "pet-fr-essentiel",
       "tier": "Essentiel 90",
       "provider": {
         "name": "Example Mutual",
         "legal_name": "Example Mutual Assurances SA",
-        "role": "insurer"
+        "role": "insurer",
+        "domain": "mutual.example.com",
+        "lei": "EXAMPLEMUTUAL0000042",
+        "licences": [
+          {
+            "country": "FR",
+            "regulator": "ACPR",
+            "register": "EIOPA register of insurance undertakings",
+            "identifier_type": "lei",
+            "identifier": "EXAMPLEMUTUAL0000042",
+            "role": "insurer"
+          }
+        ]
       },
+      "underwriting_scope_version": "2026-09",
       "indicative": false,
       "pricing": {
         "premium": {
@@ -161,7 +195,7 @@
         "application",
         "handoff"
       ],
-      "handoff_url": "https://pets.example.com/q/of-essentiel-90"
+      "handoff_url": "https://pets.example.com/q/of-5d11"
     }
   ]
 }

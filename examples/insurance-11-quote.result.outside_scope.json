@@ -1,0 +1,15 @@
+{
+  "status": "complete",
+  "quote_request_id": "qr-4e07",
+  "question_set": {
+    "question_set_id": "qs-pet-fr-essentiel",
+    "version": "3"
+  },
+  "answers_sha256": "35f2482e9f503e31c5d088f55de1340495be6cef15616cd76885521753366e10",
+  "answer_sources_sha256": "1754890bee6d12d2167b78df587c8c70f19522288eaa4c3d4b71e42549ee33ee",
+  "offers": [],
+  "no_offer": {
+    "reason_code": "outside_underwriting_scope",
+    "message": "Essentiel covers pets that live in France. Pixel lives in Belgium."
+  }
+}

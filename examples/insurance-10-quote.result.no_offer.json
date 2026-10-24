@@ -6,6 +6,7 @@
     "version": "3"
   },
   "answers_sha256": "49b096f890adbb6b541efdcd3987264a175976808541b51a6efd3e84cd620f2a",
+  "answer_sources_sha256": "99a922bc4704f2ef8ea4df1f437780362a903248286a830f44ac3b907e31c7d9",
   "offers": [],
   "no_offer": {
     "reason_code": "age_not_accepted",

@@ -1,0 +1,77 @@
+{
+  "operation": {
+    "operation_id": "op-2d71",
+    "revision": 1,
+    "state": "proposed",
+    "summary": "Check Miso's answers before Example Mutual gives a firm price. You said: lives in France, postal code 69003, a female cat named Miso, spayed, stays indoors, not insured today. Your assistant read the breed from your photo, and you have not checked it yet: European shorthair. Your vet clinic's record gives the date of birth, and you have not checked it yet: 1 April 2023. If an answer is false, Example Mutual can refuse to pay a claim or cancel the cover.",
+    "terms": {
+      "product_id": "pet-fr-essentiel",
+      "question_set": {
+        "question_set_id": "qs-pet-fr-essentiel",
+        "version": "3"
+      },
+      "answers": {
+        "country": "FR",
+        "postal_code": "69003",
+        "species": "cat",
+        "pet_name": "Miso",
+        "breed": "European shorthair",
+        "sex": "female",
+        "is_neutered": true,
+        "date_of_birth": "2023-04-01",
+        "lifestyle": "indoor",
+        "currently_insured": false
+      },
+      "answer_sources": {
+        "country": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "postal_code": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "species": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "pet_name": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "breed": {
+          "origin": "agent",
+          "validated_by_customer": false
+        },
+        "sex": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "is_neutered": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "date_of_birth": {
+          "origin": "third_party",
+          "validated_by_customer": false,
+          "source_name": "veterinary clinic record (FR)"
+        },
+        "lifestyle": {
+          "origin": "customer",
+          "validated_by_customer": true
+        },
+        "currently_insured": {
+          "origin": "customer",
+          "validated_by_customer": true
+        }
+      },
+      "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+      "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d"
+    },
+    "expires_at": "2026-10-20T10:30:00+02:00",
+    "user_approval_required": true,
+    "url": "https://pets.example.com/ops/op-2d71",
+    "confirmation": null,
+    "result": null
+  }
+}

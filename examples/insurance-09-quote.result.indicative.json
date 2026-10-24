@@ -1,0 +1,194 @@
+{
+  "status": "complete",
+  "quote_request_id": "qr-7f3a",
+  "question_set": {
+    "question_set_id": "qs-pet-fr-essentiel",
+    "version": "3"
+  },
+  "answers_sha256": "3e9c2dddf3f4f8ea10c0cd851fc69b1c9d904e067b2ed3551fdd051ee792de67",
+  "answer_sources_sha256": "c888687248b688b77862bc408acb5e9284d8f18ade76d7b48373b1cb814a286d",
+  "offers": [
+    {
+      "offer_id": "of-3c81",
+      "product_id": "pet-fr-essentiel",
+      "tier": "Essentiel 70",
+      "provider": {
+        "name": "Example Mutual",
+        "legal_name": "Example Mutual Assurances SA",
+        "role": "insurer",
+        "domain": "mutual.example.com",
+        "lei": "EXAMPLEMUTUAL0000042",
+        "licences": [
+          {
+            "country": "FR",
+            "regulator": "ACPR",
+            "register": "EIOPA register of insurance undertakings",
+            "identifier_type": "lei",
+            "identifier": "EXAMPLEMUTUAL0000042",
+            "role": "insurer"
+          }
+        ]
+      },
+      "underwriting_scope_version": "2026-09",
+      "indicative": true,
+      "pricing": {
+        "premium": {
+          "amount": {
+            "amount": "14.90",
+            "currency": "EUR"
+          },
+          "period": "month",
+          "taxes_included": true
+        },
+        "alternative_premiums": [
+          {
+            "amount": {
+              "amount": "171.00",
+              "currency": "EUR"
+            },
+            "period": "year",
+            "taxes_included": true
+          }
+        ],
+        "cover": {
+          "included": [
+            "Accident",
+            "Illness",
+            "Surgery"
+          ],
+          "limits": [
+            {
+              "key": "vet_costs_per_year",
+              "label": "Frais vétérinaires par an",
+              "limit": {
+                "amount": "1500.00",
+                "currency": "EUR"
+              },
+              "reimbursement_rate": 0.7
+            }
+          ],
+          "excess": {
+            "amount": "0.00",
+            "currency": "EUR"
+          },
+          "main_exclusions": [
+            "Pre-existing conditions"
+          ],
+          "waiting_period_days": 45
+        },
+        "options": [
+          {
+            "key": "prevention",
+            "label": "Forfait prévention",
+            "price": {
+              "amount": {
+                "amount": "3.00",
+                "currency": "EUR"
+              },
+              "period": "month",
+              "taxes_included": true
+            }
+          }
+        ],
+        "start_date": "2026-11-01"
+      },
+      "valid_until": "2026-11-19T23:59:59+01:00",
+      "subscription_paths": [
+        "application",
+        "handoff"
+      ],
+      "handoff_url": "https://pets.example.com/q/of-3c81"
+    },
+    {
+      "offer_id": "of-3c82",
+      "product_id": "pet-fr-essentiel",
+      "tier": "Essentiel 90",
+      "provider": {
+        "name": "Example Mutual",
+        "legal_name": "Example Mutual Assurances SA",
+        "role": "insurer",
+        "domain": "mutual.example.com",
+        "lei": "EXAMPLEMUTUAL0000042",
+        "licences": [
+          {
+            "country": "FR",
+            "regulator": "ACPR",
+            "register": "EIOPA register of insurance undertakings",
+            "identifier_type": "lei",
+            "identifier": "EXAMPLEMUTUAL0000042",
+            "role": "insurer"
+          }
+        ]
+      },
+      "underwriting_scope_version": "2026-09",
+      "indicative": true,
+      "pricing": {
+        "premium": {
+          "amount": {
+            "amount": "21.40",
+            "currency": "EUR"
+          },
+          "period": "month",
+          "taxes_included": true
+        },
+        "alternative_premiums": [
+          {
+            "amount": {
+              "amount": "246.00",
+              "currency": "EUR"
+            },
+            "period": "year",
+            "taxes_included": true
+          }
+        ],
+        "cover": {
+          "included": [
+            "Accident",
+            "Illness",
+            "Surgery"
+          ],
+          "limits": [
+            {
+              "key": "vet_costs_per_year",
+              "label": "Frais vétérinaires par an",
+              "limit": {
+                "amount": "2500.00",
+                "currency": "EUR"
+              },
+              "reimbursement_rate": 0.9
+            }
+          ],
+          "excess": {
+            "amount": "0.00",
+            "currency": "EUR"
+          },
+          "main_exclusions": [
+            "Pre-existing conditions"
+          ],
+          "waiting_period_days": 45
+        },
+        "options": [
+          {
+            "key": "prevention",
+            "label": "Forfait prévention",
+            "price": {
+              "amount": {
+                "amount": "3.00",
+                "currency": "EUR"
+              },
+              "period": "month",
+              "taxes_included": true
+            }
+          }
+        ],
+        "start_date": "2026-11-01"
+      },
+      "valid_until": "2026-11-19T23:59:59+01:00",
+      "subscription_paths": [
+        "application",
+        "handoff"
+      ],
+      "handoff_url": "https://pets.example.com/q/of-3c82"
+    }
+  ]
+}

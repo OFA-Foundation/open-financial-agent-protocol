@@ -11,15 +11,27 @@
  * - home: a home insurer, ES
  *
  * A profile needs a second distributor of the same line before it is stable.
+ *
+ * A profile also says what the line insures, and which question gives the
+ * kind. An agent then checks the structured part of an underwriting scope
+ * against the answers: `country` against the geography, and the value of
+ * `kind_key` against the kinds of `insured_family`.
  */
 
-import type { AnswersSchema, ProductLine } from "./schema";
+import type { AnswersSchema, InsuredFamily, ProductLine } from "./schema";
 
 export interface LineProfile {
   /** Identifier, for example "pet@0.1". */
   id: string;
   line: ProductLine;
   version: string;
+  /** What the line insures, as in `UnderwritingScope.insured`. */
+  insured_family: InsuredFamily;
+  /**
+   * The question whose values are the kinds of `insured_family`, for example
+   * "species". The kinds in an underwriting scope MUST be values it accepts.
+   */
+  kind_key?: string;
   answers_schema: AnswersSchema;
   /** Sources this profile was derived from, by line and country. */
   derived_from: string[];
@@ -31,6 +43,8 @@ export const INSURANCE_PET: LineProfile = {
   id: "pet@0.1",
   line: "pet",
   version: "0.1",
+  insured_family: "pet",
+  kind_key: "species",
   derived_from: ["pet insurer, FR, DE, SE"],
   answers_schema: {
     type: "object",
@@ -67,6 +81,8 @@ export const INSURANCE_HOME: LineProfile = {
   id: "home@0.1",
   line: "home",
   version: "0.1",
+  insured_family: "dwelling",
+  kind_key: "property_type",
   derived_from: ["home insurer, ES"],
   answers_schema: {
     type: "object",

@@ -1,0 +1,37 @@
+{
+  "product_id": "pet-fr-essentiel",
+  "question_set": {
+    "question_set_id": "qs-pet-fr-essentiel",
+    "version": "3"
+  },
+  "answers": {
+    "country": "FR",
+    "postal_code": "69003",
+    "species": "cat",
+    "pet_name": "Miso",
+    "breed": "European shorthair"
+  },
+  "answer_sources": {
+    "country": {
+      "origin": "customer",
+      "validated_by_customer": true
+    },
+    "postal_code": {
+      "origin": "customer",
+      "validated_by_customer": true
+    },
+    "species": {
+      "origin": "customer",
+      "validated_by_customer": true
+    },
+    "pet_name": {
+      "origin": "customer",
+      "validated_by_customer": true
+    },
+    "breed": {
+      "origin": "agent",
+      "validated_by_customer": false
+    }
+  },
+  "language": "fr"
+}

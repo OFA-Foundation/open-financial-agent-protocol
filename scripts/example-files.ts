@@ -3,10 +3,14 @@ import type {
   GetDistributorResult,
   GetDocumentsResult,
   GetQuestionSetResult,
+  ListProductsParams,
+  ListProductsResult,
   QuoteParams,
   QuoteResult,
   SubmitApplicationParams,
   SubmitApplicationResult,
+  ValidateAnswersParams,
+  ValidateAnswersResult,
 } from "../schema";
 
 export const EXAMPLES_DIR = join(import.meta.dir, "..", "examples");
@@ -14,16 +18,24 @@ export const EXAMPLES_DIR = join(import.meta.dir, "..", "examples");
 /** Each example file, by name, with the schema type it must match. */
 export interface Examples {
   "insurance-01-get_distributor.result": GetDistributorResult;
-  "insurance-02-get_documents.result": GetDocumentsResult;
-  "insurance-03-get_question_set.result": GetQuestionSetResult;
-  "insurance-04-quote.params.partial": QuoteParams;
-  "insurance-05-quote.result.needs_input": QuoteResult;
-  "insurance-06-quote.params.complete": QuoteParams;
-  "insurance-07-quote.result.complete": QuoteResult;
-  "insurance-08-quote.result.no_offer": QuoteResult;
-  "insurance-09-submit_application.params": SubmitApplicationParams;
-  "insurance-10-submit_application.result.proposed": SubmitApplicationResult;
-  "insurance-11-operation.succeeded": SubmitApplicationResult;
+  "insurance-02-list_products.params": ListProductsParams;
+  "insurance-03-list_products.result": ListProductsResult;
+  "insurance-04-get_documents.result": GetDocumentsResult;
+  "insurance-05-get_question_set.result": GetQuestionSetResult;
+  "insurance-06-quote.params.partial": QuoteParams;
+  "insurance-07-quote.result.needs_input": QuoteResult;
+  "insurance-08-quote.params.complete": QuoteParams;
+  "insurance-09-quote.result.indicative": QuoteResult;
+  "insurance-10-quote.result.no_offer": QuoteResult;
+  "insurance-11-quote.result.outside_scope": QuoteResult;
+  "insurance-12-validate_answers.params": ValidateAnswersParams;
+  "insurance-13-validate_answers.result.proposed": ValidateAnswersResult;
+  "insurance-14-operation.validation.succeeded": ValidateAnswersResult;
+  "insurance-15-quote.params.validated": QuoteParams;
+  "insurance-16-quote.result.binding": QuoteResult;
+  "insurance-17-submit_application.params": SubmitApplicationParams;
+  "insurance-18-submit_application.result.proposed": SubmitApplicationResult;
+  "insurance-19-operation.application.succeeded": SubmitApplicationResult;
 }
 
 export type ExampleName = keyof Examples;
@@ -31,16 +43,24 @@ export type ExampleName = keyof Examples;
 /** The `schema.json` definition that each example file must match. */
 export const EXAMPLE_DEFINITIONS: { [K in ExampleName]: string } = {
   "insurance-01-get_distributor.result": "GetDistributorResult",
-  "insurance-02-get_documents.result": "GetDocumentsResult",
-  "insurance-03-get_question_set.result": "GetQuestionSetResult",
-  "insurance-04-quote.params.partial": "QuoteParams",
-  "insurance-05-quote.result.needs_input": "QuoteResult",
-  "insurance-06-quote.params.complete": "QuoteParams",
-  "insurance-07-quote.result.complete": "QuoteResult",
-  "insurance-08-quote.result.no_offer": "QuoteResult",
-  "insurance-09-submit_application.params": "SubmitApplicationParams",
-  "insurance-10-submit_application.result.proposed": "SubmitApplicationResult",
-  "insurance-11-operation.succeeded": "SubmitApplicationResult",
+  "insurance-02-list_products.params": "ListProductsParams",
+  "insurance-03-list_products.result": "ListProductsResult",
+  "insurance-04-get_documents.result": "GetDocumentsResult",
+  "insurance-05-get_question_set.result": "GetQuestionSetResult",
+  "insurance-06-quote.params.partial": "QuoteParams",
+  "insurance-07-quote.result.needs_input": "QuoteResult",
+  "insurance-08-quote.params.complete": "QuoteParams",
+  "insurance-09-quote.result.indicative": "QuoteResult",
+  "insurance-10-quote.result.no_offer": "QuoteResult",
+  "insurance-11-quote.result.outside_scope": "QuoteResult",
+  "insurance-12-validate_answers.params": "ValidateAnswersParams",
+  "insurance-13-validate_answers.result.proposed": "ValidateAnswersResult",
+  "insurance-14-operation.validation.succeeded": "ValidateAnswersResult",
+  "insurance-15-quote.params.validated": "QuoteParams",
+  "insurance-16-quote.result.binding": "QuoteResult",
+  "insurance-17-submit_application.params": "SubmitApplicationParams",
+  "insurance-18-submit_application.result.proposed": "SubmitApplicationResult",
+  "insurance-19-operation.application.succeeded": "SubmitApplicationResult",
 };
 
 export function examplePath(name: ExampleName): string {
