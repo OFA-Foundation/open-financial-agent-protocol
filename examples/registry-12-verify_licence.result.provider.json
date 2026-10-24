@@ -1,0 +1,45 @@
+{
+  "check_id": "chk-4d3c",
+  "params": {
+    "capacity": "provider",
+    "subject": {
+      "identifier": {
+        "country": "FR",
+        "identifier_type": "lei",
+        "identifier": "EXAMPLEMUTUAL0000042"
+      }
+    },
+    "country": "FR",
+    "line": "pet"
+  },
+  "subject": {
+    "legal_name": "Example Mutual Assurances SA",
+    "lei": "EXAMPLEMUTUAL0000042",
+    "listed": false
+  },
+  "licences": [
+    {
+      "country": "FR",
+      "regulator": "ACPR",
+      "register": "REGAFI",
+      "identifier_type": "lei",
+      "identifier": "EXAMPLEMUTUAL0000042",
+      "role": "insurer",
+      "status": "active",
+      "register_status": "Actif",
+      "categories": [
+        "Non-vie"
+      ],
+      "name_in_register": "EXAMPLE MUTUAL ASSURANCES SA",
+      "access": "api",
+      "source_date": "2026-10-19",
+      "checked_at": "2026-10-20T10:04:20+02:00",
+      "source_url": "https://www.regafi.fr/"
+    }
+  ],
+  "outcome": {
+    "verdict": "licensed",
+    "message": "Example Mutual Assurances SA is in the ACPR register of insurers, and its authorisation is active."
+  },
+  "checked_at": "2026-10-20T10:04:21+02:00"
+}

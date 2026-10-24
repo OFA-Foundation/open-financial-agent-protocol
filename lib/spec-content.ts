@@ -414,34 +414,40 @@ interface RegistryStep {
 
 const REGISTRY_STEPS: RegistryStep[] = [
   {
+    title: "Load the rules of the country",
+    tool: "get_country_rules",
+    files: ["registry-01-get_country_rules.params", "registry-02-get_country_rules.result"],
+    text: "Camille lives in France and wants to insure her cat. The agent first loads the rules of France. The file is the one of the buyer skill, with its version, its owner, its status and its hash. This example shows the start of a draft file.",
+  },
+  {
     title: "Find the sellers",
     tool: "search_distributors",
-    files: ["registry-01-search_distributors.params", "registry-02-search_distributors.result"],
-    text: "Camille lives in France and wants to insure her cat. The agent asks the registry for the sellers of pet insurance in France that can at least quote. The registry returns Example Pets, with the register entry that its listing rests on.",
+    files: ["registry-03-search_distributors.params", "registry-04-search_distributors.result"],
+    text: "The agent asks the registry for the sellers of pet insurance in France that can at least quote. The registry returns Example Pets, with the register entry that its listing rests on.",
   },
   {
     title: "Check a listed seller",
     tool: "verify_licence",
-    files: ["registry-03-verify_licence.params.licensed", "registry-04-verify_licence.result.licensed"],
+    files: ["registry-05-verify_licence.params.licensed", "registry-06-verify_licence.result.licensed"],
     text: "Before it sends any answer, the agent checks the domain that will receive them. The registry reads the ORIAS entry again, and the entry gives the website of Example Pets, so the link is `register`. The verdict is `licensed`. The agent keeps this result with the record of the sale.",
   },
   {
     title: "Check a seller found on the web",
     tool: "verify_licence",
-    files: ["registry-05-verify_licence.params.no_licence", "registry-06-verify_licence.result.no_licence"],
+    files: ["registry-07-verify_licence.params.no_licence", "registry-08-verify_licence.result.no_licence"],
     text: "Another site sells pet cover and gives an ORIAS number in its legal notice. ORIAS has no such entry. The verdict is `not_licensed`, so the agent sends nothing to that site and tells Camille why.",
   },
   {
     title: "Check a seller whose licence lapsed",
     tool: "verify_licence",
-    files: ["registry-07-verify_licence.params.lapsed", "registry-08-verify_licence.result.lapsed"],
-    text: "In the United States a licence applies per state, so the agent gives the state. The operator confirmed the agency's domain when it listed it. The Texas licence lapsed, and the Oklahoma licence does not cover a customer in Texas. The verdict is `not_licensed`, and the reason comes from the Texas entry.",
+    files: ["registry-09-verify_licence.params.lapsed", "registry-10-verify_licence.result.lapsed"],
+    text: "In another sale, in the United States, a licence applies per state, so the agent gives the state. The operator confirmed the agency's domain when it listed it. The Texas licence lapsed, and the Oklahoma licence does not cover a customer in Texas. The verdict is `not_licensed`, and the reason comes from the Texas entry.",
   },
   {
-    title: "Load the rules of the country",
-    tool: "get_country_rules",
-    files: ["registry-09-get_country_rules.params", "registry-10-get_country_rules.result"],
-    text: "The agent loads the rules of France. The file is the one of the buyer skill, with its version, its owner, its status and its hash. This example shows the start of a draft file.",
+    title: "Check the insurer",
+    tool: "verify_licence",
+    files: ["registry-11-verify_licence.params.provider", "registry-12-verify_licence.result.provider"],
+    text: "Back in France, before it applies for the offer, the agent checks Example Mutual, the insurer that carries the risk. A provider check can use the register entry from `Offer.provider` alone. The ACPR register shows an active authorisation, so the verdict is `licensed`.",
   },
 ];
 

@@ -317,8 +317,8 @@ check(
 
 /* Registry rules RG1 to RG8 */
 
-const searchParams = await readExample("registry-01-search_distributors.params");
-const search = await readExample("registry-02-search_distributors.result");
+const searchParams = await readExample("registry-03-search_distributors.params");
+const search = await readExample("registry-04-search_distributors.result");
 check(
   search.distributors.every(
     (listing) =>
@@ -371,9 +371,10 @@ function verdictFromEntries(result: VerifyLicenceResult): { verdict: "licensed" 
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const verifications = [
-  ["registry-03-verify_licence.params.licensed", "registry-04-verify_licence.result.licensed"],
-  ["registry-05-verify_licence.params.no_licence", "registry-06-verify_licence.result.no_licence"],
-  ["registry-07-verify_licence.params.lapsed", "registry-08-verify_licence.result.lapsed"],
+  ["registry-05-verify_licence.params.licensed", "registry-06-verify_licence.result.licensed"],
+  ["registry-07-verify_licence.params.no_licence", "registry-08-verify_licence.result.no_licence"],
+  ["registry-09-verify_licence.params.lapsed", "registry-10-verify_licence.result.lapsed"],
+  ["registry-11-verify_licence.params.provider", "registry-12-verify_licence.result.provider"],
 ] as const;
 
 for (const [paramsName, resultName] of verifications) {
@@ -423,8 +424,8 @@ function frontMatter(content: string): Record<string, string> {
   return values;
 }
 
-const rulesParams = await readExample("registry-09-get_country_rules.params");
-const rules = await readExample("registry-10-get_country_rules.result");
+const rulesParams = await readExample("registry-01-get_country_rules.params");
+const rules = await readExample("registry-02-get_country_rules.result");
 const FRONT_MATTER_KEYS = ["country", "subdivision", "line", "version", "owner", "status", "endorsed_by", "reviewed_at"] as const;
 for (const file of rules.files) {
   const header = frontMatter(file.content);

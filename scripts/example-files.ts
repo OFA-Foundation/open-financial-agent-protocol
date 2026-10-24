@@ -44,16 +44,18 @@ export interface Examples {
   "insurance-17-submit_application.params": SubmitApplicationParams;
   "insurance-18-submit_application.result.proposed": SubmitApplicationResult;
   "insurance-19-operation.application.succeeded": SubmitApplicationResult;
-  "registry-01-search_distributors.params": SearchDistributorsParams;
-  "registry-02-search_distributors.result": SearchDistributorsResult;
-  "registry-03-verify_licence.params.licensed": VerifyLicenceParams;
-  "registry-04-verify_licence.result.licensed": VerifyLicenceResult;
-  "registry-05-verify_licence.params.no_licence": VerifyLicenceParams;
-  "registry-06-verify_licence.result.no_licence": VerifyLicenceResult;
-  "registry-07-verify_licence.params.lapsed": VerifyLicenceParams;
-  "registry-08-verify_licence.result.lapsed": VerifyLicenceResult;
-  "registry-09-get_country_rules.params": GetCountryRulesParams;
-  "registry-10-get_country_rules.result": GetCountryRulesResult;
+  "registry-01-get_country_rules.params": GetCountryRulesParams;
+  "registry-02-get_country_rules.result": GetCountryRulesResult;
+  "registry-03-search_distributors.params": SearchDistributorsParams;
+  "registry-04-search_distributors.result": SearchDistributorsResult;
+  "registry-05-verify_licence.params.licensed": VerifyLicenceParams;
+  "registry-06-verify_licence.result.licensed": VerifyLicenceResult;
+  "registry-07-verify_licence.params.no_licence": VerifyLicenceParams;
+  "registry-08-verify_licence.result.no_licence": VerifyLicenceResult;
+  "registry-09-verify_licence.params.lapsed": VerifyLicenceParams;
+  "registry-10-verify_licence.result.lapsed": VerifyLicenceResult;
+  "registry-11-verify_licence.params.provider": VerifyLicenceParams;
+  "registry-12-verify_licence.result.provider": VerifyLicenceResult;
 }
 
 export type ExampleName = keyof Examples;
@@ -79,16 +81,18 @@ export const EXAMPLE_DEFINITIONS: { [K in ExampleName]: string } = {
   "insurance-17-submit_application.params": "SubmitApplicationParams",
   "insurance-18-submit_application.result.proposed": "SubmitApplicationResult",
   "insurance-19-operation.application.succeeded": "SubmitApplicationResult",
-  "registry-01-search_distributors.params": "SearchDistributorsParams",
-  "registry-02-search_distributors.result": "SearchDistributorsResult",
-  "registry-03-verify_licence.params.licensed": "VerifyLicenceParams",
-  "registry-04-verify_licence.result.licensed": "VerifyLicenceResult",
-  "registry-05-verify_licence.params.no_licence": "VerifyLicenceParams",
-  "registry-06-verify_licence.result.no_licence": "VerifyLicenceResult",
-  "registry-07-verify_licence.params.lapsed": "VerifyLicenceParams",
-  "registry-08-verify_licence.result.lapsed": "VerifyLicenceResult",
-  "registry-09-get_country_rules.params": "GetCountryRulesParams",
-  "registry-10-get_country_rules.result": "GetCountryRulesResult",
+  "registry-01-get_country_rules.params": "GetCountryRulesParams",
+  "registry-02-get_country_rules.result": "GetCountryRulesResult",
+  "registry-03-search_distributors.params": "SearchDistributorsParams",
+  "registry-04-search_distributors.result": "SearchDistributorsResult",
+  "registry-05-verify_licence.params.licensed": "VerifyLicenceParams",
+  "registry-06-verify_licence.result.licensed": "VerifyLicenceResult",
+  "registry-07-verify_licence.params.no_licence": "VerifyLicenceParams",
+  "registry-08-verify_licence.result.no_licence": "VerifyLicenceResult",
+  "registry-09-verify_licence.params.lapsed": "VerifyLicenceParams",
+  "registry-10-verify_licence.result.lapsed": "VerifyLicenceResult",
+  "registry-11-verify_licence.params.provider": "VerifyLicenceParams",
+  "registry-12-verify_licence.result.provider": "VerifyLicenceResult",
 };
 
 export function examplePath(name: ExampleName): string {

@@ -217,7 +217,7 @@ A registry tool returns an error in an MCP tool result with `isError: true`, as 
 
 ## 12. Worked example
 
-These calls come before the [pet insurance flow](/spec/0.1/example). All companies are fictional.
+These calls go with the [pet insurance flow](/spec/0.1/example). The rules, the search and the seller checks come before it, and the insurer check comes before the application. All companies are fictional.
 
 <!-- aip:registry example -->
 

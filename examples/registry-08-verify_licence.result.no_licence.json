@@ -28,7 +28,7 @@
       "identifier": "00000001",
       "status": "not_found",
       "access": "api",
-      "checked_at": "2026-10-20T10:12:00+02:00",
+      "checked_at": "2026-10-20T09:59:00+02:00",
       "source_url": "https://www.orias.fr/"
     }
   ],
@@ -37,5 +37,5 @@
     "reason": "no_entry",
     "message": "ORIAS has no entry with the number 00000001, and no entry in the name of Pet Cover Online SARL. This seller is not registered to sell insurance in France."
   },
-  "checked_at": "2026-10-20T10:12:01+02:00"
+  "checked_at": "2026-10-20T09:59:01+02:00"
 }

@@ -2210,13 +2210,16 @@
           "type": "object",
           "properties": {
             "domain": {
-              "$ref": "#/definitions/DomainName"
+              "$ref": "#/definitions/DomainName",
+              "description": "Domain of the provider, for example `ProviderRef.domain`."
             },
             "identifier": {
-              "$ref": "#/definitions/RegisterIdentifier"
+              "$ref": "#/definitions/RegisterIdentifier",
+              "description": "Register entry of the provider, for example one of `ProviderRef.licences`."
             },
             "legal_name": {
-              "type": "string"
+              "type": "string",
+              "description": "Legal name of the provider, for example `ProviderRef.legal_name`."
             }
           },
           "required": [
@@ -2228,10 +2231,12 @@
           "type": "object",
           "properties": {
             "identifier": {
-              "$ref": "#/definitions/RegisterIdentifier"
+              "$ref": "#/definitions/RegisterIdentifier",
+              "description": "Register entry of the provider, for example one of `ProviderRef.licences`."
             },
             "legal_name": {
-              "type": "string"
+              "type": "string",
+              "description": "Legal name of the provider, for example `ProviderRef.legal_name`."
             }
           },
           "required": [

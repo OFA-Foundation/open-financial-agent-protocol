@@ -1,0 +1,12 @@
+{
+  "capacity": "provider",
+  "subject": {
+    "identifier": {
+      "country": "FR",
+      "identifier_type": "lei",
+      "identifier": "EXAMPLEMUTUAL0000042"
+    }
+  },
+  "country": "FR",
+  "line": "pet"
+}

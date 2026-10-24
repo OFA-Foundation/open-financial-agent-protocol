@@ -301,12 +301,17 @@ export interface SellerSubject {
 /** A provider to check, for example from `Offer.provider`. Give its domain, a register entry, or both. */
 export type ProviderSubject =
   | {
+      /** Domain of the provider, for example `ProviderRef.domain`. */
       domain: DomainName;
+      /** Register entry of the provider, for example one of `ProviderRef.licences`. */
       identifier?: RegisterIdentifier;
+      /** Legal name of the provider, for example `ProviderRef.legal_name`. */
       legal_name?: string;
     }
   | {
+      /** Register entry of the provider, for example one of `ProviderRef.licences`. */
       identifier: RegisterIdentifier;
+      /** Legal name of the provider, for example `ProviderRef.legal_name`. */
       legal_name?: string;
     };
 

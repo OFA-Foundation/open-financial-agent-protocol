@@ -30,7 +30,7 @@ MCP and PAP do not cover what insurance regulation asks for:
 | `registry.ts` | The registry: its tools, its types and its rules, with the conventions of `schema.ts` |
 | `schema.json` | JSON Schema generated from `schema.ts` and `registry.ts`. Do not edit it by hand |
 | `profiles.ts` | Line profiles: the common core of questions per product line |
-| `examples/` | A worked pet insurance flow with fictional data: find the product and its scope, quote a cat, quote an older dog and a pet outside the scope that get no offer, validate the answers, get binding offers, apply, keep the evidence. The `registry-` files show a search, three licence checks and the rules of France |
+| `examples/` | A worked pet insurance flow with fictional data: find the product and its scope, quote a cat, quote an older dog and a pet outside the scope that get no offer, validate the answers, get binding offers, apply, keep the evidence. The `registry-` files show the rules of France, a search, three seller checks and an insurer check |
 | `scripts/` | Generate the schema, build the examples, run the checks |
 | `content/`, `app/`, `components/`, `lib/` | The website at [openfinancialagent.org](https://openfinancialagent.org). See `AGENTS.md` |
 
