@@ -184,7 +184,7 @@
           "additionalProperties": false
         }
       ],
-      "description": "Where one answer comes from. `validated_by_customer` is true when the customer confirmed this value before the agent sent it. A value that the customer gave is confirmed by them. An agent MUST NOT set `validated_by_customer` to true when the customer did not validate that answer."
+      "description": "Where one answer comes from. `validated_by_customer` is true when the customer confirmed this value before the agent sent it. It is always true when the customer gave the value. An agent MUST NOT set `validated_by_customer` to true when the customer did not validate that answer."
     },
     "AnswerSources": {
       "type": "object",
@@ -1032,7 +1032,8 @@
         "age_not_accepted",
         "breed_not_accepted",
         "claims_history_not_accepted"
-      ]
+      ],
+      "description": "Common reason codes. `outside_underwriting_scope` means that the risk is outside the product's underwriting scope: its geography, its insured types or its conditions. A quote for a risk outside the structured part MUST get this reason."
     },
     "KnownProductLine": {
       "type": "string",
@@ -1287,7 +1288,7 @@
         "subscription_paths"
       ],
       "additionalProperties": false,
-      "description": "One priced offer. A distributor can return several offers: one per tier, per provider, or per duration."
+      "description": "One priced offer. A distributor can return several offers: one per tier, per provider, or per duration.\n\nWhen a server implements `quote`, an agent MUST take the price, the cover, the limits and the excess that it shows the customer from the offer, and MUST NOT take them from a page made for people."
     },
     "Operation<ApplicationTerms>": {
       "type": "object",

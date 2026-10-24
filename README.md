@@ -14,10 +14,11 @@ Personal agents and AI assistants now quote and buy insurance for people. Each d
 
 MCP and PAP do not cover what insurance regulation asks for:
 
-- **Right to sell.** Who holds a licence, from which regulator, in which role.
+- **Right to sell.** Who holds a licence, from which regulator, in which role. This covers the insurer that carries the risk too.
+- **Underwriting scope.** Which risks a product can cover, published before any question, so that an agent does not buy cover that cannot apply to the customer.
 - **Pre-contract information.** The IPID and the general conditions must reach the customer before they commit.
 - **Demands and needs.** The distributor records them before the contract (IDD Art. 20) and says if it gave advice.
-- **Declaration.** The answers the customer commits to, with the exact questions they answered.
+- **Declaration.** The answers the customer commits to, with the exact questions they answered, where each answer came from, and the customer's validation.
 - **Parties.** Subscriber, insured, beneficiary and payer can be different people.
 - **Withdrawal period** after a distance sale.
 
@@ -28,7 +29,7 @@ MCP and PAP do not cover what insurance regulation asks for:
 | `schema.ts` | Source of truth. Every type, with the rules in RFC 2119 keywords |
 | `schema.json` | JSON Schema generated from `schema.ts`. Do not edit it by hand |
 | `profiles.ts` | Line profiles: the common core of questions per product line |
-| `examples/` | A worked pet insurance flow with fictional data: quote a cat, quote an older dog that gets no offer, apply, keep the evidence |
+| `examples/` | A worked pet insurance flow with fictional data: find the product and its scope, quote a cat, quote an older dog and a pet outside the scope that get no offer, validate the answers, get binding offers, apply, keep the evidence |
 | `scripts/` | Generate the schema, build the examples, run the checks |
 | `content/`, `app/`, `components/`, `lib/` | The website at [openfinancialagent.org](https://openfinancialagent.org). See `AGENTS.md` |
 
@@ -42,6 +43,8 @@ A sale through an agent must leave the same record as a sale on the distributor'
 |---|---|
 | Pre-contract documents | IPID, general conditions |
 | Needs assessment | Demands and needs (IDD Art. 20) |
+| Underwriting scope | Geography, insured types, conditions in plain words |
+| Declaration | Answers, the source of each answer, the customer's validation |
 | Pricing | Premium, cover, limits, excess |
 | Agreement | Policy |
 | Line profiles | `pet`, `home` |
@@ -51,7 +54,7 @@ A sale through an agent must leave the same record as a sale on the distributor'
 | Level | Tools | Session (PAP) |
 |---|---|---|
 | 1. Inform | `get_distributor`, `list_products`, `get_documents` | None |
-| 2. Quote | + `get_question_set`, `quote` | None, or signed out |
+| 2. Quote | + `get_question_set`, `quote`, `validate_answers` | None, or signed out. `validate_answers` returns a PAP operation |
 | 3. Subscribe | + `submit_application` or `conclude` | Signed out is enough. The action is a PAP operation |
 
 A server declares its level and its lines under `capabilities.extensions["org.openfinancialagent/ofap"]` in MCP `server/discover`, and under the same key in PAP `poppy.json`.
@@ -73,11 +76,19 @@ A product's question set must include every required question of its profile wit
 
 **Asynchronous quotes.** A quote can return `in_progress` and be read again with its `quote_request_id`.
 
+**The underwriting scope comes before the questions.** Each product publishes the countries and subdivisions it covers, what it insures (a family such as `pet` or `dwelling`, and its kinds), and the other conditions in plain words. The geography and the insured types are mandatory and structured, so an agent drops a product that cannot cover the customer before it asks a question, and `quote` refuses a risk outside them with `outside_underwriting_scope`. Conditions such as "Not for people over 70" stay in plain words, because a fixed list cannot hold them all. The agent checks them with the customer. The scope lives on the insurer's server. A registry does not copy it.
+
+**Each answer keeps its source.** An answer comes from the customer, from the agent, or from a named third party, and says whether the customer validated it. The sources go with the answers to `quote`, into the declaration, and into the evidence, with their own hash. When an answer turns out to be false, the record shows who produced it.
+
+**The customer validates the answers through PAP.** An indicative price needs no validation. A binding offer and an application need the customer's validation of the answers and their sources. `validate_answers` returns a PAP operation that only the customer can approve, and its summary lists each answer with its source. A flag in `quote` would save one call, and its only evidence would be the agent's word. The operation gives the insurer a record of who validated and when, with the mechanism that AIP already uses for every commitment.
+
+**The price comes from the tools.** A page made for people can leave out the excess or show the price of another profile. An agent takes the price, the cover, the limits and the excess from `quote`, and a binding offer must state its excess and its limits.
+
 **Sensitive fields never pass through the agent.** A question marked `x-collected-by: distributor_page` (identity numbers, bank or card numbers, health details) is collected on the distributor's own page.
 
 **No auth and no confirm step of our own.** Actions with a business effect return a PAP operation, and the agent confirms it at the PAP operations endpoint. `conclude` needs the customer's own approval of that revision. A standing permission is not enough.
 
-**Evidence.** The terms of an application hold the parties, the declaration (answers, question set version, hash, accuracy confirmed), the needs assessment, every document delivered with its version and hash, and the contact consent. When the operation succeeds, the distributor keeps an `EvidenceRecord` with the hash of the confirmed terms. A PAP confirmation alone does not prove that the customer saw the terms. This record adds what was delivered and what was declared.
+**Evidence.** The terms of an application hold the parties, the declaration (answers and their sources, question set version, hashes, accuracy confirmed, validation), the needs assessment, every document delivered with its version and hash, and the contact consent. When the operation succeeds, the distributor keeps an `EvidenceRecord` with the hash of the confirmed terms, the hashes of the answers and their sources, the validation, and the version of the underwriting scope. A PAP confirmation alone does not prove that the customer saw the terms. This record adds what was delivered and what was declared.
 
 ## Rules the checks cover
 
@@ -91,6 +102,10 @@ R1 profiles compile. R2 a question set has every required question of its profil
 4. **Servicing after the sale.** Draft 0.1 stops at the sale. A later draft adds a level 4 for what comes after it: read and change an agreement, renew it, cancel it, and open and follow a claim.
 5. **Legal review** of the IDD references, country by country.
 6. **Governance.** FINOS (Linux Foundation) is a candidate home, next to MCP and A2A.
+7. **Product lines and product lists.** Some insurers do not sort their products by line and country, and do not keep a fixed product list. Decide if `list_products` and the line profiles stay in this form.
+8. **Who carries the risk.** The insurer's balance sheet carries the risk, and the customer has no way to see it today. Decide what a provider publishes about it, and how an agent shows it.
+9. **Signed results.** An agent cannot prove what the insurer said, for example the price or the scope. Decide if results carry the insurer's signature, so that an agent can show them as the insurer's own words.
+10. **Behaviour of the agent.** The checks cover what the examples show. They cannot check what happened in the conversation, for example whether the customer validated an answer or saw the summary. The buyer skill and test sandboxes can cover it.
 
 ## Related work
 

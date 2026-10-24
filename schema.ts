@@ -524,8 +524,8 @@ export type AnswerOrigin =
 
 /**
  * Where one answer comes from. `validated_by_customer` is true when the
- * customer confirmed this value before the agent sent it. A value that the
- * customer gave is confirmed by them. An agent MUST NOT set
+ * customer confirmed this value before the agent sent it. It is always true
+ * when the customer gave the value. An agent MUST NOT set
  * `validated_by_customer` to true when the customer did not validate that answer.
  */
 export type AnswerSource =
@@ -589,6 +589,10 @@ export type QuoteParams =
 /**
  * One priced offer. A distributor can return several offers: one per tier, per
  * provider, or per duration.
+ *
+ * When a server implements `quote`, an agent MUST take the price, the cover,
+ * the limits and the excess that it shows the customer from the offer, and
+ * MUST NOT take them from a page made for people.
  */
 export interface Offer {
   offer_id: string;
@@ -665,12 +669,14 @@ export interface NoOffer {
  */
 export type NoOfferReason = string;
 
+/**
+ * Common reason codes. `outside_underwriting_scope` means that the risk is
+ * outside the product's underwriting scope: its geography, its insured types or
+ * its conditions. A quote for a risk outside the structured part MUST get this
+ * reason.
+ */
 export type KnownNoOfferReason =
-  /**
-   * The risk is outside the product's underwriting scope: its geography, its
-   * insured types or its conditions. A quote outside the structured part MUST
-   * get this reason.
-   */
+  /** The risk is outside the product's underwriting scope. */
   | "outside_underwriting_scope"
   /** The insurer does not accept the risk, and gives no more precise reason. */
   | "risk_not_accepted"
